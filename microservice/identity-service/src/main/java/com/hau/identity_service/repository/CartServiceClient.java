@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(name = "cart-service", url = "${app.cart-service.url}")
 public interface CartServiceClient {
-    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/internal/cart",produces = MediaType.APPLICATION_JSON_VALUE)
     CartResponse createCart(@RequestBody CartCreateRequest cartCreateRequest);
 }
