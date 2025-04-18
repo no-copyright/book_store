@@ -12,7 +12,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableMethodSecurity
@@ -28,16 +27,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.cors(cors -> cors.configurationSource(request -> {
-            CorsConfiguration config = new CorsConfiguration();
-            config.addAllowedOrigin("*");
-            config.addAllowedMethod("*");
-            config.addAllowedHeader("*");
-            config.setAllowCredentials(false);
-            config.setMaxAge(3600L);
-            return config;
-        }));
-
         http.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, publicPostEndpoint)
                 .permitAll()
                 .anyRequest()

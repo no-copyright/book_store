@@ -29,16 +29,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.cors(cors -> cors.configurationSource(request -> {
-            CorsConfiguration config = new CorsConfiguration();
-            config.addAllowedOrigin("*");
-            config.addAllowedMethod("*");
-            config.addAllowedHeader("*");
-            config.setAllowCredentials(false);
-            config.setMaxAge(3600L);
-            return config;
-        }));
-
         http.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, publicPostEndpoint)
                 .permitAll()
                 .anyRequest()
