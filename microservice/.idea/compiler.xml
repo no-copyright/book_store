@@ -11,7 +11,7 @@
         <module name="product-service" />
         <module name="category-service" />
       </profile>
-      <profile name="Annotation profile for profile-service" enabled="true">
+      <profile name="Annotation profile for cart-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -22,8 +22,8 @@
           <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct/1.6.3/mapstruct-1.6.3.jar" />
         </processorPath>
         <module name="identity-service" />
-        <module name="profile-service" />
         <module name="cart-service" />
+        <module name="profile-service" />
       </profile>
     </annotationProcessing>
   </component>

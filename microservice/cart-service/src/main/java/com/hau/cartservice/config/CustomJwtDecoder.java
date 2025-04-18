@@ -1,14 +1,13 @@
-package com.hau.identity_service.config;
-
-import java.text.ParseException;
+package com.hau.cartservice.config;
 
 import com.nimbusds.jwt.SignedJWT;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Component;
 
-import lombok.RequiredArgsConstructor;
+import java.text.ParseException;
 
 @Component
 @RequiredArgsConstructor
