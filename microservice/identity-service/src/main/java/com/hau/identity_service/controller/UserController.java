@@ -20,11 +20,11 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/users")
+@RequestMapping("/users")
 public class UserController {
     private final UserService userService;
 
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserResponse>> createUser(
             @Valid @RequestBody UserCreateRequest userCreateRequest) {
         ApiResponse<UserResponse> userResponse = userService.createUser(userCreateRequest);

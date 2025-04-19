@@ -1,4 +1,4 @@
-/* ===== java/com/hau/identity_service/config/ApplicationInitConfig.java ===== */
+/* ===== identity_service/config/ApplicationInitConfig.java ===== */
 package com.hau.identity_service.config;
 
 import java.util.HashSet;
@@ -77,7 +77,7 @@ public class ApplicationInitConfig {
 }
 
 
-/* ===== java/com/hau/identity_service/config/CustomJwtDecoder.java ===== */
+/* ===== identity_service/config/CustomJwtDecoder.java ===== */
 package com.hau.identity_service.config;
 
 import java.util.Objects;
@@ -134,7 +134,7 @@ public class CustomJwtDecoder implements JwtDecoder {
 }
 
 
-/* ===== java/com/hau/identity_service/config/JwtAuthenticationEntryPoint.java ===== */
+/* ===== identity_service/config/JwtAuthenticationEntryPoint.java ===== */
 package com.hau.identity_service.config;
 
 import java.io.IOException;
@@ -180,7 +180,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 }
 
 
-/* ===== java/com/hau/identity_service/config/SecurityConfig.java ===== */
+/* ===== identity_service/config/SecurityConfig.java ===== */
 package com.hau.identity_service.config;
 
 import org.springframework.context.annotation.Bean;
@@ -260,7 +260,7 @@ public class SecurityConfig {
     }
 }
 
-/* ===== java/com/hau/identity_service/controller/AuthenticationController.java ===== */
+/* ===== identity_service/controller/AuthenticationController.java ===== */
 package com.hau.identity_service.controller;
 
 import java.text.ParseException;
@@ -285,7 +285,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/auth")
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
     private final ForgotPasswordService forgotPasswordService;
@@ -340,7 +340,7 @@ public class AuthenticationController {
 }
 
 
-/* ===== java/com/hau/identity_service/controller/PermissionController.java ===== */
+/* ===== identity_service/controller/PermissionController.java ===== */
 package com.hau.identity_service.controller;
 
 import java.util.List;
@@ -360,7 +360,7 @@ import com.hau.identity_service.service.PermissionService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/permissions")
+@RequestMapping("/permissions")
 @RequiredArgsConstructor
 public class PermissionController {
     private final PermissionService permissionService;
@@ -389,7 +389,7 @@ public class PermissionController {
 }
 
 
-/* ===== java/com/hau/identity_service/controller/RoleController.java ===== */
+/* ===== identity_service/controller/RoleController.java ===== */
 package com.hau.identity_service.controller;
 
 import java.util.List;
@@ -410,7 +410,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/roles")
+@RequestMapping("/roles")
 public class RoleController {
     private final RoleService roleService;
 
@@ -437,7 +437,7 @@ public class RoleController {
 }
 
 
-/* ===== java/com/hau/identity_service/controller/UserController.java ===== */
+/* ===== identity_service/controller/UserController.java ===== */
 package com.hau.identity_service.controller;
 
 import jakarta.validation.Valid;
@@ -460,7 +460,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/users")
+@RequestMapping("/users")
 public class UserController {
     private final UserService userService;
 
@@ -528,7 +528,7 @@ public class UserController {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/request/AuthenticationRequest.java ===== */
+/* ===== identity_service/dto/request/AuthenticationRequest.java ===== */
 package com.hau.identity_service.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
@@ -551,7 +551,30 @@ public class AuthenticationRequest {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/request/ChangePasswordRequest.java ===== */
+/* ===== identity_service/dto/request/CartCreateRequest.java ===== */
+package com.hau.identity_service.dto.request;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.Set;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class CartCreateRequest {
+    private Integer userId;
+}
+
+
+/* ===== identity_service/dto/request/ChangePasswordRequest.java ===== */
 package com.hau.identity_service.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
@@ -574,7 +597,7 @@ public class ChangePasswordRequest {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/request/ForgotPasswordRequest.java ===== */
+/* ===== identity_service/dto/request/ForgotPasswordRequest.java ===== */
 package com.hau.identity_service.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
@@ -594,7 +617,7 @@ public class ForgotPasswordRequest {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/request/IntrospectRequest.java ===== */
+/* ===== identity_service/dto/request/IntrospectRequest.java ===== */
 package com.hau.identity_service.dto.request;
 
 import lombok.AllArgsConstructor;
@@ -611,7 +634,7 @@ public class IntrospectRequest {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/request/LogoutRequest.java ===== */
+/* ===== identity_service/dto/request/LogoutRequest.java ===== */
 package com.hau.identity_service.dto.request;
 
 import lombok.AllArgsConstructor;
@@ -628,7 +651,7 @@ public class LogoutRequest {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/request/PermissionCreationRequest.java ===== */
+/* ===== identity_service/dto/request/PermissionCreationRequest.java ===== */
 package com.hau.identity_service.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
@@ -650,7 +673,7 @@ public class PermissionCreationRequest {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/request/RefreshTokenRequest.java ===== */
+/* ===== identity_service/dto/request/RefreshTokenRequest.java ===== */
 package com.hau.identity_service.dto.request;
 
 import lombok.AllArgsConstructor;
@@ -667,7 +690,7 @@ public class RefreshTokenRequest {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/request/ResetPasswordWithTokenRequest.java ===== */
+/* ===== identity_service/dto/request/ResetPasswordWithTokenRequest.java ===== */
 package com.hau.identity_service.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
@@ -692,7 +715,7 @@ public class ResetPasswordWithTokenRequest {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/request/RoleCreationRequest.java ===== */
+/* ===== identity_service/dto/request/RoleCreationRequest.java ===== */
 package com.hau.identity_service.dto.request;
 
 import java.util.Set;
@@ -715,7 +738,7 @@ public class RoleCreationRequest {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/request/UserCreateRequest.java ===== */
+/* ===== identity_service/dto/request/UserCreateRequest.java ===== */
 package com.hau.identity_service.dto.request;
 
 import java.util.Set;
@@ -745,13 +768,13 @@ public class UserCreateRequest {
     @Email(message = "Email không đúng định dạng")
     @NotBlank(message = "Email không được để trống")
     private String email;
-
     private String profileImage;
+    private Integer userId;
     private Set<String> roles;
 }
 
 
-/* ===== java/com/hau/identity_service/dto/request/UserUpdateInfoRequest.java ===== */
+/* ===== identity_service/dto/request/UserUpdateInfoRequest.java ===== */
 package com.hau.identity_service.dto.request;
 
 import jakarta.validation.constraints.Email;
@@ -781,7 +804,7 @@ public class UserUpdateInfoRequest {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/request/UserUpdateRequest.java ===== */
+/* ===== identity_service/dto/request/UserUpdateRequest.java ===== */
 package com.hau.identity_service.dto.request;
 
 import java.util.Set;
@@ -812,7 +835,7 @@ public class UserUpdateRequest {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/request/VerifyOtpRequest.java ===== */
+/* ===== identity_service/dto/request/VerifyOtpRequest.java ===== */
 package com.hau.identity_service.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
@@ -834,7 +857,7 @@ public class VerifyOtpRequest {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/response/ApiResponse.java ===== */
+/* ===== identity_service/dto/response/ApiResponse.java ===== */
 package com.hau.identity_service.dto.response;
 
 import java.time.LocalDateTime;
@@ -859,7 +882,7 @@ public class ApiResponse<T> {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/response/AuthenticationResponse.java ===== */
+/* ===== identity_service/dto/response/AuthenticationResponse.java ===== */
 package com.hau.identity_service.dto.response;
 
 import lombok.AllArgsConstructor;
@@ -877,7 +900,24 @@ public class AuthenticationResponse {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/response/ErrorsResponse.java ===== */
+/* ===== identity_service/dto/response/CartResponse.java ===== */
+package com.hau.identity_service.dto.response;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class CartResponse {
+    private Integer userId;
+}
+
+
+/* ===== identity_service/dto/response/ErrorsResponse.java ===== */
 package com.hau.identity_service.dto.response;
 
 import java.time.LocalDateTime;
@@ -897,7 +937,7 @@ public class ErrorsResponse {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/response/IntrospectResponse.java ===== */
+/* ===== identity_service/dto/response/IntrospectResponse.java ===== */
 package com.hau.identity_service.dto.response;
 
 import lombok.AllArgsConstructor;
@@ -915,7 +955,7 @@ public class IntrospectResponse {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/response/PermissionResponse.java ===== */
+/* ===== identity_service/dto/response/PermissionResponse.java ===== */
 package com.hau.identity_service.dto.response;
 
 import lombok.AllArgsConstructor;
@@ -933,7 +973,7 @@ public class PermissionResponse {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/response/RoleResponse.java ===== */
+/* ===== identity_service/dto/response/RoleResponse.java ===== */
 package com.hau.identity_service.dto.response;
 
 import java.util.Set;
@@ -954,7 +994,7 @@ public class RoleResponse {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/response/UserResponse.java ===== */
+/* ===== identity_service/dto/response/UserResponse.java ===== */
 package com.hau.identity_service.dto.response;
 
 import java.util.Set;
@@ -980,7 +1020,7 @@ public class UserResponse {
 }
 
 
-/* ===== java/com/hau/identity_service/dto/response/VerifyOtpResponse.java ===== */
+/* ===== identity_service/dto/response/VerifyOtpResponse.java ===== */
 package com.hau.identity_service.dto.response;
 
 import lombok.AllArgsConstructor;
@@ -997,7 +1037,7 @@ public class VerifyOtpResponse {
 }
 
 
-/* ===== java/com/hau/identity_service/entity/InvalidatedToken.java ===== */
+/* ===== identity_service/entity/InvalidatedToken.java ===== */
 package com.hau.identity_service.entity;
 
 import java.util.Date;
@@ -1023,7 +1063,7 @@ public class InvalidatedToken {
 }
 
 
-/* ===== java/com/hau/identity_service/entity/Permission.java ===== */
+/* ===== identity_service/entity/Permission.java ===== */
 package com.hau.identity_service.entity;
 
 import jakarta.persistence.Entity;
@@ -1047,7 +1087,7 @@ public class Permission {
 }
 
 
-/* ===== java/com/hau/identity_service/entity/Role.java ===== */
+/* ===== identity_service/entity/Role.java ===== */
 package com.hau.identity_service.entity;
 
 import java.util.Set;
@@ -1077,7 +1117,7 @@ public class Role {
 }
 
 
-/* ===== java/com/hau/identity_service/entity/User.java ===== */
+/* ===== identity_service/entity/User.java ===== */
 package com.hau.identity_service.entity;
 
 import java.time.LocalDateTime;
@@ -1119,7 +1159,7 @@ public class User {
 }
 
 
-/* ===== java/com/hau/identity_service/exception/AppException.java ===== */
+/* ===== identity_service/exception/AppException.java ===== */
 package com.hau.identity_service.exception;
 
 import java.time.LocalDateTime;
@@ -1145,7 +1185,7 @@ public class AppException extends RuntimeException {
 }
 
 
-/* ===== java/com/hau/identity_service/exception/GlobalExceptionHandler.java ===== */
+/* ===== identity_service/exception/GlobalExceptionHandler.java ===== */
 package com.hau.identity_service.exception;
 
 import java.time.LocalDateTime;
@@ -1241,17 +1281,19 @@ public class GlobalExceptionHandler {
 }
 
 
-/* ===== java/com/hau/identity_service/IdentityServiceApplication.java ===== */
+/* ===== identity_service/IdentityServiceApplication.java ===== */
 package com.hau.identity_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableAsync
 @EnableScheduling
+@EnableFeignClients
 public class IdentityServiceApplication {
 
     public static void main(String[] args) {
@@ -1260,7 +1302,20 @@ public class IdentityServiceApplication {
 }
 
 
-/* ===== java/com/hau/identity_service/mapper/PermissionMapper.java ===== */
+/* ===== identity_service/mapper/CartMapper.java ===== */
+package com.hau.identity_service.mapper;
+
+import com.hau.identity_service.dto.request.CartCreateRequest;
+import com.hau.identity_service.dto.request.UserCreateRequest;
+import org.mapstruct.Mapper;
+
+@Mapper(componentModel = "spring")
+public interface CartMapper {
+    CartCreateRequest toCartCreateRequest(UserCreateRequest userCreateRequest);
+}
+
+
+/* ===== identity_service/mapper/PermissionMapper.java ===== */
 package com.hau.identity_service.mapper;
 
 import org.mapstruct.Mapper;
@@ -1278,7 +1333,7 @@ public interface PermissionMapper {
 }
 
 
-/* ===== java/com/hau/identity_service/mapper/RoleMapper.java ===== */
+/* ===== identity_service/mapper/RoleMapper.java ===== */
 package com.hau.identity_service.mapper;
 
 import org.mapstruct.Mapper;
@@ -1298,7 +1353,7 @@ public interface RoleMapper {
 }
 
 
-/* ===== java/com/hau/identity_service/mapper/UserMapper.java ===== */
+/* ===== identity_service/mapper/UserMapper.java ===== */
 package com.hau.identity_service.mapper;
 
 import org.mapstruct.Mapper;
@@ -1326,7 +1381,24 @@ public interface UserMapper {
 }
 
 
-/* ===== java/com/hau/identity_service/repository/InvalidatedTokenRepository.java ===== */
+/* ===== identity_service/repository/CartServiceClient.java ===== */
+package com.hau.identity_service.repository;
+
+import com.hau.identity_service.dto.request.CartCreateRequest;
+import com.hau.identity_service.dto.response.CartResponse;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+@FeignClient(name = "cart-service", url = "${app.cart-service.url}")
+public interface CartServiceClient {
+    @PostMapping(value = "/internal/cart",produces = MediaType.APPLICATION_JSON_VALUE)
+    CartResponse createCart(@RequestBody CartCreateRequest cartCreateRequest);
+}
+
+
+/* ===== identity_service/repository/InvalidatedTokenRepository.java ===== */
 package com.hau.identity_service.repository;
 
 import java.util.Date;
@@ -1341,7 +1413,7 @@ public interface InvalidatedTokenRepository extends JpaRepository<InvalidatedTok
 }
 
 
-/* ===== java/com/hau/identity_service/repository/PermissionRepository.java ===== */
+/* ===== identity_service/repository/PermissionRepository.java ===== */
 package com.hau.identity_service.repository;
 
 import java.util.Optional;
@@ -1358,7 +1430,7 @@ public interface PermissionRepository extends JpaRepository<Permission, String>,
 }
 
 
-/* ===== java/com/hau/identity_service/repository/RoleRepository.java ===== */
+/* ===== identity_service/repository/RoleRepository.java ===== */
 package com.hau.identity_service.repository;
 
 import java.util.Optional;
@@ -1375,7 +1447,7 @@ public interface RoleRepository extends JpaRepository<Role, String>, JpaSpecific
 }
 
 
-/* ===== java/com/hau/identity_service/repository/UserRepository.java ===== */
+/* ===== identity_service/repository/UserRepository.java ===== */
 package com.hau.identity_service.repository;
 
 import java.util.Optional;
@@ -1392,7 +1464,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 }
 
 
-/* ===== java/com/hau/identity_service/service/AuthenticationService.java ===== */
+/* ===== identity_service/service/AuthenticationService.java ===== */
 package com.hau.identity_service.service;
 
 import java.text.ParseException;
@@ -1509,7 +1581,7 @@ public class AuthenticationService {
 }
 
 
-/* ===== java/com/hau/identity_service/service/EmailService.java ===== */
+/* ===== identity_service/service/EmailService.java ===== */
 package com.hau.identity_service.service;
 
 import jakarta.mail.MessagingException;
@@ -1554,7 +1626,7 @@ public class EmailService {
 }
 
 
-/* ===== java/com/hau/identity_service/service/ForgotPasswordService.java ===== */
+/* ===== identity_service/service/ForgotPasswordService.java ===== */
 package com.hau.identity_service.service;
 
 import java.text.ParseException;
@@ -1906,7 +1978,7 @@ public class ForgotPasswordService {
 }
 
 
-/* ===== java/com/hau/identity_service/service/PermissionService.java ===== */
+/* ===== identity_service/service/PermissionService.java ===== */
 package com.hau.identity_service.service;
 
 import java.time.LocalDateTime;
@@ -1971,7 +2043,7 @@ public class PermissionService {
 }
 
 
-/* ===== java/com/hau/identity_service/service/RoleService.java ===== */
+/* ===== identity_service/service/RoleService.java ===== */
 package com.hau.identity_service.service;
 
 import java.time.LocalDateTime;
@@ -2052,7 +2124,7 @@ public class RoleService {
 }
 
 
-/* ===== java/com/hau/identity_service/service/TokenService.java ===== */
+/* ===== identity_service/service/TokenService.java ===== */
 package com.hau.identity_service.service;
 
 import java.text.ParseException;
@@ -2247,13 +2319,15 @@ public class TokenService {
 }
 
 
-/* ===== java/com/hau/identity_service/service/UserService.java ===== */
+/* ===== identity_service/service/UserService.java ===== */
 package com.hau.identity_service.service;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.hau.identity_service.mapper.CartMapper;
+import com.hau.identity_service.repository.CartServiceClient;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -2287,7 +2361,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
+    private final CartMapper cartMapper;
     private final PasswordEncoder passwordEncoder;
+    private final CartServiceClient cartServiceClient;
 
     public ApiResponse<UserResponse> createUser(UserCreateRequest userCreateRequest) {
         User user = userMapper.toUser(userCreateRequest);
@@ -2296,7 +2372,9 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(userCreateRequest.getPassword()));
         try {
             userRepository.save(user);
-
+            var cartRequest = cartMapper.toCartCreateRequest(userCreateRequest);
+            cartRequest.setUserId(user.getId());
+            cartServiceClient.createCart(cartRequest);
             return ApiResponse.<UserResponse>builder()
                     .status(HttpStatus.CREATED.value())
                     .message("Tạo mới user thành công")
@@ -2305,7 +2383,10 @@ public class UserService {
                     .build();
         } catch (DataIntegrityViolationException ex) {
             throw new AppException(HttpStatus.BAD_REQUEST, "username đã tồn tại", null);
+        } catch (Exception feignException) {
+            log.error("Lỗi khi tạo giỏ hàng cho user {}: {}", user.getUsername(), feignException.getMessage(), feignException);
         }
+        return null;
     }
 
     public Page<UserResponse> getAllUsers(int pageIndex, int pageSize, String username, Integer gender) {

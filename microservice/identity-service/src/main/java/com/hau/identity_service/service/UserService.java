@@ -31,6 +31,8 @@ import com.hau.identity_service.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @RequiredArgsConstructor
 @Service
@@ -52,6 +54,7 @@ public class UserService {
             userRepository.save(user);
             var cartRequest = cartMapper.toCartCreateRequest(userCreateRequest);
             cartRequest.setUserId(user.getId());
+
             cartServiceClient.createCart(cartRequest);
             return ApiResponse.<UserResponse>builder()
                     .status(HttpStatus.CREATED.value())

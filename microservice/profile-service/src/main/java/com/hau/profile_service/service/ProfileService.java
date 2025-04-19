@@ -9,6 +9,7 @@ import com.hau.profile_service.exception.AppException;
 import com.hau.profile_service.mapper.ProfileMapper;
 import com.hau.profile_service.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProfileService {
     private final ProfileRepository profileRepository;
     private final ProfileMapper profileMapper;

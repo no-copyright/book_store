@@ -29,7 +29,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
         ApiResponse<?> apiResponse = ApiResponse.builder()
                 .status(HttpStatus.UNAUTHORIZED.value())
-                .message("Không có quyền truy cập: Token không hợp lệ hoặc hết hạn")
+                .message("Không có quyền truy cập")
                 .timestamp(LocalDateTime.now())
                 .build();
 

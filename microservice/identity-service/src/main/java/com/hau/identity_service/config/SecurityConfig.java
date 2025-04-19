@@ -14,7 +14,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableMethodSecurity
@@ -23,31 +22,26 @@ import org.springframework.web.cors.CorsConfiguration;
 public class SecurityConfig {
 
     private final String[] publicPostEndpoint = {
-            "/api/v1/users",
-            "/api/v1/auth/introspect",
-            "/api/v1/auth/login",
-            "/api/v1/auth/logout",
-            "/api/v1/auth/refresh-token",
-            "/api/v1/auth/password-recovery/otp",
-            "/api/v1/auth/password-recovery/otp/verify",
-            "/api/v1/auth/password-recovery/reset",
+            "/users/register",
+            "/auth/**",
     };
 
     private final CustomJwtDecoder customJwtDecoder;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.cors(cors -> cors.configurationSource(request -> {
-            CorsConfiguration config = new CorsConfiguration();
-            config.addAllowedOrigin("*");
-            config.addAllowedMethod("*");
-            config.addAllowedHeader("*");
-            config.setAllowCredentials(false);
-            config.setMaxAge(3600L);
-            return config;
-        }));
+//        http.cors(cors -> cors.configurationSource(request -> {
+//            CorsConfiguration config = new CorsConfiguration();
+//            config.addAllowedOrigin("*");
+//            config.addAllowedMethod("*");
+//            config.addAllowedHeader("*");
+//            config.setAllowCredentials(false);
+//            config.setMaxAge(3600L);
+//            return config;
+//        }));
 
-        http.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, publicPostEndpoint)
+        http.authorizeHttpRequests(request -> request
+                .requestMatchers(HttpMethod.POST, publicPostEndpoint)
                 .permitAll()
                 .anyRequest()
                 .authenticated());

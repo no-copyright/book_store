@@ -17,11 +17,5 @@ public class UserUpdateInfoRequest {
     @NotBlank(message = "Email không được để trống")
     @Email(message = "Email không đúng định dạng")
     private String email;
-
-    @Pattern(regexp = "^[0-9]{10}$", message = "Số điện thoại phải có 10 chữ số")
-    private String phone;
-
-    private String address;
     private String profileImage;
-    private Integer gender;
 }
