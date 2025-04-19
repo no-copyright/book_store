@@ -3,6 +3,7 @@ package com.hau.profile_service.controller;
 import com.hau.profile_service.dto.ApiResponse;
 import com.hau.profile_service.dto.ProfileCreateRequest;
 import com.hau.profile_service.dto.ProfileResponse;
+import com.hau.profile_service.dto.ProfileUpdateRequest;
 import com.hau.profile_service.service.ProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,14 +18,27 @@ public class ProfileController {
     private final ProfileService profileService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<ProfileResponse>> createUserProfile(@Valid @RequestBody ProfileCreateRequest profileCreateRequest) {
-        ApiResponse<ProfileResponse> response = profileService.createUserProfile(profileCreateRequest);
+    public ResponseEntity<ApiResponse<ProfileResponse>> createProfile(@Valid @RequestBody ProfileCreateRequest profileCreateRequest) {
+        ApiResponse<ProfileResponse> response = profileService.createProfile(profileCreateRequest);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{userprofileId}")
-    public ResponseEntity<ApiResponse<ProfileResponse>> getUserProfileById(@PathVariable Long userprofileId) {
-        ApiResponse<ProfileResponse> response = profileService.getUserProfileById(userprofileId);
+    @PutMapping("/{profileId}")
+    public ResponseEntity<ApiResponse<ProfileResponse>> updateProfile(@PathVariable Long profileId, @Valid @RequestBody ProfileUpdateRequest profileUpdateRequest) {
+        ApiResponse<ProfileResponse> response = profileService.updateProfile(profileId, profileUpdateRequest);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
+    @GetMapping("/{profileId}")
+    public ResponseEntity<ApiResponse<ProfileResponse>> getProfileById(@PathVariable Long profileId) {
+        ApiResponse<ProfileResponse> response = profileService.getProfileById(profileId);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{profileId}")
+    public ResponseEntity<ApiResponse<String>> deleteProfile(@PathVariable Long profileId) {
+        ApiResponse<String> response = profileService.deleteProfile(profileId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

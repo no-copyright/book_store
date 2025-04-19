@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.hau.identity_service.mapper.CartMapper;
+import com.hau.identity_service.repository.CartServiceClient;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,7 +39,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
+    private final CartMapper cartMapper;
     private final PasswordEncoder passwordEncoder;
+    private final CartServiceClient cartServiceClient;
 
     public ApiResponse<UserResponse> createUser(UserCreateRequest userCreateRequest) {
         User user = userMapper.toUser(userCreateRequest);
@@ -46,7 +50,9 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(userCreateRequest.getPassword()));
         try {
             userRepository.save(user);
-
+            var cartRequest = cartMapper.toCartCreateRequest(userCreateRequest);
+            cartRequest.setUserId(user.getId());
+            cartServiceClient.createCart(cartRequest);
             return ApiResponse.<UserResponse>builder()
                     .status(HttpStatus.CREATED.value())
                     .message("Tạo mới user thành công")
@@ -55,7 +61,10 @@ public class UserService {
                     .build();
         } catch (DataIntegrityViolationException ex) {
             throw new AppException(HttpStatus.BAD_REQUEST, "username đã tồn tại", null);
+        } catch (Exception feignException) {
+            log.error("Lỗi khi tạo giỏ hàng cho user {}: {}", user.getUsername(), feignException.getMessage(), feignException);
         }
+        return null;
     }
 
     public Page<UserResponse> getAllUsers(int pageIndex, int pageSize, String username, Integer gender) {
