@@ -25,20 +25,21 @@ public class ProfileController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("@profileService.isOwnerOfProfile(#profileId, authentication)")
     @PutMapping("/{profileId}")
     public ResponseEntity<ApiResponse<ProfileResponse>> updateProfile(@PathVariable Long profileId, @Valid @RequestBody ProfileUpdateRequest profileUpdateRequest) {
         ApiResponse<ProfileResponse> response = profileService.updateProfile(profileId, profileUpdateRequest);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-
+    @PreAuthorize("@profileService.isOwnerOfProfile(#profileId, authentication)")
     @GetMapping("/{profileId}")
     public ResponseEntity<ApiResponse<ProfileResponse>> getProfileById(@PathVariable Long profileId) {
         ApiResponse<ProfileResponse> response = profileService.getProfileById(profileId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @PreAuthorize("@profileService.isOwnerOfProfile(#profileId, authentication)")
     @DeleteMapping("/{profileId}")
     public ResponseEntity<ApiResponse<String>> deleteProfile(@PathVariable Long profileId) {
         ApiResponse<String> response = profileService.deleteProfile(profileId);

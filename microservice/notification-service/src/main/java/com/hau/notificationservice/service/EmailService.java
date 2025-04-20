@@ -25,7 +25,7 @@ public class EmailService {
     public EmailResponse sendEmail(SendEmailRequest sendEmailRequest) {
         EmailRequest emailRequest = EmailRequest.builder()
                 .sender(Sender.builder()
-                        .name("Duy Dat")
+                        .name("Hiệu sách Hà Nội")
                         .email("datdnk3@gmail.com")
                         .build())
                 .to(List.of(sendEmailRequest.getTo()))

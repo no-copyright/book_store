@@ -1,5 +1,6 @@
 package com.hau.identity_service.controller;
 
+import com.hau.identity_service.dto.response.PageResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Page;
@@ -17,6 +18,8 @@ import com.hau.identity_service.dto.response.UserResponse;
 import com.hau.identity_service.service.UserService;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -68,14 +71,24 @@ public class UserController {
         return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }
 
-    @GetMapping
+//    @GetMapping
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<Page<UserResponse>> getAllUsers(
+//            @RequestParam(required = false, defaultValue = "0") int pageIndex,
+//            @RequestParam(required = false, defaultValue = "10") int pageSize,
+//            @RequestParam(required = false) String username,
+//            @RequestParam(required = false) Integer gender) {
+//        Page<UserResponse> userPage = userService.getAllUsers(pageIndex, pageSize, username, gender);
+//        return new ResponseEntity<>(userPage, HttpStatus.OK);
+//    }
+
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Page<UserResponse>> getAllUsers(
-            @RequestParam(required = false, defaultValue = "0") int pageIndex,
-            @RequestParam(required = false, defaultValue = "10") int pageSize,
-            @RequestParam(required = false) String username,
-            @RequestParam(required = false) Integer gender) {
-        Page<UserResponse> userPage = userService.getAllUsers(pageIndex, pageSize, username, gender);
+    @GetMapping
+    public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> getAllUsers(
+            @RequestParam(required = false, defaultValue = "1", value = "page") int page,
+            @RequestParam(required = false, defaultValue = "10", value = "size") int size
+    ) {
+        ApiResponse<PageResponse<UserResponse>> userPage = userService.getAllUsers(page, size);
         return new ResponseEntity<>(userPage, HttpStatus.OK);
     }
 

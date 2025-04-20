@@ -123,8 +123,9 @@ public class TokenService {
     public String generateToken(User user) throws JOSEException {
         JWSHeader jwsHeader = new JWSHeader(JWSAlgorithm.HS512);
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(user.getUsername())
                 .issuer(issuer)
+                .subject(user.getId().toString())
+                .claim("username", user.getUsername())
                 .issueTime(new Date())
                 .expirationTime(new Date(
                         Instant.now().plus(expiration, ChronoUnit.MINUTES).toEpochMilli()))
