@@ -4,14 +4,17 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.hau.event.dto.UserCreateEvent;
+import com.hau.identity_service.dto.response.PageResponse;
 import com.hau.identity_service.mapper.CartMapper;
 import com.hau.identity_service.repository.CartServiceClient;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,8 +34,6 @@ import com.hau.identity_service.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 @RequiredArgsConstructor
 @Service
@@ -44,6 +45,7 @@ public class UserService {
     private final CartMapper cartMapper;
     private final PasswordEncoder passwordEncoder;
     private final CartServiceClient cartServiceClient;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public ApiResponse<UserResponse> createUser(UserCreateRequest userCreateRequest) {
         User user = userMapper.toUser(userCreateRequest);
@@ -52,6 +54,11 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(userCreateRequest.getPassword()));
         try {
             userRepository.save(user);
+            UserCreateEvent userCreateEvent = UserCreateEvent.builder()
+                    .id(user.getId())
+                    .username(user.getUsername())
+                    .build();
+            kafkaTemplate.send("user-created-topic", userCreateEvent);
             var cartRequest = cartMapper.toCartCreateRequest(userCreateRequest);
             cartRequest.setUserId(user.getId());
 
@@ -70,27 +77,47 @@ public class UserService {
         return null;
     }
 
-    public Page<UserResponse> getAllUsers(int pageIndex, int pageSize, String username, Integer gender) {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
+//    public Page<UserResponse> getAllUsers(int pageIndex, int pageSize, String username, Integer gender) {
+//        var authentication = SecurityContextHolder.getContext().getAuthentication();
+//
+//        log.info("Username : {}", authentication.getName());
+//        authentication.getAuthorities().forEach(grantedAuthority -> log.info(grantedAuthority.getAuthority()));
+//
+//        Specification<User> spec = Specification.where(null);
+//
+//        if (username != null) {
+//            spec = spec.and(
+//                    (root, query, cb) -> cb.like(cb.lower(root.get("username")), "%" + username.toLowerCase() + "%"));
+//        }
+//
+//        if (gender != null) {
+//            spec = spec.and((root, query, cb) -> cb.equal(root.get("gender"), gender));
+//        }
+//
+//        Pageable pageable = PageRequest.of(pageIndex, pageSize);
+//        Page<User> userPage = userRepository.findAll(spec, pageable);
+//
+//        return userPage.map(userMapper::toUserResponse);
+//    }
 
-        log.info("Username : {}", authentication.getName());
-        authentication.getAuthorities().forEach(grantedAuthority -> log.info(grantedAuthority.getAuthority()));
+    public ApiResponse<PageResponse<UserResponse>> getAllUsers(int page, int size) {
+        Sort sort = Sort.by("createdAt").descending();
 
-        Specification<User> spec = Specification.where(null);
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Page<User> userPage = userRepository.findAll(pageable);
 
-        if (username != null) {
-            spec = spec.and(
-                    (root, query, cb) -> cb.like(cb.lower(root.get("username")), "%" + username.toLowerCase() + "%"));
-        }
-
-        if (gender != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("gender"), gender));
-        }
-
-        Pageable pageable = PageRequest.of(pageIndex, pageSize);
-        Page<User> userPage = userRepository.findAll(spec, pageable);
-
-        return userPage.map(userMapper::toUserResponse);
+        return ApiResponse.<PageResponse<UserResponse>>builder()
+                .status(HttpStatus.OK.value())
+                .message("Lấy danh sách user thành công")
+                .result(PageResponse.<UserResponse>builder()
+                        .currentPage(page)
+                        .totalPages(userPage.getTotalPages())
+                        .totalElements(userPage.getTotalElements())
+                        .pageSize(userPage.getSize())
+                        .data(userPage.map(userMapper::toUserResponse).toList())
+                        .build())
+                .timestamp(LocalDateTime.now())
+                .build();
     }
 
     public ApiResponse<UserResponse> myInfo() {
@@ -186,10 +213,10 @@ public class UserService {
         if (authentication == null || !authentication.isAuthenticated()) {
             return false;
         }
-        String authenticatedUsername = authentication.getName();
+        String authenticatedUserId = authentication.getName();
         try {
             User requestedUser = findUserById(requestedUserId);
-            return requestedUser.getUsername().equals(authenticatedUsername);
+            return requestedUser.getId().toString().equals(authenticatedUserId);
         } catch (AppException e) {
             log.warn("Không tìm thấy người dùng với ID: {}", requestedUserId);
             return false;

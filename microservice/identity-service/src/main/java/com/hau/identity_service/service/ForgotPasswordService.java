@@ -11,11 +11,12 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.hau.event.dto.NotificationEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.context.Context;
 
 import com.hau.identity_service.dto.request.ForgotPasswordRequest;
 import com.hau.identity_service.dto.request.ResetPasswordWithTokenRequest;
@@ -40,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ForgotPasswordService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Value("${jwt.signerKey}")
     private String signerKey;
@@ -101,15 +102,17 @@ public class ForgotPasswordService {
 
         log.info("Generated OTP for user {}. Triggering async email.", username);
 
-        Context context = new Context();
-        context.setVariable("username", username);
-        context.setVariable("otp", otp);
-        context.setVariable("expiryMinutes", otpExpiryMinutes);
-
-        String emailSubject = "Mã OTP xác thực quên mật khẩu";
-        String templateName = "otp-email-template";
-
-        emailService.sendHtmlEmail(user.getEmail(), emailSubject, templateName, context);
+        NotificationEvent notificationEvent = NotificationEvent.builder()
+                .channel("EMAIL")
+                .recipient(user.getEmail())
+                .templateCode("otp-email-template")
+                .params(Map.of(
+                        "username", username,
+                        "otp", otp,
+                        "expiryMinutes", otpExpiryMinutes
+                ))
+                .build();
+        kafkaTemplate.send("forgot-password-topic", notificationEvent);
 
         // Update the timestamp *after* successfully processing the request
         otpRequestTimestamps.put(username, now);
