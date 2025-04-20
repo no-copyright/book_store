@@ -17,7 +17,7 @@ import com.hau.identity_service.service.PermissionService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/permissions")
+@RequestMapping("/permissions")
 @RequiredArgsConstructor
 public class PermissionController {
     private final PermissionService permissionService;

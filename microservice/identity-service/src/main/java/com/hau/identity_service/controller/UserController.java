@@ -1,8 +1,8 @@
 package com.hau.identity_service.controller;
 
+import com.hau.identity_service.dto.response.PageResponse;
 import jakarta.validation.Valid;
 
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,11 +20,11 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/users")
+@RequestMapping("/users")
 public class UserController {
     private final UserService userService;
 
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserResponse>> createUser(
             @Valid @RequestBody UserCreateRequest userCreateRequest) {
         ApiResponse<UserResponse> userResponse = userService.createUser(userCreateRequest);
@@ -68,14 +68,13 @@ public class UserController {
         return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }
 
-    @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Page<UserResponse>> getAllUsers(
-            @RequestParam(required = false, defaultValue = "0") int pageIndex,
-            @RequestParam(required = false, defaultValue = "10") int pageSize,
-            @RequestParam(required = false) String username,
-            @RequestParam(required = false) Integer gender) {
-        Page<UserResponse> userPage = userService.getAllUsers(pageIndex, pageSize, username, gender);
+    @GetMapping
+    public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> getAllUsers(
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") int size
+    ) {
+        ApiResponse<PageResponse<UserResponse>> userPage = userService.getAllUsers(page, size);
         return new ResponseEntity<>(userPage, HttpStatus.OK);
     }
 
