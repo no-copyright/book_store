@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class ProfileController {
     private final ProfileService profileService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+
     @PostMapping
     public ResponseEntity<ApiResponse<ProfileResponse>> createProfile(@Valid @RequestBody ProfileCreateRequest profileCreateRequest) {
         ApiResponse<ProfileResponse> response = profileService.createProfile(profileCreateRequest);

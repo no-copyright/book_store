@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,8 +22,13 @@ public class ProfileService {
     private final ProfileMapper profileMapper;
 
     public ApiResponse<ProfileResponse> createProfile(ProfileCreateRequest profileCreateRequest) {
-        Profile profile = profileMapper.toUserProfile(profileCreateRequest);
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        Profile profile = profileMapper.toUserProfile(profileCreateRequest);
+        if (authentication != null && authentication.isAuthenticated()) {
+            String authenticatedUserId = authentication.getName();
+            profile.setUserId(Integer.valueOf(authenticatedUserId));
+        }
         profileRepository.save(profile);
 
         return ApiResponse.<ProfileResponse>builder()
