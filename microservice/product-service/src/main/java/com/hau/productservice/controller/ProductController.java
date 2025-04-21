@@ -5,6 +5,7 @@ import com.hau.productservice.dto.response.ApiResponse;
 import com.hau.productservice.dto.response.ProductResponse;
 import com.hau.productservice.entity.Product;
 import com.hau.productservice.service.ProductService;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
