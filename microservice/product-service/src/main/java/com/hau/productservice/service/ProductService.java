@@ -45,8 +45,7 @@ public class ProductService {
 
         Product savedProduct = productRepository.save(product);
 
-        boolean isDuplicate = productRepository.existsByTitle(product.getTitle());
-        savedProduct.setSlug(generateUniqueSlug(product.getTitle(), savedProduct.getId(), isDuplicate));
+        savedProduct.setSlug(generateUniqueSlug(product.getTitle(), savedProduct.getId()));
 
         savedProduct = productRepository.save(savedProduct);
 
@@ -61,17 +60,17 @@ public class ProductService {
 
     @Transactional
     public ApiResponse<ProductResponse> updateProduct(ProductRequest request, Long id) {
-        productRepository.findById(id)
+        Product existProduct = productRepository.findById(id)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại", null));
 
-        Product product = productMapper.toProduct(request);
-        product.setId(id); // rất quan trọng khi update
+        Product product = productMapper.updateProductFromRequest(request, existProduct);
+        product.setActive(true);
+        product.setId(id);
         product.setSlug(StringConverter.toSlug(product.getTitle()));
 
         Product savedProduct = productRepository.save(product);
 
-        boolean isDuplicate = productRepository.existsByTitle(product.getTitle());
-        savedProduct.setSlug(generateUniqueSlug(product.getTitle(), savedProduct.getId(), isDuplicate));
+        savedProduct.setSlug(generateUniqueSlug(product.getTitle(), savedProduct.getId()));
 
         savedProduct = productRepository.save(savedProduct);
 
@@ -84,23 +83,33 @@ public class ProductService {
     }
 
 
-    public ApiResponse<ProductResponse> deleteProduct(ProductRequest request) {
-        Product product = productMapper.toProduct(request);
-        product.setActive(false);
-        Product savedProduct = productRepository.save(product);
-        ProductResponse productResponse = productMapper.toProductResponse(savedProduct);
+    public ApiResponse<ProductResponse> deleteProduct(Long id) {
+        productRepository.findById(id)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại", null));
+
+        productRepository.deleteById(id);
         return ApiResponse.<ProductResponse>builder()
                 .status(HttpStatus.OK.value())
                 .message("Xóa sản phẩm thành công")
-                .result(productResponse)
                 .timestamp(LocalDateTime.now())
                 .build();
     }
 
 
-    private String generateUniqueSlug(String title, Long productId, boolean isDuplicate) {
+    private String generateUniqueSlug(String title, Long productId) {
         String baseSlug = StringConverter.toSlug(title);
-        return isDuplicate ? baseSlug + "-" + productId : baseSlug;
+        return baseSlug + "-" + productId;
     }
 
+    public ApiResponse<ProductResponse> getProductById(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại", null));
+        ProductResponse productResponse = productMapper.toProductResponse(product);
+        return ApiResponse.<ProductResponse>builder()
+                .status(HttpStatus.OK.value())
+                .message("Lấy sản phẩm thành công")
+                .result(productResponse)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
 }
