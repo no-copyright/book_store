@@ -11,9 +11,11 @@ import lombok.experimental.FieldDefaults;
 @Builder
 public class ProductRequest {
     @NotBlank(message = "Tên sản phẩm không được để trống")
+    @NotNull
     private String title;
 
     @NotBlank(message = "Tác giả không được để trống")
+    @NotNull
     private String author;
 
     @NotBlank(message = "Nhà xuất bản không được để trống")

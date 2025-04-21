@@ -1,14 +1,12 @@
 package com.hau.productservice.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.Collate;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -35,6 +33,7 @@ public class Product {
     Integer price;
     Integer priority;
     String description;
+    @Column(unique = true)
     String slug;
     boolean active;
     @CreationTimestamp

@@ -5,6 +5,7 @@ import com.hau.productservice.dto.response.ApiResponse;
 import com.hau.productservice.dto.response.ProductResponse;
 import com.hau.productservice.entity.Product;
 import com.hau.productservice.service.ProductService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,19 +15,20 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping
 public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    public List<Product> getAllProduct(@RequestParam(required = false) Integer pageIndex,
-                                       @RequestParam(required = false) Integer pageSize) {
-        return productService.getAllProduct(pageIndex, pageSize);
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getAllProduct(@RequestParam(required = false) Integer pageIndex, @RequestParam(required = false) Integer pageSize) {
+        ApiResponse<List<ProductResponse>> response = productService.getAllProduct(pageIndex, pageSize);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<ProductResponse>> addProduct(@RequestBody ProductRequest request) {
+    public ResponseEntity<ApiResponse<ProductResponse>> addProduct(@RequestBody @Valid ProductRequest request) {
         ApiResponse<ProductResponse> response = productService.createProduct(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
+
+
 }
