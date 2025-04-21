@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="DiffGenerationConfig" isInitGenerateDdl="true">
-    <option name="initGenerateDdl" value="true" />
-    <option name="sourceModelValue" value="profile-service:profile-service" />
-    <option name="targetDbValue" value="30edd8b4-f4b3-4aff-9ee7-d9c984792f2e" />
-  </component>
-</project>
