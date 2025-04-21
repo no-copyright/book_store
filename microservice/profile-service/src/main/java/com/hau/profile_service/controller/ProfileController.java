@@ -1,9 +1,6 @@
 package com.hau.profile_service.controller;
 
-import com.hau.profile_service.dto.ApiResponse;
-import com.hau.profile_service.dto.ProfileCreateRequest;
-import com.hau.profile_service.dto.ProfileResponse;
-import com.hau.profile_service.dto.ProfileUpdateRequest;
+import com.hau.profile_service.dto.*;
 import com.hau.profile_service.service.ProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +20,14 @@ public class ProfileController {
     public ResponseEntity<ApiResponse<ProfileResponse>> createProfile(@Valid @RequestBody ProfileCreateRequest profileCreateRequest) {
         ApiResponse<ProfileResponse> response = profileService.createProfile(profileCreateRequest);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/my-profile")
+    public ResponseEntity<ApiResponse<PageResponse<ProfileResponse>>> getMyProfile
+            (@RequestParam(required = false, defaultValue = "1") int pageIndex,
+             @RequestParam(required = false, defaultValue = "10") int pageSize) {
+        ApiResponse<PageResponse<ProfileResponse>> response = profileService.getMyProfile(pageIndex, pageSize);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PreAuthorize("@profileService.isOwnerOfProfile(#profileId, authentication)")
