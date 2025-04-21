@@ -1,8 +1,5 @@
 package com.hau.profile_service.dto;
 
-import com.hau.profile_service.entity.Profile;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,5 +16,4 @@ public class ProfileResponse {
     private String phone;
     private String address;
     private String gender;
-    private Integer userId;
 }
