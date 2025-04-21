@@ -21,6 +21,4 @@ public class ProfileCreateRequest {
     private String address;
     @Pattern(regexp = "(?i)^(MALE|FEMALE)$", message = "Giá trị gender phải là 'MALE' hoặc 'FEMALE' (không phân biệt chữ hoa chữ thường)")
     private String gender;
-    @NotNull(message = "userId không được để trống")
-    private Integer userId;
 }

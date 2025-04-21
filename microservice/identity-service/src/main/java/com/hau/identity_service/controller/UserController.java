@@ -71,10 +71,10 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> getAllUsers(
-            @RequestParam(required = false, defaultValue = "1") int page,
-            @RequestParam(required = false, defaultValue = "10") int size
+            @RequestParam(required = false, defaultValue = "1") int pageIndex,
+            @RequestParam(required = false, defaultValue = "10") int pageSize
     ) {
-        ApiResponse<PageResponse<UserResponse>> userPage = userService.getAllUsers(page, size);
+        ApiResponse<PageResponse<UserResponse>> userPage = userService.getAllUsers(pageIndex, pageSize);
         return new ResponseEntity<>(userPage, HttpStatus.OK);
     }
 
