@@ -5,8 +5,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.hau.event.dto.UserCreateEvent;
+import com.hau.identity_service.dto.request.*;
 import com.hau.identity_service.dto.response.PageResponse;
-import com.hau.identity_service.mapper.CartMapper;
 import com.hau.identity_service.repository.CartServiceClient;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -20,10 +20,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.hau.identity_service.dto.request.ChangePasswordRequest;
-import com.hau.identity_service.dto.request.UserCreateRequest;
-import com.hau.identity_service.dto.request.UserUpdateInfoRequest;
-import com.hau.identity_service.dto.request.UserUpdateRequest;
 import com.hau.identity_service.dto.response.ApiResponse;
 import com.hau.identity_service.dto.response.UserResponse;
 import com.hau.identity_service.entity.User;
@@ -42,7 +38,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
-    private final CartMapper cartMapper;
     private final PasswordEncoder passwordEncoder;
     private final CartServiceClient cartServiceClient;
     private final KafkaTemplate<String, Object> kafkaTemplate;
@@ -59,9 +54,10 @@ public class UserService {
                     .username(user.getUsername())
                     .build();
             kafkaTemplate.send("user-created-topic", userCreateEvent);
-            var cartRequest = cartMapper.toCartCreateRequest(userCreateRequest);
-            cartRequest.setUserId(user.getId());
-
+            CartCreateRequest cartRequest = CartCreateRequest.builder()
+                    .userId(user.getId())
+                    .id(user.getId())
+                    .build();
             cartServiceClient.createCart(cartRequest);
             return ApiResponse.<UserResponse>builder()
                     .status(HttpStatus.CREATED.value())

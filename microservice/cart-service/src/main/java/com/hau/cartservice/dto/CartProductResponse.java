@@ -9,7 +9,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CartResponse {
+public class CartProductResponse {
     private Integer id;
-    private Integer userId;
+    private Integer cartId;
+    private Integer productId;
+    private Integer quantity;
+    private boolean isSelected;
 }
