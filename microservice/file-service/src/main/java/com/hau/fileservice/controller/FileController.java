@@ -20,7 +20,7 @@ import java.io.IOException;
 public class FileController {
     private final FileService fileService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('USER')")
     @PostMapping("/media")
     public ResponseEntity<ApiResponse<FileResponse>> uploadFile(@RequestPart("file") MultipartFile file) throws IOException {
         ApiResponse<FileResponse> apiResponse = fileService.uploadFile(file);
