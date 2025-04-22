@@ -1,6 +1,7 @@
 server:
   port: 8080
-
+  servlet:
+    context-path: /identity
 spring:
   main:
     lazy-initialization: true
@@ -10,11 +11,20 @@ spring:
     password:
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+  kafka:
+    bootstrap-servers: localhost:9094
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 jwt:
   signerKey: ""
   expirationMinutes: 1440
@@ -24,7 +34,16 @@ jwt:
   otpExpiryMinutes: 5
   otpRequestCooldownMinutes: 5
 
+app:
+  cart-service:
+    url: http://localhost:8083
+  file-service:
+    url: http://localhost:8087
+  file:
+    download-prefix: http://localhost:8888/api/v1/file/media/download/
+    default-image: 6b1cb0f1-8bb4-4c15-a71e-937f588abca3_avatar.jpg
+
 admin:
-  username:
-  password:
+  username: ""
+  password: ""
   role: ADMIN

@@ -21,4 +21,4 @@ spring:
 app:
   email-service:
     url: https://api.brevo.com
-    api-key:
+    api-key: {api-key}
