@@ -1,8 +1,10 @@
 package com.hau.productservice.service;
 
 import com.hau.productservice.converter.StringConverter;
+import com.hau.productservice.dto.request.ProductFilter;
 import com.hau.productservice.dto.request.ProductRequest;
 import com.hau.productservice.dto.response.ApiResponse;
+import com.hau.productservice.dto.response.PageResult;
 import com.hau.productservice.dto.response.ProductResponse;
 import com.hau.productservice.entity.Product;
 import com.hau.productservice.exception.AppException;
@@ -10,12 +12,12 @@ import com.hau.productservice.mapper.ProductMapper;
 import com.hau.productservice.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.awt.print.Pageable;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,19 +25,32 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
 
-    public ApiResponse<List<ProductResponse>> getAllProduct(Integer pageIndex, Integer pageSize) {
-        List<Product> products = productRepository.findAll();
-        List<ProductResponse> productResponses = products.stream()
-                .map(productMapper::toProductResponse)
-                .toList();
+    public ApiResponse<PageResult<ProductResponse>> getAllProduct(ProductFilter filter, Pageable pageable) {
+        PageResult<ProductResponse> result;
+        if (filter.isEmpty()) {
+            Page<Product> productPage = productRepository.findAll(pageable);
+            result = new PageResult<>(
+                    productPage.getContent().stream().map(productMapper::toProductResponse).toList(),
+                    productPage.getNumber() + 1, // Vì Spring bắt đầu từ 0
+                    productPage.getSize(),
+                    productPage.getTotalPages(),
+                    productPage.getTotalElements(),
+                    productPage.hasNext(),
+                    productPage.hasPrevious()
+            );
+        } else {
+            result = null; // ⚠️ Bỏ trống không xử lý gì nếu filter khác null
+        }
 
-        return ApiResponse.<List<ProductResponse>>builder()
+        return ApiResponse.<PageResult<ProductResponse>>builder()
                 .status(HttpStatus.OK.value())
                 .message("Lấy danh sách sản phẩm thành công")
-                .result(productResponses)
+                .result(result)
                 .timestamp(LocalDateTime.now())
                 .build();
     }
+
+
 
     @Transactional
     public ApiResponse<ProductResponse> createProduct(ProductRequest request) {

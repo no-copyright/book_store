@@ -1,18 +1,19 @@
 package com.hau.productservice.controller;
 
+import com.hau.productservice.dto.request.ProductFilter;
 import com.hau.productservice.dto.request.ProductRequest;
 import com.hau.productservice.dto.response.ApiResponse;
+import com.hau.productservice.dto.response.PageResult;
 import com.hau.productservice.dto.response.ProductResponse;
-import com.hau.productservice.entity.Product;
 import com.hau.productservice.service.ProductService;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,8 +21,8 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ProductResponse>>> getAllProduct(@RequestParam(required = false) Integer pageIndex, @RequestParam(required = false) Integer pageSize) {
-        ApiResponse<List<ProductResponse>> response = productService.getAllProduct(pageIndex, pageSize);
+    public ResponseEntity<ApiResponse<PageResult<ProductResponse>>> getAllProduct(@ModelAttribute ProductFilter filter,@PageableDefault(size = 10, page = 0) Pageable pageable) {
+        ApiResponse<PageResult<ProductResponse>> response = productService.getAllProduct(filter, pageable);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
