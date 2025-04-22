@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class CartResponse {
+    private Integer id;
     private Integer userId;
 }

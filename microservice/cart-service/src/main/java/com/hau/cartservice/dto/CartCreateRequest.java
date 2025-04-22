@@ -12,6 +12,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class CartCreateRequest {
+    @NotNull(message = "Id không được để trống")
+    private Integer id;
     @NotNull(message = "User Id không được để trống")
     private Integer userId;
 }
