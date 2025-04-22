@@ -5,7 +5,6 @@ import lombok.Setter;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDateTime;
-
 @Setter
 @Getter
 public class AppException extends RuntimeException {

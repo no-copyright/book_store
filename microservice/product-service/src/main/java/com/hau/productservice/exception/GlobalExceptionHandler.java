@@ -1,11 +1,11 @@
 package com.hau.productservice.exception;
 
-import com.hau.identity_service.dto.response.ErrorsResponse;
+import com.hau.productservice.dto.response.ErrorsResponse;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.authorization.AuthorizationDeniedException;
+//import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -75,18 +75,19 @@ public class GlobalExceptionHandler {
     }
 
     // Xử lý lỗi không có quyền truy cập
-    @ExceptionHandler(AuthorizationDeniedException.class)
-    public ResponseEntity<ErrorsResponse> handleAccessDeniedException() {
-        ErrorsResponse errorResponse = new ErrorsResponse(
-                HttpStatus.FORBIDDEN.value(), "Không có quyền truy cập tài nguyên này", null, LocalDateTime.now());
-        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
-    }
+//    @ExceptionHandler(AuthorizationDeniedException.class)
+//    public ResponseEntity<ErrorsResponse> handleAccessDeniedException() {
+//        ErrorsResponse errorResponse = new ErrorsResponse(
+//                HttpStatus.FORBIDDEN.value(), "Không có quyền truy cập tài nguyên này", null, LocalDateTime.now());
+//        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+//    }
 
     // Xử lý tất cả các ngoại lệ chưa được xác định
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorsResponse> handleAllExceptions() {
-        ErrorsResponse errorResponse = new ErrorsResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã có lỗi xảy ra(chưa xác định)", null, LocalDateTime.now());
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<ErrorsResponse> handleAllExceptions() {
+//        ErrorsResponse errorResponse = new ErrorsResponse(
+//                HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã có lỗi xảy ra(chưa xác định)", null, LocalDateTime.now());
+//        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
+
 }
