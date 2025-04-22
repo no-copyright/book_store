@@ -25,9 +25,6 @@ public class FileRepository {
     @Value("${app.file.storage-dir}")
     private String storageDir;
 
-    @Value("${app.file.download-prefix}")
-    private String urlPrefix;
-
     public FileInfo uploadFile(MultipartFile file) throws IOException {
 
         Path path = Paths.get(storageDir);
@@ -42,7 +39,7 @@ public class FileRepository {
                 .contentType(file.getContentType())
                 .md5Checksum(DigestUtils.md5DigestAsHex(file.getInputStream()))
                 .filePath(filePath.toString())
-                .fileUrl(urlPrefix + fileName)
+                .fileUrl(fileName)
                 .build();
     }
 

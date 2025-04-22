@@ -10,10 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -25,7 +22,7 @@ public class FileController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/media")
-    public ResponseEntity<ApiResponse<FileResponse>> uploadFile(MultipartFile file) throws IOException {
+    public ResponseEntity<ApiResponse<FileResponse>> uploadFile(@RequestPart("file") MultipartFile file) throws IOException {
         ApiResponse<FileResponse> apiResponse = fileService.uploadFile(file);
         return new ResponseEntity<>(apiResponse, HttpStatus.CREATED);
     }
