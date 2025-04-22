@@ -16,5 +16,6 @@ import java.util.Set;
 @AllArgsConstructor
 @Builder
 public class CartCreateRequest {
+    private Integer id;
     private Integer userId;
 }

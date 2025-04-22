@@ -1,4 +1,4 @@
-package com.hau.profile_service.config;
+package com.hau.fileservice.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -18,15 +18,15 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final String[] publicPostEndpoint = {
-
+    private final String[] publicGetEndpoint = {
+        "/media/download/**",
     };
 
     private final CustomJwtDecoder customJwtDecoder;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, publicPostEndpoint)
+        http.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.GET, publicGetEndpoint)
                 .permitAll()
                 .anyRequest()
                 .authenticated());

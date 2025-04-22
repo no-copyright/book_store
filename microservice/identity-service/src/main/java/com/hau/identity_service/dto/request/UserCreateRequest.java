@@ -27,7 +27,6 @@ public class UserCreateRequest {
     @Email(message = "Email không đúng định dạng")
     @NotBlank(message = "Email không được để trống")
     private String email;
-    private String profileImage;
     private Integer userId;
     private Set<String> roles;
 }

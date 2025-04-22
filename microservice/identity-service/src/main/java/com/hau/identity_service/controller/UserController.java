@@ -17,6 +17,7 @@ import com.hau.identity_service.dto.response.UserResponse;
 import com.hau.identity_service.service.UserService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,6 +30,13 @@ public class UserController {
             @Valid @RequestBody UserCreateRequest userCreateRequest) {
         ApiResponse<UserResponse> userResponse = userService.createUser(userCreateRequest);
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{userId}/profile-image")
+    public ResponseEntity<ApiResponse<UserResponse>> updateUserProfileImage(@PathVariable Long userId,
+                                                            @RequestParam("profileImage") MultipartFile profileImage) {
+        ApiResponse<UserResponse> userResponse = userService.updateUserProfileImage(userId, profileImage);
+        return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN') or @userService.isOwnerOfUser(#userId, authentication)")

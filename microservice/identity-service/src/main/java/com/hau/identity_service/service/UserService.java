@@ -2,12 +2,15 @@ package com.hau.identity_service.service;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.hau.event.dto.UserCreateEvent;
+import com.hau.identity_service.dto.request.*;
 import com.hau.identity_service.dto.response.PageResponse;
-import com.hau.identity_service.mapper.CartMapper;
 import com.hau.identity_service.repository.CartServiceClient;
+import com.hau.identity_service.repository.FileServiceClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,10 +23,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.hau.identity_service.dto.request.ChangePasswordRequest;
-import com.hau.identity_service.dto.request.UserCreateRequest;
-import com.hau.identity_service.dto.request.UserUpdateInfoRequest;
-import com.hau.identity_service.dto.request.UserUpdateRequest;
 import com.hau.identity_service.dto.response.ApiResponse;
 import com.hau.identity_service.dto.response.UserResponse;
 import com.hau.identity_service.entity.User;
@@ -34,6 +33,7 @@ import com.hau.identity_service.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @Service
@@ -42,16 +42,23 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
-    private final CartMapper cartMapper;
     private final PasswordEncoder passwordEncoder;
     private final CartServiceClient cartServiceClient;
+    private final FileServiceClient fileServiceClient;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    @Value("${app.file.download-prefix}")
+    private String fileDownloadPrefix;
+
+    @Value("${app.file.default-image}")
+    private String defaultImage;
 
     public ApiResponse<UserResponse> createUser(UserCreateRequest userCreateRequest) {
         User user = userMapper.toUser(userCreateRequest);
         var roles = roleRepository.findAllById(Set.of("USER"));
         user.setRoles(new HashSet<>(roles));
         user.setPassword(passwordEncoder.encode(userCreateRequest.getPassword()));
+        user.setProfileImage(defaultImage);
         try {
             userRepository.save(user);
             UserCreateEvent userCreateEvent = UserCreateEvent.builder()
@@ -59,9 +66,10 @@ public class UserService {
                     .username(user.getUsername())
                     .build();
             kafkaTemplate.send("user-created-topic", userCreateEvent);
-            var cartRequest = cartMapper.toCartCreateRequest(userCreateRequest);
-            cartRequest.setUserId(user.getId());
-
+            CartCreateRequest cartRequest = CartCreateRequest.builder()
+                    .userId(user.getId())
+                    .id(user.getId())
+                    .build();
             cartServiceClient.createCart(cartRequest);
             return ApiResponse.<UserResponse>builder()
                     .status(HttpStatus.CREATED.value())
@@ -76,6 +84,35 @@ public class UserService {
         }
         return null;
     }
+
+    public ApiResponse<UserResponse> updateUserProfileImage(Long userId, MultipartFile profileImage) {
+        User user = findUserById(userId);
+
+        if (profileImage == null || profileImage.isEmpty()) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Vui lòng chọn ảnh để tải lên", null);
+        }
+
+        try {
+            var fileResponse = fileServiceClient.uploadFile(profileImage);
+            if (fileResponse != null && fileResponse.getResult() != null) {
+                user.setProfileImage(fileResponse.getResult().getUrl());
+            } else {
+                throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Không nhận được thông tin từ file-service", null);
+            }
+
+            userRepository.save(user);
+            return ApiResponse.<UserResponse>builder()
+                    .status(HttpStatus.OK.value())
+                    .message("Cập nhật ảnh đại diện thành công")
+                    .result(null)
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+        } catch (Exception e) {
+            throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi khi tải ảnh profile lên dịch vụ file", e);
+        }
+    }
+
 
 //    public Page<UserResponse> getAllUsers(int pageIndex, int pageSize, String username, Integer gender) {
 //        var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -106,6 +143,8 @@ public class UserService {
         Pageable pageable = PageRequest.of(page - 1, size, sort);
         Page<User> userPage = userRepository.findAll(pageable);
 
+        List<UserResponse> userResponseList = userPage.map(userMapper::toUserResponse).toList();
+        userResponseList.forEach(userResponse -> userResponse.setProfileImage(fileDownloadPrefix + userResponse.getProfileImage()));
         return ApiResponse.<PageResponse<UserResponse>>builder()
                 .status(HttpStatus.OK.value())
                 .message("Lấy danh sách user thành công")
@@ -114,7 +153,7 @@ public class UserService {
                         .totalPages(userPage.getTotalPages())
                         .totalElements(userPage.getTotalElements())
                         .pageSize(userPage.getSize())
-                        .data(userPage.map(userMapper::toUserResponse).toList())
+                        .data(userResponseList)
                         .build())
                 .timestamp(LocalDateTime.now())
                 .build();
@@ -122,13 +161,11 @@ public class UserService {
 
     public ApiResponse<UserResponse> myInfo() {
         var context = SecurityContextHolder.getContext();
-        String username = context.getAuthentication().getName();
+        String id = context.getAuthentication().getName();
 
-        User user = userRepository
-                .findByUsername(username)
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy user", null));
+        User user = findUserById(Long.valueOf(id));
         UserResponse userResponse = userMapper.toUserResponse(user);
-
+        userResponse.setProfileImage(fileDownloadPrefix + user.getProfileImage());
         return ApiResponse.<UserResponse>builder()
                 .status(HttpStatus.OK.value())
                 .message("Lấy thông tin user thành công")
@@ -140,6 +177,7 @@ public class UserService {
     public ApiResponse<UserResponse> getUserById(Long id) {
         User user = findUserById(id);
         UserResponse userResponse = userMapper.toUserResponse(user);
+        userResponse.setProfileImage(fileDownloadPrefix + user.getProfileImage());
         return ApiResponse.<UserResponse>builder()
                 .status(HttpStatus.OK.value())
                 .message("Lấy thông tin user thành công")
@@ -159,7 +197,7 @@ public class UserService {
         return ApiResponse.<UserResponse>builder()
                 .status(HttpStatus.OK.value())
                 .message("Cập nhật thông tin user thành công")
-                .result(userMapper.toUserResponse(user))
+                .result(null)
                 .timestamp(LocalDateTime.now())
                 .build();
     }
@@ -171,7 +209,7 @@ public class UserService {
         return ApiResponse.<UserResponse>builder()
                 .status(HttpStatus.OK.value())
                 .message("Cập nhật thông tin user thành công")
-                .result(userMapper.toUserResponse(user))
+                .result(null)
                 .timestamp(LocalDateTime.now())
                 .build();
     }
