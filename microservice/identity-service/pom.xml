@@ -25,11 +25,6 @@
 	</properties>
 
 	<dependencies>
-<!--		<dependency>-->
-<!--			<groupId>io.github.openfeign.form</groupId>-->
-<!--			<artifactId>feign-form</artifactId>-->
-<!--			<version>3.8.0</version>-->
-<!--		</dependency>-->
 		<!-- https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka -->
 		<dependency>
 			<groupId>org.springframework.kafka</groupId>

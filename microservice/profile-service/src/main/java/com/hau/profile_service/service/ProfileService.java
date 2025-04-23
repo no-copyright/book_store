@@ -1,5 +1,6 @@
 package com.hau.profile_service.service;
 
+import com.hau.event.dto.ProfileCreateEvent;
 import com.hau.profile_service.dto.*;
 import com.hau.profile_service.entity.Profile;
 import com.hau.profile_service.exception.AppException;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,7 @@ import java.time.LocalDateTime;
 public class ProfileService {
     private final ProfileRepository profileRepository;
     private final ProfileMapper profileMapper;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public ApiResponse<ProfileResponse> createProfile(ProfileCreateRequest profileCreateRequest) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -36,7 +39,15 @@ public class ProfileService {
         }
 
         profileRepository.save(profile);
-
+        ProfileCreateEvent profileCreateEvent = ProfileCreateEvent.builder()
+                .id(profile.getId())
+                .userId(profile.getUserId())
+                .fullName(profile.getFullName())
+                .phone(profile.getPhone())
+                .address(profile.getAddress())
+                .build();
+        log.info("Gửi sự kiện đến Kafka: {}", profileCreateEvent);
+        kafkaTemplate.send("profile-create-event", profileCreateEvent);
         return ApiResponse.<ProfileResponse>builder()
                 .status(HttpStatus.CREATED.value())
                 .message("Thêm thông tin người nhận hàng thành công")

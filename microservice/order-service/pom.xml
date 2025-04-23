@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.hau</groupId>
-    <artifactId>profile-service</artifactId>
+    <artifactId>order-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>profile-service</name>
-    <description>profile-service</description>
+    <name>order-service</name>
+    <description>order-service</description>
     <url/>
     <licenses>
         <license/>
