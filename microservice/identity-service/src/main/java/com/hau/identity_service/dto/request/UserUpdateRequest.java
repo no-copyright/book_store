@@ -23,6 +23,5 @@ public class UserUpdateRequest {
     @Email(message = "Email không đúng định dạng")
     private String email;
 
-    private String profileImage;
     private Set<String> roles;
 }

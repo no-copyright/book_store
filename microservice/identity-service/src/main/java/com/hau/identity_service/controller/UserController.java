@@ -60,11 +60,9 @@ public class UserController {
         return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or @userService.isOwnerOfUser(#userId, authentication)")
-    @PutMapping("/{userId}/info")
-    public ResponseEntity<ApiResponse<UserResponse>> updateUserInfo(
-            @PathVariable Long userId, @Valid @RequestBody UserUpdateInfoRequest userUpdateInfoRequest) {
-        ApiResponse<UserResponse> userResponse = userService.updateUserInfo(userId, userUpdateInfoRequest);
+    @PutMapping("/info")
+    public ResponseEntity<ApiResponse<UserResponse>> updateUserInfo(@Valid @RequestBody UserUpdateInfoRequest userUpdateInfoRequest) {
+        ApiResponse<UserResponse> userResponse = userService.updateUserInfo(userUpdateInfoRequest);
         return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }
 
