@@ -24,7 +24,7 @@ public class CartService {
         return ApiResponse.<CartResponse>builder()
                 .status(HttpStatus.CREATED.value())
                 .message("Thêm giỏ hàng thành công")
-                .result(cartMapper.toCartResponse(cart))
+                .result(null)
                 .timestamp(LocalDateTime.now())
                 .build();
     }

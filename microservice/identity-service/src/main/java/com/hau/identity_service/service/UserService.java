@@ -85,13 +85,12 @@ public class UserService {
         return null;
     }
 
-    public ApiResponse<UserResponse> updateUserProfileImage(Long userId, MultipartFile profileImage) {
-        User user = findUserById(userId);
-
+    public ApiResponse<UserResponse> updateUserProfileImage(MultipartFile profileImage) {
         if (profileImage == null || profileImage.isEmpty()) {
             throw new AppException(HttpStatus.BAD_REQUEST, "Vui lòng chọn ảnh để tải lên", null);
         }
-
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = findUserById(Long.valueOf(authentication.getName()));
         try {
             var fileResponse = fileServiceClient.uploadFile(profileImage);
             if (fileResponse != null && fileResponse.getResult() != null) {

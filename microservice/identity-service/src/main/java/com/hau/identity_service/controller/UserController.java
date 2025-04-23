@@ -32,10 +32,10 @@ public class UserController {
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{userId}/profile-image")
-    public ResponseEntity<ApiResponse<UserResponse>> updateUserProfileImage(@PathVariable Long userId,
-                                                            @RequestParam("profileImage") MultipartFile profileImage) {
-        ApiResponse<UserResponse> userResponse = userService.updateUserProfileImage(userId, profileImage);
+    @PutMapping("/profile-image")
+    public ResponseEntity<ApiResponse<UserResponse>> updateUserProfileImage(
+            @RequestParam("profileImage") MultipartFile profileImage) {
+        ApiResponse<UserResponse> userResponse = userService.updateUserProfileImage(profileImage);
         return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }
 
