@@ -37,10 +37,14 @@ public class GlobalExceptionHandler {
     // Xử lý ngoại lệ DataIntegrityViolationException
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorsResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        List<Map<String, String>> errorDetails = new ArrayList<>();
+        Map<String, String> detail = new HashMap<>();
+        detail.put("error", ex.getMessage());
+        errorDetails.add(detail);
         ErrorsResponse errorResponse = new ErrorsResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 "Vi phạm tính toàn vẹn dữ liệu. Xem 'error' để biết chi tiết.",
-                ex.getMessage(),
+                errorDetails,
                 LocalDateTime.now());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
@@ -80,9 +84,9 @@ public class GlobalExceptionHandler {
 
     // Xử lý tất cả các ngoại lệ chưa được xác định
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorsResponse> handleAllExceptions(Exception ex) {
+    public ResponseEntity<ErrorsResponse> handleAllExceptions() {
         ErrorsResponse errorResponse = new ErrorsResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã có lỗi xảy ra(chưa xác định)", ex.getMessage(), LocalDateTime.now());
+                HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã có lỗi xảy ra(chưa xác định)", null, LocalDateTime.now());
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

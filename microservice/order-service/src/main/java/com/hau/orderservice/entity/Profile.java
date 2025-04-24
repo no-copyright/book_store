@@ -1,15 +1,17 @@
 package com.hau.orderservice.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.*;
 
+@Entity
 @Builder
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "profiles")
-@Entity
+@Getter
+@Setter
 public class Profile {
     @Id
     private Long id;

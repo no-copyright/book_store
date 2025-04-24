@@ -12,10 +12,9 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class ProfileController {
     private final ProfileService profileService;
-
     @KafkaListener(topics = "profile-create-event")
-    public void createProfile(ProfileCreateEvent profileCreateEvent) {
-        log.info("Received event: {}", profileCreateEvent);
-        profileService.createProfile(profileCreateEvent);
+    public void handleProfileCreateEvent(ProfileCreateEvent profileCreateEvent) {
+        log.info("Received ProfileCreateEvent: {}", profileCreateEvent);
+        profileService.saveProfile(profileCreateEvent);
     }
 }
