@@ -34,4 +34,9 @@ public class FileController {
                 .header(HttpHeaders.CONTENT_TYPE, fileData.contentType())
                 .body(fileData.resource());
     }
+
+    @DeleteMapping("/media/{fileName}")
+    public void deleteFile(@PathVariable String fileName) throws IOException {
+        fileService.deleteFile(fileName);
+    }
 }

@@ -23,9 +23,10 @@ public interface ProductMapper {
     @Mapping(target = "productImage", ignore = true)
     Product toProduct(ProductRequest productRequest);
 
-    @Mapping(source = "productImage", target = "imageUrls")
     ProductResponse toProductResponse(Product product);
 
+    @Mapping(source = "productImage", target = "imageUrls")
+    ProductResponse toProductWithImageResponse(Product product);
     @Mapping(target = "productImage", ignore = true)
     Product updateProductFromRequest(ProductRequest productUpdateRequest, @MappingTarget Product product);
 

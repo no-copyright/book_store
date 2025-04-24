@@ -50,4 +50,8 @@ public class FileService {
 
         return new FileData(fileManagement.getContentType(), fileRepository.read(fileManagement));
     }
+
+    public void deleteFile(String fileName) throws IOException {
+        fileRepository.delete(fileName);
+    }
 }

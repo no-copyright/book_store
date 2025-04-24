@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import java.time.LocalDateTime;
@@ -41,7 +43,6 @@ public class Product {
     @CreationTimestamp
     LocalDateTime updatedAt;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    List<ProductImage> productImage;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "product")
+    List<ProductImage> productImage = new ArrayList<>();
 }

@@ -23,9 +23,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +35,9 @@ public class ProductService {
     private final ProductMapper productMapper;
     private final ProductImageRepository productImageRepository;
     private final FileServiceClientRepository fileServiceClientRepository;
+    private final ProductImageService productImageService;
+    private final FileUploadService fileUploadService;
+    private final SlugService slugService;
 
     @Value("${app.file.download-prefix}")
     private String fileServiceUrl;
@@ -52,7 +56,7 @@ public class ProductService {
                     productPage.hasPrevious()
             );
         } else {
-            result = null; // ⚠️ Bỏ trống không xử lý gì nếu filter khác null
+            result = null;
         }
 
         return ApiResponse.<PageResult<ProductResponse>>builder()
@@ -68,7 +72,7 @@ public class ProductService {
         Product product = productMapper.toProduct(request);
         product.setActive(true); // Set default active status
 
-        String thumbnailUrl = uploadFileAndGetUrl(thumbnail, "thumbnail");
+        String thumbnailUrl = fileUploadService.uploadFileAndGetUrl(thumbnail, "thumbnail");
         product.setThumbnail(thumbnailUrl);
 
         product.setSlug(StringConverter.toSlug(product.getTitle()));
@@ -76,33 +80,15 @@ public class ProductService {
         Product savedProduct = productRepository.save(product);
         Long productId = savedProduct.getId();
 
-        String uniqueSlug = generateUniqueSlug(savedProduct.getTitle(), productId);
+        String uniqueSlug = slugService.generateUniqueSlug(savedProduct.getTitle(), productId);
         savedProduct.setSlug(uniqueSlug);
 
-        List<ProductImage> productImages = new ArrayList<>();
-        if (!CollectionUtils.isEmpty(images)) {
-            for (MultipartFile imageFile : images) {
-                if (imageFile != null && !imageFile.isEmpty()) {
-                    try {
-                        String imageUrl = uploadFileAndGetUrl(imageFile, "product image");
+        productImageService.createImageByProduct(savedProduct, images);
 
-                        ProductImage productImage = new ProductImage();
-                        productImage.setProduct(savedProduct); // Associate with the saved product
-                        productImage.setUrl(imageUrl);
-
-                        // Save the ProductImage entity
-                        productImages.add(productImageRepository.save(productImage));
-
-                    } catch (Exception e) {
-                        throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi khi tải lên hình ảnh sản phẩm: " + imageFile.getOriginalFilename(), e);
-                    }
-                }
-            }
-        }
         savedProduct.setProductImage(null);
         savedProduct = productRepository.save(savedProduct);
 
-        ProductResponse productResponse = productMapper.toProductResponse(savedProduct);
+        ProductResponse productResponse = productMapper.toProductWithImageResponse(savedProduct);
         productResponse.setThumbnail(fileServiceUrl + savedProduct.getThumbnail());
 
         return ApiResponse.<ProductResponse>builder()
@@ -113,52 +99,54 @@ public class ProductService {
                 .build();
     }
 
-    private String uploadFileAndGetUrl(MultipartFile file, String fileTypeDescription) {
-        if (file == null || file.isEmpty()) {
-            throw new AppException(HttpStatus.BAD_REQUEST, "File " + fileTypeDescription + " không được để trống", null);
-        }
-        try {
-            var fileResponse = fileServiceClientRepository.uploadFile(file);
-            if (fileResponse != null && fileResponse.getResult() != null && fileResponse.getResult().getUrl() != null) {
-                return fileResponse.getResult().getUrl(); // Return only the relative URL path
-            } else {
-                throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Không nhận được thông tin hợp lệ từ file-service cho " + fileTypeDescription, null);
-            }
-        } catch (Exception e) {
-            throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi khi tải lên file " + fileTypeDescription, e);
-        }
-    }
 
-
+    // Modified to handle thumbnail and image updates
     @Transactional
-    public ApiResponse<ProductResponse> updateProduct(ProductRequest request, Long id) {
+    public ApiResponse<ProductResponse> updateProduct(ProductRequest request, Long id, MultipartFile thumbnail, List<MultipartFile> images) {
         Product existProduct = productRepository.findById(id)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại", null));
 
         Product product = productMapper.updateProductFromRequest(request, existProduct);
-        product.setActive(true);
-        product.setId(id);
-        product.setSlug(StringConverter.toSlug(product.getTitle()));
 
-        Product savedProduct = productRepository.save(product);
+        if (request.getActive() != null) {
+            existProduct.setActive(request.getActive());
+        }
 
-        savedProduct.setSlug(generateUniqueSlug(product.getTitle(), savedProduct.getId()));
+        if (thumbnail != null && !thumbnail.isEmpty()) {
+            fileServiceClientRepository.deleteFile(existProduct.getThumbnail());
+            String newThumbnailUrl = fileUploadService.uploadFileAndGetUrl(thumbnail, "new thumbnail");
+            existProduct.setThumbnail(newThumbnailUrl);
+        }
 
-        savedProduct = productRepository.save(savedProduct);
+        if (!CollectionUtils.isEmpty(images)) {
+            productImageService.deleteAllByProductId(id);
+            productImageService.createImageByProduct(product, images);
+        }
+
+        existProduct.setSlug(slugService.generateUniqueSlug(product.getTitle(), id));
+
+        Product savedProduct = productRepository.save(existProduct);
+
+        ProductResponse response = productMapper.toProductWithImageResponse(savedProduct);
+        response.setThumbnail(savedProduct.getThumbnail());
+
 
         return ApiResponse.<ProductResponse>builder()
                 .status(HttpStatus.OK.value())
                 .message("Cập nhật sản phẩm thành công")
-                .result(productMapper.toProductResponse(savedProduct))
+                .result(response)
                 .timestamp(LocalDateTime.now())
                 .build();
     }
 
 
+
     public ApiResponse<ProductResponse> deleteProduct(Long id) {
-        productRepository.findById(id)
+        Product product =  productRepository.findById(id)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại", null));
 
+        productImageService.deleteImage(product.getId());
+        fileServiceClientRepository.deleteFile(product.getThumbnail());
         productRepository.deleteById(id);
         return ApiResponse.<ProductResponse>builder()
                 .status(HttpStatus.OK.value())
@@ -168,20 +156,23 @@ public class ProductService {
     }
 
 
-    private String generateUniqueSlug(String title, Long productId) {
-        String baseSlug = StringConverter.toSlug(title);
-        return baseSlug + "-" + productId;
-    }
 
     public ApiResponse<ProductResponse> getProductById(Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại", null));
-        ProductResponse productResponse = productMapper.toProductResponse(product);
+        ProductResponse response = productMapper.toProductWithImageResponse(product);
+        response.setThumbnail(fileServiceUrl + product.getThumbnail());
+        List<String> imageUrls = response.getImageUrls();
+        for(String item : imageUrls) {
+            imageUrls.set(imageUrls.indexOf(item), fileServiceUrl + item);
+        }
         return ApiResponse.<ProductResponse>builder()
                 .status(HttpStatus.OK.value())
                 .message("Lấy sản phẩm thành công")
-                .result(productResponse)
+                .result(response)
                 .timestamp(LocalDateTime.now())
                 .build();
     }
+
+
 }
