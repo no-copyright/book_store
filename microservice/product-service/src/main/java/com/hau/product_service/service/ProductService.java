@@ -69,8 +69,18 @@ public class ProductService {
 
     @Transactional // Ensure atomicity
     public ApiResponse<ProductResponse> createProduct(ProductRequest request, MultipartFile thumbnail, List<MultipartFile> images) {
+        if (thumbnail == null || thumbnail.isEmpty()) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Ảnh thumbnail không được để trống", null);
+        }
+
+        if (images == null || images.isEmpty()) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Danh sách ảnh sản phẩm không được để trống", null);
+        }
+
         Product product = productMapper.toProduct(request);
         product.setActive(true); // Set default active status
+
+
 
         String thumbnailUrl = fileUploadService.uploadFileAndGetUrl(thumbnail, "thumbnail");
         product.setThumbnail(thumbnailUrl);

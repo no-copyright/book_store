@@ -10,6 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -72,6 +73,40 @@ public class GlobalExceptionHandler {
         ErrorsResponse errorResponse =
                 new ErrorsResponse(ex.getHttpStatus().value(), ex.getMessage(), ex.getError(), LocalDateTime.now());
         return new ResponseEntity<>(errorResponse, ex.getHttpStatus()); // Trả về HttpStatus từ AppException
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ErrorsResponse> handleMissingServletRequestPartException(MissingServletRequestPartException ex) {
+        String errorMessage = getString(ex);
+
+        // Tạo đối tượng ErrorsResponse với status 400 và thông báo lỗi tùy chỉnh
+        ErrorsResponse errorResponse = new ErrorsResponse(
+                HttpStatus.BAD_REQUEST.value(), // Status luôn là 400 cho loại lỗi này
+                errorMessage,
+                // Bạn có thể đưa tên part bị thiếu vào trường 'error' nếu muốn chi tiết hơn
+                // hoặc để null như AppException mặc định nếu error không có thông tin cụ thể
+                null, // Hoặc partName
+                LocalDateTime.now()
+        );
+
+        // Trả về ResponseEntity với status 400
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    private static String getString(MissingServletRequestPartException ex) {
+        String partName = ex.getRequestPartName();
+        String errorMessage;
+        // Tạo thông báo lỗi thân thiện dựa trên tên part bị thiếu
+        if ("thumbnail".equals(partName)) {
+            errorMessage = "Ảnh thumbnail không được để trống";
+        } else if ("images".equals(partName)) {
+            errorMessage = "Danh sách ảnh sản phẩm không được để trống";
+        }
+        else {
+            // Trường hợp thiếu part khác không phải thumbnail hoặc images
+            errorMessage = "Thiếu phần yêu cầu trong request: " + partName;
+        }
+        return errorMessage;
     }
 
     // Xử lý lỗi không có quyền truy cập

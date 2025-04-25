@@ -3,6 +3,7 @@ package com.hau.fileservice.repository;
 import com.hau.fileservice.dto.FileInfo;
 import com.hau.fileservice.entity.FileManagement;
 import com.hau.fileservice.exception.AppException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -20,10 +21,11 @@ import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class FileRepository {
     @Value("${app.file.storage-dir}")
     private String storageDir;
-
+    private final FileManagementRepository fileManagementRepository;
     public FileInfo uploadFile(MultipartFile file) throws IOException {
         Path path = Paths.get(storageDir);
         String originalFileName = file.getOriginalFilename();
@@ -57,5 +59,7 @@ public class FileRepository {
         if(!isDeleted) {
             throw new AppException(HttpStatus.NOT_FOUND, "Xóa thất bại", filePath);
         }
+        fileManagementRepository.deleteById(filename);
+
     }
 }

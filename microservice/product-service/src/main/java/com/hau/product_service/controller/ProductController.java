@@ -45,7 +45,7 @@ public class ProductController {
     }
 
     // Modified for image/thumbnail update
-    @PutMapping(value = "/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{productId}")
     public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(
             @PathVariable Long productId,
             @RequestPart("product") @Valid ProductRequest request,

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -25,21 +26,23 @@ public class ProductImageService {
         deleteImage(productId);
         productImageRepository.deleteByProductId(productId);
     }
-    
+
     @Transactional
     public void createImageByProduct(Product product, List<MultipartFile> images) {
-            for (MultipartFile imageFile : images) {
-                if (imageFile != null && !imageFile.isEmpty()) {
-                    try {
-                        String imageUrl = fileUploadService.uploadFileAndGetUrl(imageFile, "product image");
+            if(images != null && !images.isEmpty()) {
+                for (MultipartFile imageFile : images) {
+                    if (imageFile != null && !imageFile.isEmpty()) {
+                        try {
+                            String imageUrl = fileUploadService.uploadFileAndGetUrl(imageFile, "product image");
 
-                        ProductImage productImage = new ProductImage();
-                        productImage.setProduct(product);
-                        productImage.setUrl(imageUrl);
+                            ProductImage productImage = new ProductImage();
+                            productImage.setProduct(product);
+                            productImage.setUrl(imageUrl);
 
-                        productImageRepository.save(productImage);
-                    } catch (Exception e) {
-                        throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi khi tải lên hình ảnh sản phẩm: " + imageFile.getOriginalFilename(), e);
+                            productImageRepository.save(productImage);
+                        } catch (Exception e) {
+                            throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi khi tải lên hình ảnh sản phẩm: " + imageFile.getOriginalFilename(), e);
+                        }
                     }
                 }
             }
