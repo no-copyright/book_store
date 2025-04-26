@@ -4,7 +4,6 @@ import com.hau.categoryservice.dto.request.CategoryRequest;
 import com.hau.categoryservice.dto.response.ApiResponse;
 import com.hau.categoryservice.dto.response.CategoryResponse;
 import com.hau.categoryservice.dto.response.CategoryTreeResponse;
-import com.hau.categoryservice.dto.response.PageResult;
 import com.hau.categoryservice.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
