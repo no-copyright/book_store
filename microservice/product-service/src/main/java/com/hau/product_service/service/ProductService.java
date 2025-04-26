@@ -1,6 +1,5 @@
 package com.hau.product_service.service;
 
-import com.hau.product_service.entity.ProductImage;
 import com.hau.product_service.repository.FileServiceClientRepository;
 import com.hau.product_service.converter.StringConverter;
 import com.hau.product_service.dto.request.ProductFilter;
@@ -11,7 +10,6 @@ import com.hau.product_service.dto.response.ProductResponse;
 import com.hau.product_service.entity.Product;
 import com.hau.product_service.exception.AppException;
 import com.hau.product_service.mapper.ProductMapper;
-import com.hau.product_service.repository.ProductImageRepository;
 import com.hau.product_service.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,17 +21,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
+
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
-    private final ProductImageRepository productImageRepository;
     private final FileServiceClientRepository fileServiceClientRepository;
     private final ProductImageService productImageService;
     private final FileUploadService fileUploadService;
