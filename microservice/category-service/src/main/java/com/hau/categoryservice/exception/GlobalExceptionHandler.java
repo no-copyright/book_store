@@ -1,7 +1,6 @@
 package com.hau.categoryservice.exception;
 
-import com.hau.product_service.dto.response.ErrorsResponse;
-import com.hau.product_service.exception.AppException;
+import com.hau.categoryservice.dto.response.ErrorsResponse;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
