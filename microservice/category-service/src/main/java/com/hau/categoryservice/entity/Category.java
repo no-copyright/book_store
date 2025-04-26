@@ -21,6 +21,4 @@ public class Category {
     private String slug;
     private int priority;
     private Long parentId;
-    @CreationTimestamp
-    LocalDateTime createdAt;
 }

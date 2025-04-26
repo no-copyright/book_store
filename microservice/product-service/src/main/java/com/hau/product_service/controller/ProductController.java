@@ -29,7 +29,8 @@ public class ProductController {
     private final ProductImageRepository productImageRepository;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PageResult<ProductResponse>>> getAllProduct(@ModelAttribute ProductFilter filter,@PageableDefault(size = 10, page = 0) Pageable pageable) {
+    public ResponseEntity<ApiResponse<PageResult<ProductResponse>>> getAllProduct(@ModelAttribute ProductFilter filter,
+                                                                                  @PageableDefault(size = 10, page = 0) Pageable pageable) {
         ApiResponse<PageResult<ProductResponse>> response = productService.getAllProduct(filter, pageable);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

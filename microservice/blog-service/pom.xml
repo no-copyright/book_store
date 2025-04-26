@@ -9,7 +9,7 @@
 		<relativePath/>
 	</parent>
 	<groupId>com.example.hau</groupId>
-	<artifactId>Blog Service</artifactId>
+	<artifactId>blog-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>blog-service</name>
 	<description>Demo project for Spring Boot</description>
