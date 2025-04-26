@@ -1,4 +1,4 @@
-package com.example.hau.blogService;
+package com.hau.blogService;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
