@@ -18,6 +18,7 @@ public class OrderProduct {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
+    private Integer cartProductId;
     private Integer productId;
     private String productName;
     private Integer price;

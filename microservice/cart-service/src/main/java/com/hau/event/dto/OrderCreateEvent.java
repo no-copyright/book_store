@@ -1,4 +1,5 @@
-package com.hau.cartservice.dto;
+package com.hau.event.dto;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,9 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CartProductResponse {
-    private Integer id;
-    private Integer cartId;
+public class OrderCreateEvent {
+    private Integer cartProductId;
     private Integer productId;
     private Integer quantity;
 }
