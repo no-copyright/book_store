@@ -14,5 +14,4 @@ public class CartProductResponse {
     private Integer cartId;
     private Integer productId;
     private Integer quantity;
-    private boolean isSelected;
 }

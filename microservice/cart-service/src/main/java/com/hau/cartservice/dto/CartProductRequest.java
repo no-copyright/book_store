@@ -18,5 +18,4 @@ public class CartProductRequest {
     private Integer productId;
     @Min(value = 1, message = "Số lượng sản phẩm phải lớn hơn 0")
     private Integer quantity;
-    private boolean isSelected;
 }

@@ -32,10 +32,10 @@ public class UserController {
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
     }
 
-    @PutMapping("/{userId}/profile-image")
-    public ResponseEntity<ApiResponse<UserResponse>> updateUserProfileImage(@PathVariable Long userId,
-                                                            @RequestParam("profileImage") MultipartFile profileImage) {
-        ApiResponse<UserResponse> userResponse = userService.updateUserProfileImage(userId, profileImage);
+    @PutMapping("/profile-image")
+    public ResponseEntity<ApiResponse<UserResponse>> updateUserProfileImage(
+            @RequestParam("profileImage") MultipartFile profileImage) {
+        ApiResponse<UserResponse> userResponse = userService.updateUserProfileImage(profileImage);
         return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }
 
@@ -60,11 +60,9 @@ public class UserController {
         return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or @userService.isOwnerOfUser(#userId, authentication)")
-    @PutMapping("/{userId}/info")
-    public ResponseEntity<ApiResponse<UserResponse>> updateUserInfo(
-            @PathVariable Long userId, @Valid @RequestBody UserUpdateInfoRequest userUpdateInfoRequest) {
-        ApiResponse<UserResponse> userResponse = userService.updateUserInfo(userId, userUpdateInfoRequest);
+    @PutMapping("/info")
+    public ResponseEntity<ApiResponse<UserResponse>> updateUserInfo(@Valid @RequestBody UserUpdateInfoRequest userUpdateInfoRequest) {
+        ApiResponse<UserResponse> userResponse = userService.updateUserInfo(userUpdateInfoRequest);
         return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }
 

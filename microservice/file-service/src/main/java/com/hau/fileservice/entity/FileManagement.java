@@ -4,6 +4,8 @@ import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Builder
@@ -18,4 +20,6 @@ public class FileManagement {
     private long size;
     private String md5Checksum;
     private String filePath;
+
+    private LocalDateTime createdAt;
 }
