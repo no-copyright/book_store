@@ -22,7 +22,6 @@ public class CartProduct {
     private Integer cartId;
     private Integer productId;
     private Integer quantity;
-    private boolean isSelected;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

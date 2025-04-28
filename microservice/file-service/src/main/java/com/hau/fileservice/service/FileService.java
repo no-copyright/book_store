@@ -31,6 +31,7 @@ public class FileService {
         var fileManagement = fileManagementMapper.toFileManagement(fileInfo);
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         fileManagement.setOwnerId(userId);
+        fileManagement.setCreatedAt(LocalDateTime.now());
         fileManagementRepository.save(fileManagement);
         return ApiResponse.<FileResponse>builder()
                 .status(201)
