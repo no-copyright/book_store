@@ -1,5 +1,6 @@
 package com.hau.categoryservice.service.impl;
 
+import com.hau.categoryservice.dto.event.CategoryEvent;
 import com.hau.categoryservice.dto.request.CategoryRequest;
 import com.hau.categoryservice.dto.response.ApiResponse;
 import com.hau.categoryservice.dto.response.CategoryResponse;
@@ -11,6 +12,7 @@ import com.hau.categoryservice.mapper.CategoryMapper;
 import com.hau.categoryservice.repository.CategoryRepository;
 import com.hau.categoryservice.service.CategoryService;
 import com.hau.categoryservice.service.SlugService;
+import com.hau.categoryservice.service.eventProducer.CategoryEventProducer;
 import com.hau.categoryservice.service.helper.CategoryHelper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +29,9 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
     private final SlugService slugService;
+    private final CategoryEventProducer categoryEventProducer;
 
-    public ApiResponse<List<CategoryResponse>> getAll(String name, Boolean isAsc) { // Removed pageIndex, pageSize
+    public ApiResponse<List<CategoryResponse>> getAll(String name, Boolean isAsc) {
         List<Category> categories;
 
         if(name != null && !name.trim().isEmpty()) {
@@ -95,6 +98,16 @@ public class CategoryServiceImpl implements CategoryService {
         savedCategory = categoryRepository.save(savedCategory);
         CategoryResponse response = categoryMapper.toCategoryResponse(savedCategory);
 
+        // Tạo sự kiện Category Created
+        CategoryEvent createdEvent = CategoryEvent.builder()
+                .type(CategoryEvent.TYPE_CREATED)
+                .categoryId(savedCategory.getId()) // Sử dụng ID của category vừa tạo
+                .data(response) // Gửi kèm thông tin chi tiết của category
+                .timestamp(LocalDateTime.now())
+                .build();
+        categoryEventProducer.sendCategoryCreatedEvent(createdEvent);
+
+
         return ApiResponse.<CategoryResponse>builder()
                 .status(HttpStatus.CREATED.value())
                 .message("Tạo danh mục thành công")
@@ -116,6 +129,14 @@ public class CategoryServiceImpl implements CategoryService {
         Category savedCategory = categoryRepository.save(updatedCategory);
         CategoryResponse response = categoryMapper.toCategoryResponse(savedCategory);
 
+        CategoryEvent updatedEvent = CategoryEvent.builder()
+                .type(CategoryEvent.TYPE_UPDATED)
+                .categoryId(savedCategory.getId()) // Sử dụng ID của category vừa cập nhật
+                .data(response) // Gửi kèm thông tin chi tiết của category đã cập nhật
+                .timestamp(LocalDateTime.now())
+                .build();
+        categoryEventProducer.sendCategoryUpdatedEvent(updatedEvent);
+
         return ApiResponse.<CategoryResponse>builder()
                 .status(HttpStatus.OK.value())
                 .message("Cập nhật danh mục thành công")
@@ -129,6 +150,14 @@ public class CategoryServiceImpl implements CategoryService {
     public ApiResponse<Void> delete(Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy danh mục", null));
+
+        CategoryEvent deletedEvent = CategoryEvent.builder()
+                .type(CategoryEvent.TYPE_DELETED)
+                .categoryId(id) // Sử dụng ID của category sẽ bị xóa
+                .data(null) // Thường không cần dữ liệu chi tiết khi xóa, chỉ cần ID
+                .timestamp(LocalDateTime.now())
+                .build();
+        categoryEventProducer.sendCategoryDeletedEvent(deletedEvent);
 
         categoryRepository.deleteByParentId(id);
         categoryRepository.delete(category);
