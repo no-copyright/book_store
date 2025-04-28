@@ -1,6 +1,6 @@
 package com.hau.blogService.exception;
 
-import com.hau.product_service.dto.response.ErrorsResponse;
+import com.hau.blogService.dto.response.ErrorsResponse;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
