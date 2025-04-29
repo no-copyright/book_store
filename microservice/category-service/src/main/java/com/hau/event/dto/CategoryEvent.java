@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,7 +13,6 @@ public class CategoryEvent {
     private String type;
     private Long categoryId;
     private Object data;
-
 
     public static String TYPE_CREATED = "CATEGORY_CREATED";
     public static String TYPE_UPDATED = "CATEGORY_UPDATED";

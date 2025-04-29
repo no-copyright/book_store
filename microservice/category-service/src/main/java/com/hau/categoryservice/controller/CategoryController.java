@@ -1,6 +1,5 @@
 package com.hau.categoryservice.controller;
 
-import com.hau.event.dto.CategoryEvent;
 import com.hau.categoryservice.dto.request.CategoryRequest;
 import com.hau.categoryservice.dto.response.ApiResponse;
 import com.hau.categoryservice.dto.response.CategoryResponse;
