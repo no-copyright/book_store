@@ -7,9 +7,9 @@ spring:
   main:
     lazy-initialization: true
   datasource:
-    url: jdbc:postgresql://localhost:5432/identity_db
-    username:
-    password:
+    url: jdbc:postgresql://localhost:5432/category_db
+    username: postgres
+    password: postgres
   jpa:
     hibernate:
       ddl-auto: update
@@ -17,3 +17,9 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  kafka:
+    bootstrap-servers: localhost:9094
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
