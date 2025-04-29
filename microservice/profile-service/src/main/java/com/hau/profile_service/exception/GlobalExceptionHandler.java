@@ -84,9 +84,9 @@ public class GlobalExceptionHandler {
 
     // Xử lý tất cả các ngoại lệ chưa được xác định
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorsResponse> handleAllExceptions() {
+    public ResponseEntity<ErrorsResponse> handleAllExceptions(Exception e) {
         ErrorsResponse errorResponse = new ErrorsResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã có lỗi xảy ra(chưa xác định)", null, LocalDateTime.now());
+                HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã có lỗi xảy ra(chưa xác định)", e, LocalDateTime.now());
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
