@@ -1,6 +1,6 @@
 package com.hau.categoryservice.service.impl;
 
-import com.hau.categoryservice.dto.event.CategoryEvent;
+import com.hau.event.dto.CategoryEvent;
 import com.hau.categoryservice.dto.request.CategoryRequest;
 import com.hau.categoryservice.dto.response.ApiResponse;
 import com.hau.categoryservice.dto.response.CategoryResponse;
@@ -16,7 +16,9 @@ import com.hau.categoryservice.service.eventProducer.CategoryEventProducer;
 import com.hau.categoryservice.service.helper.CategoryHelper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -25,11 +27,14 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
     private final SlugService slugService;
     private final CategoryEventProducer categoryEventProducer;
+//    private final KafkaTemplate<String, CategoryEvent> kafkaTemplate;
+
 
     public ApiResponse<List<CategoryResponse>> getAll(String name, Boolean isAsc) {
         List<Category> categories;
@@ -51,8 +56,8 @@ public class CategoryServiceImpl implements CategoryService {
 
         List<CategoryResponse> categoryTree = CategoryHelper.buildCategoryTree(flatList, isAsc);
 
-        // Directly return the list of the tree structure
-        return ApiResponse.<List<CategoryResponse>>builder() // Change builder type
+
+        return ApiResponse.<List<CategoryResponse>>builder()
                 .status(200)
                 .message("Lấy danh sách danh mục thành công")
                 .result(categoryTree)
@@ -92,21 +97,19 @@ public class CategoryServiceImpl implements CategoryService {
                     .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy danh mục cha", null));
         }
         Category savedCategory = categoryRepository.save(category);
-        // Tạo slug cho danh mục
         String slug = slugService.generateUniqueSlug(savedCategory.getName(), savedCategory.getId());
         savedCategory.setSlug(slug);
         savedCategory = categoryRepository.save(savedCategory);
         CategoryResponse response = categoryMapper.toCategoryResponse(savedCategory);
 
-        // Tạo sự kiện Category Created
         CategoryEvent createdEvent = CategoryEvent.builder()
                 .type(CategoryEvent.TYPE_CREATED)
-                .categoryId(savedCategory.getId()) // Sử dụng ID của category vừa tạo
-                .data(response) // Gửi kèm thông tin chi tiết của category
-                .timestamp(LocalDateTime.now())
+                .categoryId(savedCategory.getId())
+                .data(response)
                 .build();
         categoryEventProducer.sendCategoryCreatedEvent(createdEvent);
-
+//        kafkaTemplate.send("category-event", createdEvent);
+//        log.info("Sent message to Kafka {}", createdEvent);
 
         return ApiResponse.<CategoryResponse>builder()
                 .status(HttpStatus.CREATED.value())
@@ -131,9 +134,8 @@ public class CategoryServiceImpl implements CategoryService {
 
         CategoryEvent updatedEvent = CategoryEvent.builder()
                 .type(CategoryEvent.TYPE_UPDATED)
-                .categoryId(savedCategory.getId()) // Sử dụng ID của category vừa cập nhật
-                .data(response) // Gửi kèm thông tin chi tiết của category đã cập nhật
-                .timestamp(LocalDateTime.now())
+                .categoryId(savedCategory.getId())
+                .data(response)
                 .build();
         categoryEventProducer.sendCategoryUpdatedEvent(updatedEvent);
 
@@ -153,9 +155,8 @@ public class CategoryServiceImpl implements CategoryService {
 
         CategoryEvent deletedEvent = CategoryEvent.builder()
                 .type(CategoryEvent.TYPE_DELETED)
-                .categoryId(id) // Sử dụng ID của category sẽ bị xóa
-                .data(null) // Thường không cần dữ liệu chi tiết khi xóa, chỉ cần ID
-                .timestamp(LocalDateTime.now())
+                .categoryId(id)
+                .data(null)
                 .build();
         categoryEventProducer.sendCategoryDeletedEvent(deletedEvent);
 
