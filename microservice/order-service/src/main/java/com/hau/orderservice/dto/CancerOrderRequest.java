@@ -1,14 +1,14 @@
-package com.hau.event.dto;
+package com.hau.orderservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
 @Builder
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserCreateEvent {
-    private Integer id;
+public class CancerOrderRequest {
+    private String note;
 }

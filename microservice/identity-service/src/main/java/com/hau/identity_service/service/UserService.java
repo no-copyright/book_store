@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.hau.event.dto.UserCreateEvent;
 import com.hau.identity_service.dto.request.*;
 import com.hau.identity_service.dto.response.PageResponse;
 import com.hau.identity_service.repository.CartServiceClient;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,8 +33,6 @@ import com.hau.identity_service.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionalEventListener;
 import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
@@ -45,7 +45,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final CartServiceClient cartServiceClient;
     private final FileServiceClient fileServiceClient;
-//    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Value("${app.file.download-prefix}")
     private String fileDownloadPrefix;
@@ -61,11 +61,10 @@ public class UserService {
         user.setProfileImage(defaultImage);
         try {
             userRepository.save(user);
-//            UserCreateEvent userCreateEvent = UserCreateEvent.builder()
-//                    .id(user.getId())
-//                    .username(user.getUsername())
-//                    .build();
-//            kafkaTemplate.send("user-created-topic", userCreateEvent);
+            UserCreateEvent userCreateEvent = UserCreateEvent.builder()
+                    .id(user.getId())
+                    .build();
+            kafkaTemplate.send("user-created-topic", userCreateEvent);
             CartCreateRequest cartRequest = CartCreateRequest.builder()
                     .userId(user.getId())
                     .id(user.getId())

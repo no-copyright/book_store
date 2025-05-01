@@ -18,9 +18,4 @@ public class ProfileController {
         log.info("Received ProfileCreateEvent: {}", profileCreateEvent);
         profileService.saveProfile(profileCreateEvent);
     }
-
-//    @KafkaListener(topics = "simple-order-processing-topic")
-//    public void handleOrderCreateEvent(OrderCreateEvent event) {
-//        log.info("### Đã nhận sự kiện OrderCreateEvent từ Kafka: {}", event);
-//    }
 }
