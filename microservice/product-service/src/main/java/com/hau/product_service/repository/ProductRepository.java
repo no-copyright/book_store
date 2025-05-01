@@ -9,14 +9,22 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("""
-    SELECT p FROM Product p 
+    SELECT DISTINCT p FROM Product p
+    JOIN p.categories c
     WHERE (:#{#filter.title} IS NULL OR p.title ILIKE CONCAT('%', :#{#filter.title}, '%'))
       AND (:#{#filter.author} IS NULL OR p.author ILIKE CONCAT('%', :#{#filter.author}, '%'))
       AND (:#{#filter.priceFrom} IS NULL OR p.price >= :#{#filter.priceFrom})
       AND (:#{#filter.priceTo} IS NULL OR p.price <= :#{#filter.priceTo})
+      AND (:categoryIds IS NULL OR c.id IN (:categoryIds))
 """)
-    Page<Product> findAllByFilter(@Param("filter") ProductFilter filter, Pageable pageable);
+    Page<Product> findAllByFilter(@Param("filter") ProductFilter filter,
+                                  @Param("categoryIds") List<Long> categoryIds,
+                                  Pageable pageable);
+
+
 }

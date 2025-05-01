@@ -3,6 +3,7 @@ package com.hau.product_service.mapper;
 
 import com.hau.product_service.dto.request.ProductRequest;
 import com.hau.product_service.dto.response.ProductResponse;
+import com.hau.product_service.entity.Category;
 import com.hau.product_service.entity.Product;
 import com.hau.product_service.entity.ProductImage;
 import org.mapstruct.Mapper;
@@ -26,7 +27,9 @@ public interface ProductMapper {
     ProductResponse toProductResponse(Product product);
 
     @Mapping(source = "productImage", target = "imageUrls")
+    @Mapping(source = "categories", target = "categories")
     ProductResponse toProductWithImageResponse(Product product);
+
     @Mapping(target = "productImage", ignore = true)
     Product updateProductFromRequest(ProductRequest productUpdateRequest, @MappingTarget Product product);
 
@@ -39,4 +42,14 @@ public interface ProductMapper {
                 .map(ProductImage::getUrl) // Lấy URL từ mỗi ProductImage
                 .collect(Collectors.toList());
     }
+
+    default List<Long> mapCategoriesToIds(List<Category> categories) {
+        if (CollectionUtils.isEmpty(categories)) {
+            return Collections.emptyList();
+        }
+        return categories.stream()
+                .map(Category::getId)
+                .collect(Collectors.toList());
+    }
+
 }

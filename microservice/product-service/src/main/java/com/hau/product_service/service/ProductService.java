@@ -1,5 +1,6 @@
 package com.hau.product_service.service;
 
+import com.hau.product_service.entity.Category;
 import com.hau.product_service.repository.FileServiceClientRepository;
 import com.hau.product_service.converter.StringConverter;
 import com.hau.product_service.dto.request.ProductFilter;
@@ -25,7 +26,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +40,7 @@ public class ProductService {
     private final ProductImageService productImageService;
     private final FileUploadService fileUploadService;
     private final SlugService slugService;
+    private final CategoryService categoryService;
 
     @Value("${app.file.download-prefix}")
     private String fileServiceUrl;
@@ -54,7 +58,15 @@ public class ProductService {
 
         Pageable pageable = PageRequest.of(page, pageSize, sort);
 
-        Page<Product> productPage = productRepository.findAllByFilter(filter, pageable);
+        List<Long> categoryIds = null;
+        if (filter.getCategoryId() != null) {
+            Set<Long> allCategoryIds = new HashSet<>();
+            allCategoryIds.add(filter.getCategoryId());
+            allCategoryIds.addAll(categoryService.findAllSubCategoryIds(filter.getCategoryId()));
+            categoryIds = allCategoryIds.stream().toList();
+        }
+
+        Page<Product> productPage = productRepository.findAllByFilter(filter, categoryIds, pageable);
 
         List<ProductResponse> responses = productPage.getContent().stream()
                 .map(product -> {
@@ -93,6 +105,7 @@ public class ProductService {
 
 
 
+
     @Transactional // Ensure atomicity
     public ApiResponse<ProductResponse> createProduct(ProductRequest request, MultipartFile thumbnail, List<MultipartFile> images) {
         if (thumbnail == null || thumbnail.isEmpty()) {
@@ -103,9 +116,11 @@ public class ProductService {
             throw new AppException(HttpStatus.BAD_REQUEST, "Danh sách ảnh sản phẩm không được để trống", null);
         }
 
-        Product product = productMapper.toProduct(request);
-        product.setActive(true); // Set default active status
+        List<Category> categories = categoryService.handleCategoryFromProduct(request.getCategoryIds());
 
+        Product product = productMapper.toProduct(request);
+        product.setActive(true);
+        product.setCategories(categories);
 
 
         String thumbnailUrl = fileUploadService.uploadFileAndGetUrl(thumbnail, "thumbnail");
@@ -124,7 +139,7 @@ public class ProductService {
         savedProduct.setProductImage(null);
         savedProduct = productRepository.save(savedProduct);
 
-        ProductResponse productResponse = productMapper.toProductWithImageResponse(savedProduct);
+        ProductResponse productResponse = productMapper.toProductResponse(savedProduct);
         productResponse.setThumbnail(fileServiceUrl + savedProduct.getThumbnail());
 
         return ApiResponse.<ProductResponse>builder()
@@ -144,6 +159,8 @@ public class ProductService {
 
         Product product = productMapper.updateProductFromRequest(request, existProduct);
 
+        List<Category> categories = categoryService.handleCategoryFromProduct(request.getCategoryIds());
+
         if (request.getActive() != null) {
             existProduct.setActive(request.getActive());
         }
@@ -160,10 +177,10 @@ public class ProductService {
         }
 
         existProduct.setSlug(slugService.generateUniqueSlug(product.getTitle(), id));
-
+        existProduct.setCategories(categories);
         Product savedProduct = productRepository.save(existProduct);
 
-        ProductResponse response = productMapper.toProductWithImageResponse(savedProduct);
+        ProductResponse response = productMapper.toProductResponse(savedProduct);
         response.setThumbnail(savedProduct.getThumbnail());
 
 
@@ -209,6 +226,5 @@ public class ProductService {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
-
 
 }
