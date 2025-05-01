@@ -15,7 +15,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -24,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,22 +41,46 @@ public class ProductService {
     @Value("${app.file.download-prefix}")
     private String fileServiceUrl;
 
-    public ApiResponse<PageResult<ProductResponse>> getAllProduct(ProductFilter filter, Pageable pageable) {
-        PageResult<ProductResponse> result;
-        if (filter.isEmpty()) {
-            Page<Product> productPage = productRepository.findAll(pageable);
-            result = new PageResult<>(
-                    productPage.getContent().stream().map(productMapper::toProductResponse).toList(),
-                    productPage.getNumber() + 1, // Vì Spring bắt đầu từ 0
-                    productPage.getSize(),
-                    productPage.getTotalPages(),
-                    productPage.getTotalElements(),
-                    productPage.hasNext(),
-                    productPage.hasPrevious()
-            );
+    public ApiResponse<PageResult<ProductResponse>> getAllProduct(ProductFilter filter, Integer pageIndex, Integer pageSize) {
+        int page = (pageIndex == null || pageIndex <= 1) ? 0 : pageIndex - 1;
+
+        Sort sort;
+        if (filter.getSortDir() != null && !filter.getSortDir().isEmpty()) {
+            Sort.Direction direction = "asc".equalsIgnoreCase(filter.getSortDir()) ? Sort.Direction.ASC : Sort.Direction.DESC;
+            sort = Sort.by(direction, "price");
         } else {
-            result = null;
+            sort = Sort.by(Sort.Direction.DESC, "createdAt");
         }
+
+        Pageable pageable = PageRequest.of(page, pageSize, sort);
+
+        Page<Product> productPage = productRepository.findAllByFilter(filter, pageable);
+
+        List<ProductResponse> responses = productPage.getContent().stream()
+                .map(product -> {
+                    ProductResponse res = productMapper.toProductWithImageResponse(product);
+                    res.setThumbnail(fileServiceUrl + product.getThumbnail());
+
+                    if (res.getImageUrls() != null) {
+                        res.setImageUrls(
+                                res.getImageUrls().stream()
+                                        .map(url -> fileServiceUrl + url)
+                                        .collect(Collectors.toList())
+                        );
+                    }
+
+                    return res;
+                }).toList();
+
+        PageResult<ProductResponse> result = new PageResult<>(
+                responses,
+                productPage.getNumber() + 1,
+                productPage.getSize(),
+                productPage.getTotalPages(),
+                productPage.getTotalElements(),
+                productPage.hasNext(),
+                productPage.hasPrevious()
+        );
 
         return ApiResponse.<PageResult<ProductResponse>>builder()
                 .status(HttpStatus.OK.value())
@@ -62,6 +89,9 @@ public class ProductService {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
+
+
+
 
     @Transactional // Ensure atomicity
     public ApiResponse<ProductResponse> createProduct(ProductRequest request, MultipartFile thumbnail, List<MultipartFile> images) {
