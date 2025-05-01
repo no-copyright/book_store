@@ -3,13 +3,13 @@ package com.hau.fileservice.service;
 import com.hau.fileservice.dto.ApiResponse;
 import com.hau.fileservice.dto.FileData;
 import com.hau.fileservice.dto.FileResponse;
+import com.hau.fileservice.entity.FileManagement;
 import com.hau.fileservice.exception.AppException;
 import com.hau.fileservice.mapper.FileManagementMapper;
 import com.hau.fileservice.repository.FileManagementRepository;
 import com.hau.fileservice.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -54,5 +54,10 @@ public class FileService {
 
     public void deleteFile(String fileName) throws IOException {
         fileRepository.delete(fileName);
+    }
+
+    public FileManagement getFileManagement(String fileName) {
+        return fileManagementRepository.findById(fileName)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "File không tồn tại", null));
     }
 }
