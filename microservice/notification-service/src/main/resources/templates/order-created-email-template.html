@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác Nhận Đơn Hàng</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.7;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            font-size: 16px;  /* Tăng kích thước chữ cơ bản */
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .header {
+            background-color: #4285f4;
+            padding: 22px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;  /* Tăng kích thước tiêu đề */
+        }
+
+        .content {
+            padding: 12px;
+            font-size: 14px;  /* Tăng kích thước nội dung */
+        }
+        .order-id-container {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .order-id {
+            font-size: 16px;  /* Tăng kích thước */
+            font-weight: bold;
+            color: #4285f4;
+            display: inline-block;
+            padding: 12px 24px;
+            border: 2px solid #d1e0ff;
+            background-color: #f5f8ff;
+            border-radius: 6px;
+        }
+        .order-summary {
+            background-color: #f5f8ff;
+            border: 1px solid #d1e0ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            font-size: 14px;  /* Tăng kích thước */
+        }
+        .status-container {
+            display: flex;
+            margin-bottom: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .status-label {
+            min-width: 166px;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+        .order-status, .payment-status {
+            display: inline-block;
+            padding: 7px 14px;
+            border-radius: 4px;
+            margin-right: 10px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .order-status {
+            background-color: #e8f0fe;
+            color: #4285f4;
+        }
+        .payment-status {
+            background-color: #e6f4ea;
+            color: #34a853;
+        }
+        .payment-pending {
+            background-color: #ffe8e8;
+            color: #e53935;
+        }
+        .info-item {
+            display: flex;
+            margin-bottom: 12px;
+        }
+        .info-label {
+            font-weight: bold;
+            min-width: 95px;  /* Tăng chiều rộng để phù hợp với nhãn dài hơn */
+            margin-right: 10px;
+        }
+        .info-value {
+            flex: 1;
+        }
+        .section-divider {
+            height: 1px;
+            background-color: #d1e0ff;
+            margin: 20px 0;
+        }
+        .order-details {
+            margin: 30px 0;
+            padding: 14px;
+            background-color: #f5f5f5;
+            border-left: 5px solid #4285f4;
+            font-size: 16px;
+        }
+        .order-details h3 {
+            font-size: 18px;
+            margin-top: 0;
+        }
+        .product-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+        .product-table th, .product-table td {
+            padding: 6px 0;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .product-table th {
+            background-color: #f5f8ff;
+            font-size: 12px;
+        }
+        .total-price {
+            font-size: 18px;  /* Tăng kích thước */
+            font-weight: bold;
+            text-align: right;
+            color: #e53935;  /* Đổi sang màu đỏ */
+            margin-top: 20px;
+        }
+        .note {
+            font-style: italic;
+            margin-top: 18px;
+            padding: 15px;
+            background-color: #fffde7;
+            border-left: 4px solid #ffd600;
+            font-size: 14px;
+        }
+        .footer {
+            background-color: #f5f5f5;
+            padding: 25px;
+            text-align: center;
+            font-size: 16px;
+            color: #666;
+        }
+        .social-icons {
+            margin-top: 18px;
+        }
+        .social-icons a {
+            display: inline-block;
+            margin: 0 10px;
+            color: #4285f4;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        @media (max-width: 576px) {
+            .container {
+                width: 100%;
+                border-radius: 0;
+            }
+            .content {
+                padding: 20px 4px;
+            }
+            .product-table {
+                font-size: 14px;
+            }
+            .info-item {
+                flex-direction: column;
+            }
+            .info-label {
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Xác Nhận Đơn Hàng</h1>
+    </div>
+
+    <div class="content">
+        <p>Xin chào <strong th:text="${username}">Nguyễn Văn A</strong>!</p>
+
+        <p>Cảm ơn bạn đã đặt hàng tại cửa hàng của chúng tôi. Đơn hàng của bạn đã được tiếp nhận và đang được xử lý.</p>
+
+        <div class="order-id-container">
+            <div class="order-id">Mã đơn hàng: <span th:text="${orderId}">#ORD12345</span></div>
+        </div>
+
+        <div class="order-summary">
+            <div class="status-container">
+                <div class="status-label">Trạng thái đơn hàng:</div>
+                <div class="info-value" th:text="${status}">Chờ xác nhận</div>
+            </div>
+            <div class="status-container">
+                <div class="status-label">Trạng thái thanh toán:</div>
+                <div class="info-value" th:text="${paymentStatus}">Chưa thanh toán</div>
+            </div>
+            <div class="status-container">
+                <div class="status-label">Ngày đặt hàng:</div>
+                <div class="info-value" th:text="${createdAt[2] + '/' + createdAt[1] + '/' + createdAt[0] + ' ' + createdAt[3] + ':' + createdAt[4]}">01/05/2025 10:30</div>
+            </div>
+            <div class="status-container">
+                <div class="status-label">Phương thức thanh toán:</div>
+                <div class="info-value" th:text="${paymentMethod}">Thanh toán khi nhận hàng</div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div class="info-item">
+                <div class="info-label">Người nhận:</div>
+                <div class="info-value" th:text="${fullName}">Nguyễn Văn A</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Địa chỉ:</div>
+                <div class="info-value" th:text="${address}">123 Đường ABC, Phường XYZ, Quận 123, TP Hà Nội</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Số điện thoại:</div>
+                <div class="info-value" th:text="${phone}">0912345678</div>
+            </div>
+        </div>
+
+        <div class="order-details">
+            <h3>Chi tiết đơn hàng:</h3>
+            <table class="product-table">
+                <thead>
+                <tr>
+                    <th>Sản phẩm</th>
+                    <th>Số lượng</th>
+                    <th>Đơn giá</th>
+                    <th>Thành tiền</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="product : ${orderProducts}">
+                    <td th:text="${product.productName}">Tên sản phẩm</td>
+                    <td style="right: 0" th:text="${product.quantity}">1</td>
+                    <td style="right: 0" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')}">100.000 VNĐ</td>
+                    <td style="right: 0" th:text="${#numbers.formatDecimal(product.price * product.quantity, 0, 'COMMA', 0, 'POINT')}">100.000 VNĐ</td>
+                </tr>
+                </tbody>
+            </table>
+            <div class="total-price">Tổng tiền: <span th:text="${#numbers.formatDecimal(totalPrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">300.000 VNĐ</span></div>
+
+            <div th:if="${note != ''}" class="note">
+                <strong>Ghi chú:</strong> <span th:text="${note}">Gọi điện trước khi giao hàng.</span>
+            </div>
+        </div>
+
+        <p>Nếu bạn có bất kỳ câu hỏi hoặc thắc mắc nào về đơn hàng, vui lòng liên hệ với đội ngũ hỗ trợ của chúng tôi qua email <a href="mailto:support@example.com">hausupport@gmail.com</a> hoặc hotline <strong>1900 1009</strong>.</p>
+    </div>
+
+    <div class="footer">
+        <p>Trân trọng,<br /><strong>Đội Ngũ Chăm Sóc Khách Hàng</strong></p>
+        <p>© 2025 Đại học Kiến trúc Hà Nội. Tất cả các quyền được bảo lưu.</p>
+        <p>Địa chỉ: Km 10, Đường Nguyễn Trãi, Quận Thanh Xuân, TP Hà Nội.</p>
+
+        <div class="social-icons">
+            <a href="#" title="Facebook">Facebook</a> |
+            <a href="#" title="Instagram">Instagram</a> |
+            <a href="#" title="LinkedIn">LinkedIn</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

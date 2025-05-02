@@ -15,9 +15,7 @@ import java.util.Set;
 public class OrderCreateRequest {
     @NotNull(message = "Mã địa chỉ nhận hàng không được để trống")
     private Long profileId;
-    private Integer status;
     private Integer paymentMethod;
-    private Integer paymentStatus;
     private String note;
 
     private Set<OrderProductCreateRequest> orderProducts;

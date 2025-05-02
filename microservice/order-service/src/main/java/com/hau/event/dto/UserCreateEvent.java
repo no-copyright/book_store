@@ -1,17 +1,16 @@
 package com.hau.event.dto;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class OrderCreateEvent {
-    private Integer cartProductId;
-    private Integer productId;
-    private Integer quantity;
+public class UserCreateEvent {
+    private Integer id;
+    private String email;
+    private String username;
 }
