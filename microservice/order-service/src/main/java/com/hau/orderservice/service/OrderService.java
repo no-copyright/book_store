@@ -1,6 +1,7 @@
 package com.hau.orderservice.service;
 
 import com.hau.event.dto.NotificationEvent;
+import com.hau.event.dto.OrderCreateEvent;
 import com.hau.orderservice.dto.*;
 import com.hau.orderservice.entity.*;
 import com.hau.orderservice.exception.AppException;
@@ -85,33 +86,44 @@ public class OrderService {
         order.setTotalPrice(totalPrice);
         orderRepository.save(order);
 
-        NotificationEvent notificationEvent = new NotificationEvent();
-        notificationEvent.setChannel("EMAIL");
-        notificationEvent.setRecipient(
-                userRepository.findById(userId).orElseThrow().getEmail()
-        );
-        notificationEvent.setTemplateCode("order-created-email-template");
-        notificationEvent.setParams(Map.ofEntries(
-                Map.entry("username", userRepository.findById(userId).orElseThrow().getUsername()),
-                Map.entry("fullName", order.getFullName()),
-                Map.entry("orderId", order.getId()),
-                Map.entry("totalPrice", order.getTotalPrice()),
-                Map.entry("address", order.getAddress()),
-                Map.entry("phone", order.getPhone()),
-                Map.entry("paymentMethod", order.getPaymentMethod() == 0 ? "COD" : "VNPAY"),
-                Map.entry("paymentStatus", order.getPaymentStatus() == 0 ? "Đã thanh toán" : "Chưa thanh toán"),
-                Map.entry("status", order.getStatus() == 1 ? "Chờ xác nhận" : "Chờ vận chuyển"),
-                Map.entry("note", order.getNote() == null ? "" : order.getNote()),
-                Map.entry("createdAt", order.getCreatedAt()),
-                Map.entry("orderProducts", order.getOrderProducts().stream()
-                        .map(orderProduct -> Map.of(
-                                "productId", orderProduct.getProductId(),
-                                "productName", orderProduct.getProductName(),
-                                "quantity", orderProduct.getQuantity(),
-                                "price", orderProduct.getPrice()))
-                        .toList()
-                )));
-        kafkaTemplate.send("order-create-notification-topic", notificationEvent);
+        if (order.getPaymentMethod() == 0) {
+            NotificationEvent notificationEvent = new NotificationEvent();
+            notificationEvent.setChannel("EMAIL");
+            notificationEvent.setRecipient(
+                    userRepository.findById(userId).orElseThrow().getEmail()
+            );
+            notificationEvent.setTemplateCode("order-created-email-template");
+            notificationEvent.setParams(Map.ofEntries(
+                    Map.entry("username", userRepository.findById(userId).orElseThrow().getUsername()),
+                    Map.entry("fullName", order.getFullName()),
+                    Map.entry("orderId", order.getId()),
+                    Map.entry("totalPrice", order.getTotalPrice()),
+                    Map.entry("address", order.getAddress()),
+                    Map.entry("phone", order.getPhone()),
+                    Map.entry("paymentMethod", order.getPaymentMethod() == 0 ? "COD" : "VNPAY"),
+                    Map.entry("paymentStatus", order.getPaymentStatus() == 0 ? "Đã thanh toán" : "Chưa thanh toán"),
+                    Map.entry("status", order.getStatus() == 1 ? "Chờ xác nhận" : "Chờ vận chuyển"),
+                    Map.entry("note", order.getNote() == null ? "" : order.getNote()),
+                    Map.entry("createdAt", order.getCreatedAt()),
+                    Map.entry("orderProducts", order.getOrderProducts().stream()
+                            .map(orderProduct -> Map.of(
+                                    "productId", orderProduct.getProductId(),
+                                    "productName", orderProduct.getProductName(),
+                                    "quantity", orderProduct.getQuantity(),
+                                    "price", orderProduct.getPrice()))
+                            .toList()
+                    )));
+            kafkaTemplate.send("order-create-notification-topic", notificationEvent);
+        } else {
+            OrderCreateEvent orderCreateEvent = OrderCreateEvent.builder()
+                    .orderId(order.getId())
+                    .totalPrice(order.getTotalPrice())
+                    .paymentMethod(order.getPaymentMethod())
+                    .paymentStatus(order.getPaymentStatus())
+                    .build();
+            kafkaTemplate.send("order-create-topic", orderCreateEvent);
+        }
+
         return ApiResponse.<OrderResponse>builder()
                 .status(HttpStatus.CREATED.value())
                 .message("Tạo đơn hàng thành công")

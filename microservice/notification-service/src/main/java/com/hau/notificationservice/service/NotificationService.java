@@ -57,6 +57,7 @@ public class NotificationService {
         Context context = new Context();
         Map<String, Object> params = notificationEvent.getParams();
 
+        context.setVariable("username", params.get("username"));
         context.setVariable("fullName", params.get("fullName"));
         context.setVariable("orderId", params.get("orderId"));
         context.setVariable("totalPrice", params.get("totalPrice"));
