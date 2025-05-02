@@ -21,6 +21,7 @@ public class OrderResponse {
     private Integer status;
     private Integer paymentMethod;
     private Integer paymentStatus;
+    private Integer totalPrice;
     private String note;
 
     private Set<OrderProductResponse> orderProducts;

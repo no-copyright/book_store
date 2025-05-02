@@ -5,12 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserCreateEvent {
-    private Integer id;
-    private String email;
-    private String username;
+public class NotificationEvent {
+    private String channel;
+    private String recipient;
+    private String templateCode;
+    private Map<String, Object> params;
 }

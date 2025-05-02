@@ -1,6 +1,5 @@
 package com.hau.orderservice.controller;
 
-import com.hau.event.dto.OrderCreateEvent;
 import com.hau.event.dto.ProfileCreateEvent;
 import com.hau.orderservice.service.ProfileService;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +17,4 @@ public class ProfileController {
         log.info("Received ProfileCreateEvent: {}", profileCreateEvent);
         profileService.saveProfile(profileCreateEvent);
     }
-
-//    @KafkaListener(topics = "simple-order-processing-topic")
-//    public void handleOrderCreateEvent(OrderCreateEvent event) {
-//        log.info("### Đã nhận sự kiện OrderCreateEvent từ Kafka: {}", event);
-//    }
 }

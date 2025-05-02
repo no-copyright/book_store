@@ -27,6 +27,7 @@ public class Order {
     private Integer status;
     private Integer paymentMethod;
     private Integer paymentStatus;
+    private Integer totalPrice;
     private String note;
 
     @CreationTimestamp
