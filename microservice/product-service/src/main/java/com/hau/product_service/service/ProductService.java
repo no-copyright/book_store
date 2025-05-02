@@ -104,8 +104,6 @@ public class ProductService {
 
 
 
-
-
     @Transactional // Ensure atomicity
     public ApiResponse<ProductResponse> createProduct(ProductRequest request, MultipartFile thumbnail, List<MultipartFile> images) {
         if (thumbnail == null || thumbnail.isEmpty()) {

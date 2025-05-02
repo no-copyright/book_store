@@ -11,8 +11,6 @@ import lombok.NoArgsConstructor;
 public class RateRequest {
     @NotNull(message = "Mã sản phẩm không được để trống")
     private Long productId;
-    @NotNull(message = "Mã người dùng không được để trống")
-    private Long userId;
     @NotNull(message = "Điểm đánh giá không được để trống")
     private int vote;
     private String comment;

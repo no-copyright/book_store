@@ -17,12 +17,16 @@ public class Rate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long userId;
     private int vote;
     private String comment;
     @ManyToOne
-    @JoinColumn(name = "productId", referencedColumnName = "id")
+    @JoinColumn(name = "product_id", referencedColumnName = "id")
     private Product product;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
+
     @CreationTimestamp
     LocalDateTime createdAt;
 }

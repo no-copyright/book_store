@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class RateResponse {
     private Long id;
     private Long productId;
-    private Long userId;
+    private Integer userId;
     private Integer vote;
     private String comment;
     private String createdAt;
