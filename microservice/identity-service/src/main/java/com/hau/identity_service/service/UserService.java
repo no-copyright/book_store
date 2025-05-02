@@ -63,6 +63,8 @@ public class UserService {
             userRepository.save(user);
             UserCreateEvent userCreateEvent = UserCreateEvent.builder()
                     .id(user.getId())
+                    .email(user.getEmail())
+                    .username(user.getUsername())
                     .build();
             kafkaTemplate.send("user-created-topic", userCreateEvent);
             CartCreateRequest cartRequest = CartCreateRequest.builder()

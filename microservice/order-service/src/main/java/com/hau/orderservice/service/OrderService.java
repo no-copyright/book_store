@@ -1,5 +1,6 @@
 package com.hau.orderservice.service;
 
+import com.hau.event.dto.NotificationEvent;
 import com.hau.orderservice.dto.*;
 import com.hau.orderservice.entity.*;
 import com.hau.orderservice.exception.AppException;
@@ -15,15 +16,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +33,7 @@ public class OrderService {
     private final ProfileRepository profileRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public ApiResponse<OrderResponse> createOrder(OrderCreateRequest orderCreateRequest) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -84,6 +84,34 @@ public class OrderService {
         order.setOrderProducts(orderProductsEntitySet);
         order.setTotalPrice(totalPrice);
         orderRepository.save(order);
+
+        NotificationEvent notificationEvent = new NotificationEvent();
+        notificationEvent.setChannel("EMAIL");
+        notificationEvent.setRecipient(
+                userRepository.findById(userId).orElseThrow().getEmail()
+        );
+        notificationEvent.setTemplateCode("order-created-email-template");
+        notificationEvent.setParams(Map.ofEntries(
+                Map.entry("username", userRepository.findById(userId).orElseThrow().getUsername()),
+                Map.entry("fullName", order.getFullName()),
+                Map.entry("orderId", order.getId()),
+                Map.entry("totalPrice", order.getTotalPrice()),
+                Map.entry("address", order.getAddress()),
+                Map.entry("phone", order.getPhone()),
+                Map.entry("paymentMethod", order.getPaymentMethod() == 0 ? "COD" : "VNPAY"),
+                Map.entry("paymentStatus", order.getPaymentStatus() == 0 ? "Đã thanh toán" : "Chưa thanh toán"),
+                Map.entry("status", order.getStatus() == 1 ? "Chờ xác nhận" : "Chờ vận chuyển"),
+                Map.entry("note", order.getNote() == null ? "" : order.getNote()),
+                Map.entry("createdAt", order.getCreatedAt()),
+                Map.entry("orderProducts", order.getOrderProducts().stream()
+                        .map(orderProduct -> Map.of(
+                                "productId", orderProduct.getProductId(),
+                                "productName", orderProduct.getProductName(),
+                                "quantity", orderProduct.getQuantity(),
+                                "price", orderProduct.getPrice()))
+                        .toList()
+                )));
+        kafkaTemplate.send("order-create-notification-topic", notificationEvent);
         return ApiResponse.<OrderResponse>builder()
                 .status(HttpStatus.CREATED.value())
                 .message("Tạo đơn hàng thành công")

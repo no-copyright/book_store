@@ -16,9 +16,9 @@ public class UserController {
 
     @KafkaListener(topics = "user-created-topic")
     public void handleUserCreateEvent(UserCreateEvent userCreateEvent) {
-        log.info("Received UserCreateEvent: {}", userCreateEvent);
         User user = User.builder()
                 .id(userCreateEvent.getId())
+                .email(userCreateEvent.getEmail())
                 .build();
         userRepository.save(user);
     }

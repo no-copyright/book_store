@@ -19,9 +19,20 @@ public class NotificationService {
     private final EmailService emailService;
     private final SpringTemplateEngine templateEngine;
 
-    public void handleForgotPasswordNotification(NotificationEvent notificationEvent) {
-        String subject = "Mã OTP Xác Thực - Đặt Lại Mật Khẩu";
-        String htmlContent = processTemplate(notificationEvent);
+    public void handleNotification(NotificationEvent notificationEvent) {
+        String templateCode = notificationEvent.getTemplateCode();
+        String subject;
+        String htmlContent = switch (templateCode) {
+            case "otp-email-template" -> {
+                subject = "Mã OTP Xác Thực - Đặt Lại Mật Khẩu";
+                yield processOtpTemplate(notificationEvent);
+            }
+            case "order-created-email-template" -> {
+                subject = "Xác Nhận Đơn Hàng";
+                yield processOrderTemplate(notificationEvent);
+            }
+            default -> throw new IllegalArgumentException("Template code không hợp lệ: " + templateCode);
+        };
 
         emailService.sendEmail(SendEmailRequest.builder()
                 .to(Recipient.builder()
@@ -32,7 +43,7 @@ public class NotificationService {
                 .build());
     }
 
-    private String processTemplate(NotificationEvent notificationEvent) {
+    private String processOtpTemplate(NotificationEvent notificationEvent) {
         Context context = new Context();
         Map<String, Object> params = notificationEvent.getParams();
         context.setVariable("username", params.get("username"));
@@ -40,5 +51,25 @@ public class NotificationService {
         context.setVariable("expiryMinutes", params.get("expiryMinutes"));
 
         return templateEngine.process("otp-email-template", context);
+    }
+
+    private String processOrderTemplate(NotificationEvent notificationEvent) {
+        Context context = new Context();
+        Map<String, Object> params = notificationEvent.getParams();
+
+        context.setVariable("fullName", params.get("fullName"));
+        context.setVariable("orderId", params.get("orderId"));
+        context.setVariable("totalPrice", params.get("totalPrice"));
+        context.setVariable("address", params.get("address"));
+        context.setVariable("phone", params.get("phone"));
+        context.setVariable("paymentMethod", params.get("paymentMethod"));
+        context.setVariable("paymentStatus", params.get("paymentStatus"));
+        context.setVariable("status", params.get("status"));
+        context.setVariable("note", params.get("note"));
+        context.setVariable("createdAt", params.get("createdAt"));
+        context.setVariable("orderProducts", params.get("orderProducts"));
+
+
+        return templateEngine.process("order-created-email-template", context);
     }
 }

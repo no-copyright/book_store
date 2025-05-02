@@ -1,6 +1,5 @@
 package com.hau.orderservice.controller;
 
-import com.hau.event.dto.OrderCreateEvent;
 import com.hau.event.dto.ProfileCreateEvent;
 import com.hau.orderservice.service.ProfileService;
 import lombok.RequiredArgsConstructor;
