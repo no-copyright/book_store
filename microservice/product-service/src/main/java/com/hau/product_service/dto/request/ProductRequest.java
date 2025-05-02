@@ -59,4 +59,6 @@ public class ProductRequest {
     private String description;
 
     Boolean active;
+
+    private List<Long> categoryIds;
 }

@@ -77,6 +77,7 @@ public class BlogServiceImpl implements BlogService {
                 .build();
     }
 
+    @Transactional
     @Override
     public ApiResponse<BlogResponse> updateBlog(Long id, BlogRequest request, MultipartFile thumbnail) {
         Blog blog = blogRepository.findById(id)
@@ -99,6 +100,7 @@ public class BlogServiceImpl implements BlogService {
                 .build();
     }
 
+    @Transactional
     @Override
     public ApiResponse<Void> deleteBlog(Long id) {
         Blog blog = blogRepository.findById(id)
@@ -159,12 +161,17 @@ public class BlogServiceImpl implements BlogService {
 
         Page<Blog> blogPage = blogRepository.findByFilters(filterRequest.getTitle(), categoryId, pageable);
 
-        List<BlogResponse> blogResponses = blogPage.getContent().stream()
-                .map(blogMapper::toBlogResponse)
-                .toList();
+        List<BlogResponse> responses = blogPage.getContent().stream()
+                .map(blog -> {
+                    BlogResponse res = blogMapper.toBlogResponse(blog);
+                    res.setThumbnail(fileServiceUrl + res.getThumbnail());
+                    return res;
+                }).toList();
+
+
 
         PageResult<BlogResponse> pageResult = new PageResult<>(
-                blogResponses,
+                responses,
                 blogPage.getNumber() + 1,
                 blogPage.getSize(),
                 blogPage.getTotalPages(),

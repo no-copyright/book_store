@@ -26,4 +26,5 @@ public class ProductResponse {
     private boolean active;
 
     private List<String> imageUrls;
+    private List<Long> categories;
 }

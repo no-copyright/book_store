@@ -14,8 +14,7 @@ public class ProductFilter {
     private Integer priceTo;
     private String sortBy;
     private String sortDir;
-    private Integer pageIndex;
-    private Integer pageSize;
+    private Long categoryId;
 
     public boolean isEmpty() {
         return (title == null || title.isEmpty()) &&
@@ -24,7 +23,6 @@ public class ProductFilter {
                 (priceTo == null || priceTo <= 0) &&
                 (sortBy == null || sortBy.isEmpty()) &&
                 (sortDir == null || sortDir.isEmpty()) &&
-                (pageIndex == null || pageIndex < 0) &&
-                (pageSize == null || pageSize <= 0);
+                (categoryId == null || categoryId <= 0);
     }
 }

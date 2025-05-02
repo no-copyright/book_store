@@ -41,14 +41,14 @@ public class BlogController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PutMapping
+    @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<BlogResponse>> updateBlog(@PathVariable Long id, @RequestPart("blog") @Valid BlogRequest request,
                                                                 @RequestPart(value = "thumbnail") MultipartFile thumbnail) {
         ApiResponse<BlogResponse> response = blogService.updateBlog(id, request, thumbnail);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @DeleteMapping
+    @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteBlog(@PathVariable Long id) {
         ApiResponse<Void> response = blogService.deleteBlog(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
