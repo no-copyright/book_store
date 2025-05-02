@@ -55,4 +55,7 @@ public class Product {
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "product")
     List<ProductImage> productImage = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Rate> rates;
 }
