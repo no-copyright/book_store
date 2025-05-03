@@ -33,7 +33,16 @@ public class OrderController {
             @PathVariable Integer userId,
             @RequestParam(defaultValue = "1") int pageIndex,
             @RequestParam(defaultValue = "10") int pageSize) {
-        ApiResponse<PageResponse<OrderResponse>> apiResponse = orderService.getAllOrders(pageIndex, pageSize, userId);
+        ApiResponse<PageResponse<OrderResponse>> apiResponse = orderService.getAllOrdersByUserId(pageIndex, pageSize, userId);
+        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping
+    public ResponseEntity<ApiResponse<PageResponse<OrderResponse>>> getOrdersByUserId(
+            @RequestParam(defaultValue = "1") int pageIndex,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        ApiResponse<PageResponse<OrderResponse>> apiResponse = orderService.getAllOrders(pageIndex, pageSize);
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
 
@@ -42,7 +51,6 @@ public class OrderController {
         ApiResponse<String> apiResponse = orderService.cancerOrder(orderId, cancerOrderRequest);
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
-
 
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{orderId}")

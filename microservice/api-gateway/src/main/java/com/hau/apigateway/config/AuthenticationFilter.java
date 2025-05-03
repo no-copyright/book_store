@@ -42,6 +42,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             "/identity/auth/.*",
             "/notification/email",
             "/file/media/download/.*",
+            "payment/vnpay_return"
     };
 
     @NonFinal

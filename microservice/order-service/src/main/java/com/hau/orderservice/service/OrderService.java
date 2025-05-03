@@ -2,6 +2,7 @@ package com.hau.orderservice.service;
 
 import com.hau.event.dto.NotificationEvent;
 import com.hau.event.dto.OrderCreateEvent;
+import com.hau.event.dto.PaymentCreateEvent;
 import com.hau.orderservice.dto.*;
 import com.hau.orderservice.entity.*;
 import com.hau.orderservice.exception.AppException;
@@ -21,6 +22,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -87,33 +89,7 @@ public class OrderService {
         orderRepository.save(order);
 
         if (order.getPaymentMethod() == 0) {
-            NotificationEvent notificationEvent = new NotificationEvent();
-            notificationEvent.setChannel("EMAIL");
-            notificationEvent.setRecipient(
-                    userRepository.findById(userId).orElseThrow().getEmail()
-            );
-            notificationEvent.setTemplateCode("order-created-email-template");
-            notificationEvent.setParams(Map.ofEntries(
-                    Map.entry("username", userRepository.findById(userId).orElseThrow().getUsername()),
-                    Map.entry("fullName", order.getFullName()),
-                    Map.entry("orderId", order.getId()),
-                    Map.entry("totalPrice", order.getTotalPrice()),
-                    Map.entry("address", order.getAddress()),
-                    Map.entry("phone", order.getPhone()),
-                    Map.entry("paymentMethod", order.getPaymentMethod() == 0 ? "COD" : "VNPAY"),
-                    Map.entry("paymentStatus", order.getPaymentStatus() == 0 ? "Đã thanh toán" : "Chưa thanh toán"),
-                    Map.entry("status", order.getStatus() == 1 ? "Chờ xác nhận" : "Chờ vận chuyển"),
-                    Map.entry("note", order.getNote() == null ? "" : order.getNote()),
-                    Map.entry("createdAt", order.getCreatedAt()),
-                    Map.entry("orderProducts", order.getOrderProducts().stream()
-                            .map(orderProduct -> Map.of(
-                                    "productId", orderProduct.getProductId(),
-                                    "productName", orderProduct.getProductName(),
-                                    "quantity", orderProduct.getQuantity(),
-                                    "price", orderProduct.getPrice()))
-                            .toList()
-                    )));
-            kafkaTemplate.send("order-create-notification-topic", notificationEvent);
+            sendNotification(userId, order);
         } else {
             OrderCreateEvent orderCreateEvent = OrderCreateEvent.builder()
                     .orderId(order.getId())
@@ -161,6 +137,16 @@ public class OrderService {
                 .build();
     }
 
+    @Transactional
+    public void updatePaymentStatus(PaymentCreateEvent paymentCreateEvent) {
+        Order order = orderRepository.findById(paymentCreateEvent.getOrderId())
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Đơn hàng không tồn tại", null));
+        order.setPaymentStatus(paymentCreateEvent.getPaymentStatus());
+        orderRepository.save(order);
+        Integer userId = order.getUserId();
+        sendNotification(userId, order);
+    }
+
     public ApiResponse<OrderResponse> updateOrderStatus(OrderUpdateStatus orderUpdateStatus, Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Đơn hàng không tồn tại", null));
@@ -191,11 +177,53 @@ public class OrderService {
                 .build();
     }
 
-    public ApiResponse<PageResponse<OrderResponse>> getAllOrders(int page, int size, int userId) {
+    public void sendNotification(Integer userId, Order order) {
+        NotificationEvent notificationEvent = new NotificationEvent();
+        notificationEvent.setChannel("EMAIL");
+        notificationEvent.setRecipient(
+                userRepository.findById(userId).orElseThrow().getEmail()
+        );
+        notificationEvent.setTemplateCode("order-created-email-template");
+        notificationEvent.setParams(Map.ofEntries(
+                Map.entry("username", userRepository.findById(userId).orElseThrow().getUsername()),
+                Map.entry("fullName", order.getFullName()),
+                Map.entry("orderId", order.getId()),
+                Map.entry("totalPrice", order.getTotalPrice()),
+                Map.entry("address", order.getAddress()),
+                Map.entry("phone", order.getPhone()),
+                Map.entry("paymentMethod", order.getPaymentMethod() == 0 ? "COD" : "VNPAY"),
+                Map.entry("paymentStatus", order.getPaymentStatus() == 0 ? "Đã thanh toán" : "Chưa thanh toán"),
+                Map.entry("status", order.getStatus() == 1 ? "Chờ xác nhận" : "Chờ vận chuyển"),
+                Map.entry("note", order.getNote() == null ? "" : order.getNote()),
+                Map.entry("createdAt", order.getCreatedAt()),
+                Map.entry("orderProducts", order.getOrderProducts().stream()
+                        .map(orderProduct -> Map.of(
+                                "productId", orderProduct.getProductId(),
+                                "productName", orderProduct.getProductName(),
+                                "quantity", orderProduct.getQuantity(),
+                                "price", orderProduct.getPrice()))
+                        .toList()
+                )));
+        kafkaTemplate.send("order-create-notification-topic", notificationEvent);
+    }
+
+    public ApiResponse<PageResponse<OrderResponse>> getAllOrdersByUserId(int page, int size, int userId) {
         Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
         Pageable pageable = PageRequest.of(page - 1, size, sort);
         Page<Order> orderPage = orderRepository.findAllByUserId(userId, pageable);
 
+        return getPageResponseApiResponse(page, orderPage);
+    }
+
+    public ApiResponse<PageResponse<OrderResponse>> getAllOrders(int page, int size) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
+        Page<Order> orderPage = orderRepository.findAll(pageable);
+
+        return getPageResponseApiResponse(page, orderPage);
+    }
+
+    private ApiResponse<PageResponse<OrderResponse>> getPageResponseApiResponse(int page, Page<Order> orderPage) {
         List<OrderResponse> orderResponseList = orderPage.map(orderMapper::toOrderResponse).toList();
         return ApiResponse.<PageResponse<OrderResponse>>builder()
                 .status(HttpStatus.OK.value())
