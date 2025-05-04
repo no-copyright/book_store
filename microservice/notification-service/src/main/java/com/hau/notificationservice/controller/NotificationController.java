@@ -16,21 +16,11 @@ public class NotificationController {
 
     @KafkaListener(topics = "forgot-password-topic")
     public void listenOtpTopic(NotificationEvent notificationEvent) {
-        log.info("Message received from forgot password topic: {}", notificationEvent);
-        try {
-            notificationService.handleNotification(notificationEvent);
-        } catch (Exception e) {
-            log.error("Error handling notification: {}", e.getMessage());
-        }
+        notificationService.handleNotification(notificationEvent);
     }
 
     @KafkaListener(topics = "order-create-notification-topic")
     public void listenOrderCreateTopic(NotificationEvent notificationEvent) {
-        log.info("Message received from order create topic: {}", notificationEvent);
-        try {
-            notificationService.handleNotification(notificationEvent);
-        } catch (Exception e) {
-            log.error("Error handling notification: {}", e.getMessage());
-        }
+        notificationService.handleNotification(notificationEvent);
     }
 }
