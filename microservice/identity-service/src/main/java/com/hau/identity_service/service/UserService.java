@@ -114,29 +114,6 @@ public class UserService {
     }
 
 
-//    public Page<UserResponse> getAllUsers(int pageIndex, int pageSize, String username, Integer gender) {
-//        var authentication = SecurityContextHolder.getContext().getAuthentication();
-//
-//        log.info("Username : {}", authentication.getName());
-//        authentication.getAuthorities().forEach(grantedAuthority -> log.info(grantedAuthority.getAuthority()));
-//
-//        Specification<User> spec = Specification.where(null);
-//
-//        if (username != null) {
-//            spec = spec.and(
-//                    (root, query, cb) -> cb.like(cb.lower(root.get("username")), "%" + username.toLowerCase() + "%"));
-//        }
-//
-//        if (gender != null) {
-//            spec = spec.and((root, query, cb) -> cb.equal(root.get("gender"), gender));
-//        }
-//
-//        Pageable pageable = PageRequest.of(pageIndex, pageSize);
-//        Page<User> userPage = userRepository.findAll(spec, pageable);
-//
-//        return userPage.map(userMapper::toUserResponse);
-//    }
-
     public ApiResponse<PageResponse<UserResponse>> getAllUsers(int page, int size) {
         Sort sort = Sort.by("createdAt").descending();
 

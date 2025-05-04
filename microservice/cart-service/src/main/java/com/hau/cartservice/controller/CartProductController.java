@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/cart-products")
 @RequiredArgsConstructor
@@ -21,9 +23,9 @@ public class CartProductController {
         return new ResponseEntity<>(apiResponse, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{cartProductId}")
-    public ResponseEntity<ApiResponse<String>> removeProductFromCart(@PathVariable Integer cartProductId) {
-        ApiResponse<String> apiResponse = cartProductService.removeProductFromCart(cartProductId);
+    @DeleteMapping
+    public ResponseEntity<ApiResponse<String>> removeProductFromCart(@RequestBody List<Integer> cartProductIds) {
+        ApiResponse<String> apiResponse = cartProductService.removeProductsFromCart(cartProductIds);
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
 }
