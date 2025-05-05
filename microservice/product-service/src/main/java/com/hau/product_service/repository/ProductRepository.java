@@ -27,6 +27,4 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                                   @Param("categoryIds") List<Long> categoryIds,
                                   Pageable pageable);
 
-
-
 }
