@@ -103,6 +103,64 @@ public class ProductService {
                 .build();
     }
 
+    public ApiResponse<PageResult<ProductResponse>> getAllProductByActive(ProductFilter filter, Integer pageIndex, Integer pageSize) {
+        int page = (pageIndex == null || pageIndex <= 1) ? 0 : pageIndex - 1;
+
+        Sort sort;
+        if (filter.getSortDir() != null && !filter.getSortDir().isEmpty()) {
+            Sort.Direction direction = "asc".equalsIgnoreCase(filter.getSortDir()) ? Sort.Direction.ASC : Sort.Direction.DESC;
+            sort = Sort.by(direction, "price");
+        } else {
+            sort = Sort.by(Sort.Direction.DESC, "createdAt");
+        }
+
+        Pageable pageable = PageRequest.of(page, pageSize, sort);
+
+        List<Long> categoryIds = null;
+        if (filter.getCategoryId() != null) {
+            Set<Long> allCategoryIds = new HashSet<>();
+            allCategoryIds.add(filter.getCategoryId());
+            allCategoryIds.addAll(categoryService.findAllSubCategoryIds(filter.getCategoryId()));
+            categoryIds = allCategoryIds.stream().toList();
+        }
+
+        // Explicitly search for active=true products
+        Page<Product> productPage = productRepository.findAllByActiveStatus(filter, categoryIds, pageable, Boolean.TRUE);
+
+        List<ProductResponse> responses = productPage.getContent().stream()
+                .map(product -> {
+                    ProductResponse res = productMapper.toProductWithImageResponse(product);
+                    res.setThumbnail(fileServiceUrl + product.getThumbnail());
+
+                    if (res.getImageUrls() != null) {
+                        res.setImageUrls(
+                                res.getImageUrls().stream()
+                                        .map(url -> fileServiceUrl + url)
+                                        .collect(Collectors.toList())
+                        );
+                    }
+
+                    return res;
+                }).toList();
+
+        PageResult<ProductResponse> result = new PageResult<>(
+                responses,
+                productPage.getNumber() + 1,
+                productPage.getSize(),
+                productPage.getTotalPages(),
+                productPage.getTotalElements(),
+                productPage.hasNext(),
+                productPage.hasPrevious()
+        );
+
+        return ApiResponse.<PageResult<ProductResponse>>builder()
+                .status(HttpStatus.OK.value())
+                .message("Lấy danh sách sản phẩm đang hoạt động thành công")
+                .result(result)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
 
 
     @Transactional // Ensure atomicity
