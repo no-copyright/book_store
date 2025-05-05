@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @RestController
@@ -21,8 +23,13 @@ public class NotificationFirebaseController {
 
     @PostMapping("/firebase")
     public ResponseEntity sendNotification(@RequestBody NotificationRequest request) throws ExecutionException, InterruptedException {
-        fcmService.sendMessageToToken(request);
-        return new ResponseEntity<>(new NotificationResponse(HttpStatus.OK.value(), "Notification has been sent."), HttpStatus.OK);
-    }
+        if (request.getToken() != null && (request.getTokens() == null || request.getTokens().isEmpty())) {
+            List<String> tokens = new ArrayList<>();
+            tokens.add(request.getToken());
+            request.setTokens(tokens);
+        }
 
+        fcmService.sendMessageToTokens(request);
+        return new ResponseEntity<>(new NotificationResponse(HttpStatus.OK.value(), "Thông báo đã được gửi."), HttpStatus.OK);
+    }
 }

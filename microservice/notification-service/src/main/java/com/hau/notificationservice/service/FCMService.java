@@ -1,31 +1,50 @@
 package com.hau.notificationservice.service;
 
 import com.google.firebase.messaging.*;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.hau.notificationservice.dto.NotificationRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @Service
 @Slf4j
 public class FCMService {
-    public void sendMessageToToken(NotificationRequest request)
-            throws InterruptedException, ExecutionException {
-        Message message = getPreconfiguredMessageToToken(request);
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String jsonOutput = gson.toJson(message);
-        String response = sendAndGetResponse(message);
-        log.info("Sent message to token. Device token: {}, {} msg {}", request.getToken(), response, jsonOutput);
+    public void sendMessageToTokens(NotificationRequest request) {
+        if (request.getTokens() == null || request.getTokens().isEmpty()) {
+            log.error("No tokens provided for sending notifications");
+            return;
+        }
+
+        List<String> successfulTokens = new ArrayList<>();
+        List<String> failedTokens = new ArrayList<>();
+
+        for (String token : request.getTokens()) {
+            try {
+                Message message = getPreconfiguredMessageToToken(request, token);
+                String response = sendAndGetResponse(message);
+                successfulTokens.add(token);
+                log.info("Sent message to token: {}, response: {}", token, response);
+            } catch (Exception e) {
+                failedTokens.add(token);
+                log.error("Failed to send message to token: {}, error: {}", token, e.getMessage());
+            }
+        }
+
+        log.info("Notification sending summary: Success: {}, Failed: {}",
+                successfulTokens.size(), failedTokens.size());
+
+        if (!failedTokens.isEmpty()) {
+            log.error("Failed tokens: {}", failedTokens);
+        }
     }
 
     private String sendAndGetResponse(Message message) throws InterruptedException, ExecutionException {
         return FirebaseMessaging.getInstance().sendAsync(message).get();
     }
-
 
     private AndroidConfig getAndroidConfig(String topic) {
         return AndroidConfig.builder()
@@ -40,8 +59,9 @@ public class FCMService {
                 .setAps(Aps.builder().setCategory(topic).setThreadId(topic).build()).build();
     }
 
-    private Message getPreconfiguredMessageToToken(NotificationRequest request) {
-        return getPreconfiguredMessageBuilder(request).setToken(request.getToken())
+    private Message getPreconfiguredMessageToToken(NotificationRequest request, String token) {
+        return getPreconfiguredMessageBuilder(request)
+                .setToken(token)
                 .build();
     }
 
@@ -52,7 +72,16 @@ public class FCMService {
                 .setTitle(request.getTitle())
                 .setBody(request.getBody())
                 .build();
-        return Message.builder()
-                .setApnsConfig(apnsConfig).setAndroidConfig(androidConfig).setNotification(notification);
+
+        Message.Builder builder = Message.builder()
+                .setApnsConfig(apnsConfig)
+                .setAndroidConfig(androidConfig)
+                .setNotification(notification);
+
+        if (request.getData() != null && !request.getData().isEmpty()) {
+            builder.putAllData(request.getData());
+        }
+
+        return builder;
     }
 }
