@@ -41,6 +41,7 @@ public class ProductService {
     private final FileUploadService fileUploadService;
     private final SlugService slugService;
     private final CategoryService categoryService;
+    private final RateService rateService;
 
     @Value("${app.file.download-prefix}")
     private String fileServiceUrl;
