@@ -15,6 +15,7 @@ public class ProductFilter {
     private String sortBy;
     private String sortDir;
     private Long categoryId;
+    private Float averageRateFrom;
 
     public boolean isEmpty() {
         return (title == null || title.isEmpty()) &&
@@ -23,6 +24,7 @@ public class ProductFilter {
                 (priceTo == null || priceTo <= 0) &&
                 (sortBy == null || sortBy.isEmpty()) &&
                 (sortDir == null || sortDir.isEmpty()) &&
-                (categoryId == null || categoryId <= 0);
+                (categoryId == null || categoryId <= 0) &&
+                (averageRateFrom == null || averageRateFrom <= 0);
     }
 }

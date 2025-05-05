@@ -6,6 +6,7 @@ import com.hau.product_service.dto.response.ProductResponse;
 import com.hau.product_service.entity.Category;
 import com.hau.product_service.entity.Product;
 import com.hau.product_service.entity.ProductImage;
+import com.hau.product_service.entity.Rate;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

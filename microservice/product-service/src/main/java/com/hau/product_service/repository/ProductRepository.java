@@ -21,10 +21,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
       AND (:#{#filter.priceFrom} IS NULL OR p.price >= :#{#filter.priceFrom})
       AND (:#{#filter.priceTo} IS NULL OR p.price <= :#{#filter.priceTo})
       AND (:categoryIds IS NULL OR c.id IN (:categoryIds))
+      AND (:#{#filter.averageRateFrom} IS NULL OR p.averageRate >= :#{#filter.averageRateFrom})
 """)
     Page<Product> findAllByFilter(@Param("filter") ProductFilter filter,
                                   @Param("categoryIds") List<Long> categoryIds,
                                   Pageable pageable);
-
 
 }
