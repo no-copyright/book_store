@@ -33,3 +33,4 @@ build/
 .vscode/
 /src/main/resources/application.yml
 /src/main/resources/client.truststore.jks
+/src/main/resources/bookstore-21cce-firebase-adminsdk-fbsvc-6db9e294b8.json
