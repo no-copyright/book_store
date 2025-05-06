@@ -1,6 +1,7 @@
 package com.hau.notificationservice.controller;
 
 import com.hau.event.dto.NotificationEvent;
+import com.hau.notificationservice.service.NotificationProcessingService;
 import com.hau.notificationservice.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final NotificationProcessingService notificationProcessingService;
 
     @KafkaListener(topics = "forgot-password-topic")
     public void listenOtpTopic(NotificationEvent notificationEvent) {
@@ -21,6 +23,8 @@ public class NotificationController {
 
     @KafkaListener(topics = "order-create-notification-topic")
     public void listenOrderCreateTopic(NotificationEvent notificationEvent) {
+        log.info("Received notification event: {}", notificationEvent);
         notificationService.handleNotification(notificationEvent);
+        notificationProcessingService.processOrderCreateNotification(notificationEvent);
     }
 }

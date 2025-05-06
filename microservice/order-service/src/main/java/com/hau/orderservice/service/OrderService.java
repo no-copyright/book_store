@@ -185,6 +185,7 @@ public class OrderService {
         );
         notificationEvent.setTemplateCode("order-created-email-template");
         notificationEvent.setParams(Map.ofEntries(
+                Map.entry("userId", userId),
                 Map.entry("username", userRepository.findById(userId).orElseThrow().getUsername()),
                 Map.entry("fullName", order.getFullName()),
                 Map.entry("orderId", order.getId()),
