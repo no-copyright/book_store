@@ -152,6 +152,16 @@ public class OrderService {
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Đơn hàng không tồn tại", null));
         order.setStatus(orderUpdateStatus.getStatus());
         orderRepository.save(order);
+        NotificationEvent notificationEvent = NotificationEvent.builder()
+                .params(
+                        Map.ofEntries(
+                                Map.entry("userId", order.getUserId()),
+                                Map.entry("orderId", order.getId()),
+                                Map.entry("orderStatus", order.getStatus())
+                        )
+                )
+                .build();
+        kafkaTemplate.send("order-updated-status-topic", notificationEvent);
         return ApiResponse.<OrderResponse>builder()
                 .status(HttpStatus.OK.value())
                 .message("Cập nhật trạng thái đơn hàng thành công")

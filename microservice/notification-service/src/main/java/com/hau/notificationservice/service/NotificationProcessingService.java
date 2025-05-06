@@ -43,4 +43,43 @@ public class NotificationProcessingService {
         notificationRepository.save(notification);
         fcmService.sendMessageToTokens(notificationRequest);
     }
+
+    public void processOrderUpdatedStatusNotification(NotificationEvent notificationEvent) {
+        Integer userId = (Integer) notificationEvent.getParams().get("userId");
+        Integer oderStatus = (Integer) notificationEvent.getParams().get("orderStatus");
+
+        List<FcmToken> fcmTokens = fcmTokenRepository.findFcmTokenByUserId(userId);
+
+        List<String> tokensToSend = fcmTokens.stream()
+                .map(FcmToken::getToken)
+                .toList();
+        Map<String, String> data = new HashMap<>();
+        data.put("orderId", notificationEvent.getParams().get("orderId").toString());
+
+        String notificationBody = getNotificationBody(oderStatus);
+
+        NotificationRequest notificationRequest = NotificationRequest.builder()
+                .topic("order updated")
+                .title("Cập nhật trạng thái đơn hàng")
+                .body(notificationBody)
+                .tokens(tokensToSend)
+                .data(data)
+                .build();
+        Notification notification = notificationMapper.toNotification(notificationRequest);
+        notificationRepository.save(notification);
+        fcmService.sendMessageToTokens(notificationRequest);
+    }
+
+    private static String getNotificationBody(Integer oderStatus) {
+        String notificationBody;
+        switch (oderStatus) {
+            case 0 -> notificationBody = "Đơn hàng của bạn đã được giao thành công";
+            case 1 -> notificationBody = "Đơn hàng của bạn đã được xác nhận";
+            case 2 -> notificationBody = "Đơn hàng của bạn đang chờ đơn vị vận chuyển đến lấy hàng";
+            case 3 -> notificationBody = "Đơn hàng của bạn đã được giao cho đơn vị vận chuyển";
+            case 4 -> notificationBody = "Đơn hàng của bạn đã được hủy";
+            default -> notificationBody = "Lỗi không xác định trạng thái đơn hàng";
+        }
+        return notificationBody;
+    }
 }
