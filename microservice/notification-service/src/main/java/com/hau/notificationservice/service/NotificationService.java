@@ -1,5 +1,6 @@
 package com.hau.notificationservice.service;
 
+import com.google.firebase.messaging.*;
 import com.hau.event.dto.NotificationEvent;
 import com.hau.notificationservice.dto.Recipient;
 import com.hau.notificationservice.dto.SendEmailRequest;
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -18,6 +21,7 @@ public class NotificationService {
 
     private final EmailService emailService;
     private final SpringTemplateEngine templateEngine;
+
 
     public void handleNotification(NotificationEvent notificationEvent) {
         String templateCode = notificationEvent.getTemplateCode();

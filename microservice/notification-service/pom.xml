@@ -35,6 +35,11 @@
         <spring-cloud.version>2024.0.1</spring-cloud.version>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>com.google.firebase</groupId>
+            <artifactId>firebase-admin</artifactId>
+            <version>9.2.0</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka -->
         <dependency>
             <groupId>org.springframework.kafka</groupId>
@@ -79,6 +84,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
         </dependency>
     </dependencies>
     <dependencyManagement>
