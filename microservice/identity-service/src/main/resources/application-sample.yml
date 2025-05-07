@@ -3,12 +3,10 @@ server:
   servlet:
     context-path: /identity
 spring:
-  main:
-    lazy-initialization: true
   datasource:
     url: jdbc:postgresql://localhost:5432/identity_db
-    username:
-    password:
+    username: postgres
+    password: postgres
   jpa:
     hibernate:
       ddl-auto: none
@@ -26,7 +24,7 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 jwt:
-  signerKey: ""
+  signerKey: "qxNOdgKfw1UmyuQ68SKM+tmEVoeAUqgvr1/eg50ufWkQTizklguIDWNP3oOGv8bS"
   expirationMinutes: 1440
   expirationRefreshMinutes: 7200
   issuer: identity-service
@@ -44,6 +42,6 @@ app:
     default-image: 6b1cb0f1-8bb4-4c15-a71e-937f588abca3_avatar.jpg
 
 admin:
-  username: ""
-  password: ""
+  username: admin
+  password: admin
   role: ADMIN

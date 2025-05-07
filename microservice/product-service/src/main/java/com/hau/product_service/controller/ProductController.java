@@ -1,5 +1,6 @@
 package com.hau.product_service.controller;
 
+import com.hau.event.dto.NotificationEvent;
 import com.hau.product_service.dto.request.ProductFilter;
 import com.hau.product_service.dto.request.ProductRequest;
 import com.hau.product_service.dto.response.ApiResponse;
@@ -10,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -68,6 +70,11 @@ public class ProductController {
     public ResponseEntity<ApiResponse<ProductResponse>> getProductById(@PathVariable Long productId) {
         ApiResponse<ProductResponse> response = productService.getProductById(productId);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @KafkaListener(topics = "order-create-notification-topic")
+    public void updateProductQuantity(NotificationEvent notificationEvent) {
+        productService.updateProductQuantity(notificationEvent);
     }
 
 }

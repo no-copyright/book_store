@@ -7,7 +7,7 @@ spring:
     name: notification-service
   data:
     mongodb:
-      uri: mongodb://{username}:{password}@localhost:27017/notification_db?authSource=admin
+      uri: mongodb://root:root@localhost:27017/notification_db?authSource=admin
   kafka:
     bootstrap-servers: localhost:9094
     consumer:
@@ -17,8 +17,8 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
-
 app:
   email-service:
     url: https://api.brevo.com
-    api-key: {api-key}
+    api-key:
+  firebase-configuration-file:

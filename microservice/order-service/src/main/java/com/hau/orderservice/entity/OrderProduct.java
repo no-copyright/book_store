@@ -19,7 +19,7 @@ public class OrderProduct {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
     private Integer cartProductId;
-    private Integer productId;
+    private Long productId;
     private String productName;
     private Integer price;
     private Integer quantity;
