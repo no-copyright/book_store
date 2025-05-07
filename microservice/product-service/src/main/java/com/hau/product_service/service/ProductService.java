@@ -1,5 +1,7 @@
 package com.hau.product_service.service;
 
+import com.hau.event.dto.NotificationEvent;
+import com.hau.event.dto.ProductEvent;
 import com.hau.product_service.entity.Category;
 import com.hau.product_service.repository.FileServiceClientRepository;
 import com.hau.product_service.converter.StringConverter;
@@ -14,12 +16,14 @@ import com.hau.product_service.mapper.ProductMapper;
 import com.hau.product_service.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,11 +32,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
@@ -41,6 +47,7 @@ public class ProductService {
     private final FileUploadService fileUploadService;
     private final SlugService slugService;
     private final CategoryService categoryService;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Value("${app.file.download-prefix}")
     private String fileServiceUrl;
@@ -137,6 +144,14 @@ public class ProductService {
         savedProduct.setProductImage(null);
         savedProduct = productRepository.save(savedProduct);
 
+        ProductEvent productEvent = ProductEvent.builder()
+                .id(savedProduct.getId())
+                .discount(savedProduct.getDiscount())
+                .price(savedProduct.getPrice())
+                .quantity(savedProduct.getQuantity())
+                .title(savedProduct.getTitle())
+                .build();
+        kafkaTemplate.send("product-create-topic", productEvent);
         ProductResponse productResponse = productMapper.toProductResponse(savedProduct);
         productResponse.setThumbnail(fileServiceUrl + savedProduct.getThumbnail());
 
@@ -177,6 +192,15 @@ public class ProductService {
         existProduct.setSlug(slugService.generateUniqueSlug(product.getTitle(), id));
         existProduct.setCategories(categories);
         Product savedProduct = productRepository.save(existProduct);
+
+        ProductEvent productEvent = ProductEvent.builder()
+                .id(savedProduct.getId())
+                .discount(savedProduct.getDiscount())
+                .price(savedProduct.getPrice())
+                .quantity(savedProduct.getQuantity())
+                .title(savedProduct.getTitle())
+                .build();
+        kafkaTemplate.send("product-update-topic", productEvent);
 
         ProductResponse response = productMapper.toProductResponse(savedProduct);
         response.setThumbnail(savedProduct.getThumbnail());
@@ -225,4 +249,44 @@ public class ProductService {
                 .build();
     }
 
+
+    public void updateProductQuantity(NotificationEvent notificationEvent) {
+        Map<String, Object> params = notificationEvent.getParams();
+        Object orderProducts = params.get("orderProducts");
+
+        if (orderProducts instanceof List<?> orderProductList) {
+            for (Object item : orderProductList) {
+                if (item instanceof Map<?, ?> productMap) {
+                    log.info("Product map: {}", productMap);
+
+                    Object productIdObj = productMap.get("productId");
+                    if (!(productIdObj instanceof Integer)) {
+                        log.error("productId không phải là Integer.  Value: {}", productIdObj);
+                        continue;
+                    }
+                    Long productId = ((Integer) productIdObj).longValue();
+
+
+                    Object quantityObj = productMap.get("quantity");
+                    if (!(quantityObj instanceof Integer)) {
+                        log.error("quantity không phải là Integer. Value: {}", quantityObj);
+                        continue;
+                    }
+                    int quantity = (Integer) quantityObj;
+
+
+                    try {
+                        Product product = productRepository.findById(productId)
+                                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại", null));
+                        product.setQuantity(product.getQuantity() - quantity);
+                        productRepository.save(product);
+                    } catch (AppException e) {
+                        log.error("Lỗi khi xử lý sản phẩm với productId {}: {}", productId, e.getMessage());
+                    }
+                }
+            }
+        } else {
+            log.warn("orderProducts không phải là List hoặc null");
+        }
+    }
 }
