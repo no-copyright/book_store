@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -98,13 +99,16 @@ public class RateService {
     public ApiResponse<RateResponse> createRate(RateRequest request) {
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm", "id = " + request.getProductId()));
-
         Integer userId = Integer.valueOf(SecurityContextHolder.getContext().getAuthentication().getName());
         User user =  userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng", "id = " + userId));
         Rate newRate = rateMapper.toRate(request);
+
         newRate.setProduct(product);
         newRate.setUser(user);
+        Float averageRate = calculateAverageRate(newRate.getProduct().getId());
+        product.setAverageRate(averageRate);
+        productRepository.save(product);
         Rate savedRate = rateRepository.save(newRate);
         RateResponse rateResponse = rateMapper.toRateResponse(savedRate);
 
@@ -119,12 +123,30 @@ public class RateService {
         Rate rate = rateRepository.findById(id)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy đánh giá", "id = " + id));
         rateRepository.delete(rate);
+        Product product = rate.getProduct();
+        Float averageRate = calculateAverageRate(product.getId());
+        product.setAverageRate(averageRate);
+        productRepository.save(product);
         return ApiResponse.<RateResponse>builder()
                 .status(HttpStatus.OK.value())
                 .message("Xóa đánh giá thành công")
                 .result(null)
+                .timestamp(LocalDateTime.now())
                 .build();
     }
 
+    public Float calculateAverageRate(Long productId) {
+        List<Rate> rates = rateRepository.findAllByProductId(productId);
+
+        if (rates.isEmpty()) {
+            return 0f;
+        }
+
+        float totalRate = 0f;
+        for (Rate rate : rates) {
+            totalRate += rate.getVote();
+        }
+        return Float.valueOf(String.format("%.1f", totalRate / rates.size())) ;
+    }
 
 }
