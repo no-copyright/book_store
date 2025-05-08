@@ -20,29 +20,38 @@ public class OrderController {
         return new ResponseEntity<>(apiResponse, HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or @orderService.isOwnerOfUser(#userId, authentication)")
-    @GetMapping("/{orderId}/user/{userId}")
-    public ResponseEntity<ApiResponse<OrderResponse>> getOrderById(@PathVariable Long orderId, @PathVariable Integer userId) {
-        ApiResponse<OrderResponse> apiResponse = orderService.getOrderById(orderId, userId);
-        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
-    }
-
-    @PreAuthorize("hasRole('ADMIN') or @orderService.isOwnerOfUser(#userId, authentication)")
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<ApiResponse<PageResponse<OrderResponse>>> getOrdersByUserId(
-            @PathVariable Integer userId,
-            @RequestParam(defaultValue = "1") int pageIndex,
-            @RequestParam(defaultValue = "10") int pageSize) {
-        ApiResponse<PageResponse<OrderResponse>> apiResponse = orderService.getAllOrdersByUserId(pageIndex, pageSize, userId);
-        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     @GetMapping
-    public ResponseEntity<ApiResponse<PageResponse<OrderResponse>>> getOrdersByUserId(
-            @RequestParam(defaultValue = "1") int pageIndex,
-            @RequestParam(defaultValue = "10") int pageSize) {
-        ApiResponse<PageResponse<OrderResponse>> apiResponse = orderService.getAllOrders(pageIndex, pageSize);
+    public ResponseEntity<ApiResponse<PageResponse<OrderResponse>>> getAllOrders(
+            @RequestParam(defaultValue = "1", required = false) int pageIndex,
+            @RequestParam(defaultValue = "10", required = false) int pageSize,
+            @RequestParam(required = false) String createdAt,
+            @RequestParam(required = false) Integer paymentStatus,
+            @RequestParam(required = false) Integer paymentMethod
+    ) {
+        ApiResponse<PageResponse<OrderResponse>> apiResponse = orderService.getAllOrders(pageIndex, pageSize, createdAt, paymentStatus, paymentMethod);
+        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+    @GetMapping("/{orderId}")
+    public ResponseEntity<ApiResponse<OrderResponse>> getOrderByIdForAdmin(@PathVariable Long orderId) {
+        ApiResponse<OrderResponse> apiResponse = orderService.getOrderById(orderId);
+        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/my-orders")
+    public ResponseEntity<ApiResponse<PageResponse<OrderResponse>>> getMyOrders(
+            @RequestParam(defaultValue = "1", required = false) int pageIndex,
+            @RequestParam(defaultValue = "10", required = false) int pageSize
+    ) {
+        ApiResponse<PageResponse<OrderResponse>> apiResponse = orderService.getOrdersByUserId(pageIndex, pageSize);
+        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/my-orders/{orderId}")
+    public ResponseEntity<ApiResponse<OrderResponse>> getMyOrderById(@PathVariable Long orderId) {
+        ApiResponse<OrderResponse> apiResponse = orderService.getOrderByIdForUser(orderId);
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
 
@@ -52,7 +61,7 @@ public class OrderController {
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     @PatchMapping("/{orderId}")
     public ResponseEntity<ApiResponse<OrderResponse>> updateOrderStatus(@Valid @PathVariable Long orderId, @RequestBody OrderUpdateStatus orderUpdateStatus) {
         ApiResponse<OrderResponse> apiResponse = orderService.updateOrderStatus(orderUpdateStatus, orderId);

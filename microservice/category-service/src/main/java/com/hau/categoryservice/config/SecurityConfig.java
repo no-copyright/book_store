@@ -19,7 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final String[] publicPostEndpoint = {
-
+        "/**"
     };
 
 
@@ -27,7 +27,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, publicPostEndpoint)
+        http.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.GET, publicPostEndpoint)
                 .permitAll()
                 .anyRequest()
                 .authenticated());

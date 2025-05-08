@@ -39,7 +39,7 @@ public class UserController {
         return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or @userService.isOwnerOfUser(#userId, authentication)")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF') or @userService.isOwnerOfUser(#userId, authentication)")
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponse<UserResponse>> getUserById(@PathVariable Long userId) {
         ApiResponse<UserResponse> userResponse = userService.getUserById(userId);
@@ -52,7 +52,7 @@ public class UserController {
         return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     @PutMapping("/{userId}")
     public ResponseEntity<ApiResponse<UserResponse>> updateUser(
             @PathVariable Long userId, @Valid @RequestBody UserUpdateRequest userUpdateRequest) {
@@ -66,7 +66,7 @@ public class UserController {
         return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or @userService.isOwnerOfUser(#userId, authentication)")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF') or @userService.isOwnerOfUser(#userId, authentication)")
     @PatchMapping("/{userId}/password")
     public ResponseEntity<ApiResponse<UserResponse>> updatePassword(
             @PathVariable Long userId, @RequestBody @Valid ChangePasswordRequest changePasswordRequest) {
@@ -74,7 +74,7 @@ public class UserController {
         return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> getAllUsers(
             @RequestParam(required = false, defaultValue = "1") int pageIndex,
@@ -84,7 +84,7 @@ public class UserController {
         return new ResponseEntity<>(userPage, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponse<UserResponse>> deleteUser(@PathVariable Long userId) {
         ApiResponse<UserResponse> userResponse = userService.deleteUser(userId);

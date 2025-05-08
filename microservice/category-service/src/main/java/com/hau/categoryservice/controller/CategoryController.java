@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,7 +20,6 @@ import java.util.List;
 @Slf4j
 public class CategoryController {
     private final CategoryService categoryService;
-    private final KafkaTemplate<String, String> kafkaTemplate;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAllCategories(@RequestParam(required = false) String name,
@@ -39,6 +38,7 @@ public class CategoryController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     @PostMapping
     public ResponseEntity<ApiResponse<CategoryResponse>> createCategory(@RequestBody @Valid CategoryRequest request) {
         // Mock implementation
@@ -47,6 +47,7 @@ public class CategoryController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<CategoryResponse>> updateCategory(@PathVariable Long id, @RequestBody @Valid CategoryRequest request) {
         // Mock implementation
@@ -55,18 +56,12 @@ public class CategoryController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteCategory(@PathVariable Long id) {
         // Mock implementation
         ApiResponse<Void> response = categoryService.delete(id);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    @PostMapping("/send/")
-    public void sendCategoryEvent() {
-        String str = "Hello, this is a test message!";
-        kafkaTemplate.send("xam-lon-event", str);
-        log.info("Sent message to Kafka topic: xam-lon-event {}", str);
     }
 }

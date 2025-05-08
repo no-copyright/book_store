@@ -16,6 +16,7 @@ public class Order {
     @Id
     private Long id;
 
+    private Integer userId;
     private Integer totalPrice;
     private Integer paymentMethod;
     private Integer paymentStatus;

@@ -11,20 +11,24 @@ import com.hau.orderservice.repository.OrderRepository;
 import com.hau.orderservice.repository.ProductRepository;
 import com.hau.orderservice.repository.ProfileRepository;
 import com.hau.orderservice.repository.UserRepository;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @Service
@@ -93,6 +97,7 @@ public class OrderService {
         } else {
             OrderCreateEvent orderCreateEvent = OrderCreateEvent.builder()
                     .orderId(order.getId())
+                    .userId(order.getUserId())
                     .totalPrice(order.getTotalPrice())
                     .paymentMethod(order.getPaymentMethod())
                     .paymentStatus(order.getPaymentStatus())
@@ -170,15 +175,23 @@ public class OrderService {
                 .build();
     }
 
-    public ApiResponse<OrderResponse> getOrderById(Long id, Integer userId) {
-        boolean userExists = userRepository.existsById(userId);
-        if (!userExists) {
-            throw new AppException(HttpStatus.NOT_FOUND, "Người dùng không tồn tại", null);
-        }
-        Order order = orderRepository.findByIdAndUserId(id, userId)
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Đơn hàng không tồn tại cho người dùng này", null));
+    public ApiResponse<OrderResponse> getOrderById(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Đơn hàng không tồn tại", null));
         OrderResponse orderResponse = orderMapper.toOrderResponse(order);
-        orderResponse.setTotalPrice(order.getTotalPrice());
+        return ApiResponse.<OrderResponse>builder()
+                .status(HttpStatus.OK.value())
+                .message("Lấy thông tin đơn hàng thành công")
+                .result(orderResponse)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    public ApiResponse<OrderResponse> getOrderByIdForUser(Long orderId) {
+        Integer userId = Integer.valueOf(SecurityContextHolder.getContext().getAuthentication().getName());
+        Order order = orderRepository.findByIdAndUserId(orderId, userId)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Đơn hàng này không thuộc về bạn", null));
+        OrderResponse orderResponse = orderMapper.toOrderResponse(order);
         return ApiResponse.<OrderResponse>builder()
                 .status(HttpStatus.OK.value())
                 .message("Lấy thông tin đơn hàng thành công")
@@ -218,19 +231,21 @@ public class OrderService {
         kafkaTemplate.send("order-create-notification-topic", notificationEvent);
     }
 
-    public ApiResponse<PageResponse<OrderResponse>> getAllOrdersByUserId(int page, int size, int userId) {
+    public ApiResponse<PageResponse<OrderResponse>> getAllOrders(int page, int size, String createdAt, Integer paymentStatus, Integer paymentMethod) {
         Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
         Pageable pageable = PageRequest.of(page - 1, size, sort);
-        Page<Order> orderPage = orderRepository.findAllByUserId(userId, pageable);
 
+        Specification<Order> spec = getSpecification(createdAt, paymentStatus, paymentMethod);
+
+        Page<Order> orderPage = orderRepository.findAll(spec, pageable);
         return getPageResponseApiResponse(page, orderPage);
     }
 
-    public ApiResponse<PageResponse<OrderResponse>> getAllOrders(int page, int size) {
+    public ApiResponse<PageResponse<OrderResponse>> getOrdersByUserId(int page, int size) {
+        Integer userId = Integer.valueOf(SecurityContextHolder.getContext().getAuthentication().getName());
         Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
         Pageable pageable = PageRequest.of(page - 1, size, sort);
-        Page<Order> orderPage = orderRepository.findAll(pageable);
-
+        Page<Order> orderPage = orderRepository.findAllByUserId(userId, pageable);
         return getPageResponseApiResponse(page, orderPage);
     }
 
@@ -250,24 +265,39 @@ public class OrderService {
                 .build();
     }
 
-    public boolean isOwnerOfUser(Integer requestedUserId, Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return false;
-        }
-        String authenticatedUserId = authentication.getName();
-        try {
-            User requestedUser = findUserById(requestedUserId);
-            return requestedUser.getId().toString().equals(authenticatedUserId);
-        } catch (AppException e) {
-            log.warn("Không tìm thấy người dùng với ID: {}", requestedUserId);
-            return false;
-        }
-    }
 
-    public User findUserById(Integer id) {
-        return userRepository
-                .findById(id)
-                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy user có id: " + id, null));
+    private Specification<Order> getSpecification(String createdAt, Integer paymentStatus, Integer paymentMethod) {
+        return (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (createdAt != null && !createdAt.trim().isEmpty()) {
+                try {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                    LocalDate createdDate = LocalDate.parse(createdAt, formatter);
+
+                    LocalDateTime startOfDay = createdDate.atStartOfDay();
+                    LocalDateTime endOfDay = createdDate.plusDays(1).atStartOfDay();
+
+                    predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createdAt"), startOfDay));
+                    predicates.add(criteriaBuilder.lessThan(root.get("createdAt"), endOfDay));
+
+                } catch (DateTimeParseException e) {
+                    throw new AppException(HttpStatus.BAD_REQUEST, "Định dạng ngày phải là dd-MM-yyyy", null);
+                }
+            }
+
+            Optional.ofNullable(paymentStatus)
+                    .ifPresent(s -> predicates.add(criteriaBuilder.equal(root.get("paymentStatus"), s)));
+
+            Optional.ofNullable(paymentMethod)
+                    .ifPresent(s -> predicates.add(criteriaBuilder.equal(root.get("paymentMethod"), s)));
+
+            if (predicates.isEmpty()) {
+                return null;
+            }
+
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
     }
 }
 
