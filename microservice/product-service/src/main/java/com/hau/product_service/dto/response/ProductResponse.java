@@ -23,6 +23,7 @@ public class ProductResponse {
     private Integer price;
     private Integer priority;
     private String description;
+    private Float averageRate;
     private boolean active;
 
     private List<String> imageUrls;

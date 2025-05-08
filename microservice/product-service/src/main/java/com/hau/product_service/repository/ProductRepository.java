@@ -21,10 +21,24 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
       AND (:#{#filter.priceFrom} IS NULL OR p.price >= :#{#filter.priceFrom})
       AND (:#{#filter.priceTo} IS NULL OR p.price <= :#{#filter.priceTo})
       AND (:categoryIds IS NULL OR c.id IN (:categoryIds))
+      AND (:#{#filter.averageRateFrom} IS NULL OR p.averageRate >= :#{#filter.averageRateFrom})
 """)
     Page<Product> findAllByFilter(@Param("filter") ProductFilter filter,
                                   @Param("categoryIds") List<Long> categoryIds,
                                   Pageable pageable);
 
-
+    @Query("""
+    SELECT DISTINCT p FROM Product p
+    JOIN p.categories c
+    WHERE (:#{#filter.title} IS NULL OR p.title ILIKE CONCAT('%', :#{#filter.title}, '%'))
+      AND (:#{#filter.author} IS NULL OR p.author ILIKE CONCAT('%', :#{#filter.author}, '%'))
+      AND (:#{#filter.priceFrom} IS NULL OR p.price >= :#{#filter.priceFrom})
+      AND (:#{#filter.priceTo} IS NULL OR p.price <= :#{#filter.priceTo})
+      AND (:categoryIds IS NULL OR c.id IN (:categoryIds))
+      AND (:#{#filter.averageRateFrom} IS NULL OR p.averageRate >= :#{#filter.averageRateFrom})
+      AND (p.active = :active OR :active IS NULL)
+""")
+    Page<Product> findAllByActiveStatus(@Param("filter") ProductFilter filter,
+                                      @Param("categoryIds") List<Long> categoryIds,
+                                      Pageable pageable, @Param("active") Boolean active);
 }

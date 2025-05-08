@@ -35,11 +35,6 @@ public class Product {
     String description;
     @Column(unique = true)
     String slug;
-    boolean active;
-    @CreationTimestamp
-    LocalDateTime createdAt;
-    @CreationTimestamp
-    LocalDateTime updatedAt;
 
     @ManyToMany(fetch = FetchType.LAZY) // Use LAZY fetching
     @JoinTable(
@@ -58,4 +53,14 @@ public class Product {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     List<Rate> rates;
+
+    private Float averageRate;
+
+    boolean active;
+    @CreationTimestamp
+    LocalDateTime createdAt;
+    @CreationTimestamp
+    LocalDateTime updatedAt;
+
+
 }

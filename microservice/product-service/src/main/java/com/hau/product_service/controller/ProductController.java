@@ -30,6 +30,14 @@ public class ProductController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("/active")
+    public ResponseEntity<ApiResponse<PageResult<ProductResponse>>> getAllProductByActive(@ModelAttribute ProductFilter filter,
+                                                                                          @RequestParam(defaultValue = "1", required = false) Integer pageIndex,
+                                                                                          @RequestParam(defaultValue = "10", required = false) Integer pageSize) {
+        ApiResponse<PageResult<ProductResponse>> response = productService.getAllProductByActive(filter, pageIndex, pageSize);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<ProductResponse>> createProduct(
             @RequestPart("product") @Valid ProductRequest request,
