@@ -48,10 +48,19 @@ public class ApplicationInitConfig {
             if (roleRepository.findByName("USER").isEmpty()) {
                 Role userRole = Role.builder()
                         .name("USER")
-                        .description("Quyền người dùng thông thường")
+                        .description("Quyền người dùng")
                         .build();
                 roleRepository.save(userRole);
                 log.info("Role USER đã được tạo.");
+            }
+
+            if (roleRepository.findByName("STAFF").isEmpty()) {
+                Role userRole = Role.builder()
+                        .name("STAFF")
+                        .description("Quyền nhân viên")
+                        .build();
+                roleRepository.save(userRole);
+                log.info("Role STAFF đã được tạo.");
             }
 
             if (userRepository.findByUsername(adminUsername).isEmpty()) {

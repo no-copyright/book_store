@@ -14,6 +14,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod; // Thêm import
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -24,26 +25,33 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map; // Sử dụng Map để lưu trữ đường dẫn theo HttpMethod
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PACKAGE, makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationFilter implements GlobalFilter, Ordered {
 
     IdentityService identityService;
     ObjectMapper objectMapper;
 
     @NonFinal
-    String[] publicEndpoints = {
-            "/identity/users/register",
-            "/identity/auth/.*",
-            "/notification/email",
-            "/file/media/download/.*",
-            "payment/vnpay_return"
-    };
+    Map<HttpMethod, List<String>> publicEndpointsByMethod = Map.of(
+            HttpMethod.POST, List.of(
+                    "/identity/users/register",
+                    "/identity/auth/.*",
+                    "/payment/vnpay_return",
+                    "/customer/.*"
+            ),
+            HttpMethod.GET, List.of(
+                    "/file/media/download/.*",
+                    "/blog/.*",
+                    "/category/.*",
+                    "/product/.*"
+            )
+    );
 
     @NonFinal
     @Value("${app.api-prefix}")
@@ -53,22 +61,24 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         log.info("Enter authentication filter....");
 
-        if (isPublicEndpoint(exchange.getRequest()))
+        if (isPublicEndpoint(exchange.getRequest())) {
             return chain.filter(exchange);
+        }
 
-        // Get token from the authorization header
         List<String> authHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION);
-        if (CollectionUtils.isEmpty(authHeader))
+        if (CollectionUtils.isEmpty(authHeader)) {
             return unauthenticated(exchange.getResponse());
+        }
 
         String token = authHeader.getFirst().replace("Bearer ", "");
         log.info("Token: {}", token);
 
         return identityService.introspect(token).flatMap(introspectResponse -> {
-            if (introspectResponse.getResult().isValid())
+            if (introspectResponse.getResult().isValid()) {
                 return chain.filter(exchange);
-            else
+            } else {
                 return unauthenticated(exchange.getResponse());
+            }
         }).onErrorResume(throwable -> unauthenticated(exchange.getResponse()));
     }
 
@@ -78,8 +88,16 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     }
 
     boolean isPublicEndpoint(ServerHttpRequest request) {
-        return Arrays.stream(publicEndpoints)
-                .anyMatch(s -> request.getURI().getPath().matches(apiPrefix + s));
+        HttpMethod method = request.getMethod();
+        String path = request.getURI().getPath();
+
+        List<String> publicPathsForMethod = publicEndpointsByMethod.get(method);
+        if (publicPathsForMethod == null) {
+            return false;
+        }
+
+        return publicPathsForMethod.stream()
+                .anyMatch(pattern -> path.matches(apiPrefix + pattern));
     }
 
     Mono<Void> unauthenticated(ServerHttpResponse response) {

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Data
@@ -23,6 +24,7 @@ public class OrderResponse {
     private Integer paymentStatus;
     private Integer totalPrice;
     private String note;
+    private LocalDateTime createdAt;
 
     private Set<OrderProductResponse> orderProducts;
 }

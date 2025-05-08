@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class CustomerCareController {
     private final CustomerCareService customerCareService;
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     @GetMapping
     public ResponseEntity<ApiResponse<PageResult<CustomerCareResponse>>> findAll(@RequestParam(required = false, defaultValue = "1") Integer pageIndex,
                                                                                  @RequestParam(required = false, defaultValue = "10") Integer pageSize,
@@ -26,6 +28,7 @@ public class CustomerCareController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<CustomerCareResponse>> findById(@PathVariable Long id) {
         ApiResponse<CustomerCareResponse> result = customerCareService.findById(id);
@@ -38,6 +41,7 @@ public class CustomerCareController {
         return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteContact(@PathVariable Long id) {
         ApiResponse<Void> result = customerCareService.deleteContact(id);

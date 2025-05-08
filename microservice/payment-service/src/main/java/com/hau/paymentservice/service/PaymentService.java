@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,8 +48,11 @@ public class PaymentService {
     private String secretKey;
 
     public String createPaymentUrl(Long orderId, HttpServletRequest request, String bankCode) {
+        Integer userId = Integer.valueOf(SecurityContextHolder.getContext().getAuthentication().getName());
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Đơn hàng không tồn tại", null));
+        if (!order.getUserId().equals(userId))
+            throw new AppException(HttpStatus.FORBIDDEN, "Đơn hàng không thuộc về bạn", null);
         if (order.getPaymentStatus() == 0)
             throw new AppException(HttpStatus.BAD_REQUEST, "Đơn hàng đã được thanh toán", null);
         if (!(order.getPaymentMethod() == 1))
