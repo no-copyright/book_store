@@ -5,8 +5,8 @@ server:
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/profile_db
-    username: postgres
-    password: postgres
+    username: root
+    password: 123456789
   jpa:
     hibernate:
       ddl-auto: update
