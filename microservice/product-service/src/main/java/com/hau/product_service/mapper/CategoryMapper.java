@@ -4,6 +4,7 @@ import com.hau.product_service.dto.request.CategoryRequest;
 import com.hau.product_service.dto.response.CategoryResponse;
 import com.hau.product_service.entity.Category;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")

@@ -21,9 +21,11 @@ public class ProductResponse {
     private Integer quantity;
     private Integer discount;
     private Integer price;
+    private Double discountPercent;
     private Integer priority;
     private String description;
     private Float averageRate;
+
     private boolean active;
 
     private List<String> imageUrls;

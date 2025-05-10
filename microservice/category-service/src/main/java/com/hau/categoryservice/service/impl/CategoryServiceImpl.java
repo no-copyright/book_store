@@ -33,7 +33,6 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryMapper categoryMapper;
     private final SlugService slugService;
     private final CategoryEventProducer categoryEventProducer;
-//    private final KafkaTemplate<String, CategoryEvent> kafkaTemplate;
 
 
     public ApiResponse<List<CategoryResponse>> getAll(String name, Boolean isAsc) {
@@ -96,6 +95,7 @@ public class CategoryServiceImpl implements CategoryService {
             categoryRepository.findById(request.getParentId())
                     .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy danh mục cha", null));
         }
+
         Category savedCategory = categoryRepository.save(category);
         String slug = slugService.generateUniqueSlug(savedCategory.getName(), savedCategory.getId());
         savedCategory.setSlug(slug);
@@ -108,8 +108,6 @@ public class CategoryServiceImpl implements CategoryService {
                 .data(response)
                 .build();
         categoryEventProducer.sendCategoryCreatedEvent(createdEvent);
-//        kafkaTemplate.send("category-event", createdEvent);
-//        log.info("Sent message to Kafka {}", createdEvent);
 
         return ApiResponse.<CategoryResponse>builder()
                 .status(HttpStatus.CREATED.value())
@@ -126,9 +124,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy danh mục", null));
 
         Category updatedCategory = categoryMapper.toCategoryUpdateFromRequest(request, category);
-        if(request.getPriority() == null) {
-            updatedCategory.setPriority(category.getPriority());
-        }
+
         Category savedCategory = categoryRepository.save(updatedCategory);
         CategoryResponse response = categoryMapper.toCategoryResponse(savedCategory);
 

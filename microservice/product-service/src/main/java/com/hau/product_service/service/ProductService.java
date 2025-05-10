@@ -169,7 +169,55 @@ public class ProductService {
                 .build();
     }
 
+    public ApiResponse<List<ProductResponse>> getTopTenProductByBestDiscountPercent() {
+        List<Product> products = productRepository.getTopTenBestDiscountProduct();
+        List<ProductResponse> responses = products.stream()
+                .map(product -> {
+                    ProductResponse res = productMapper.toProductWithImageResponse(product);
+                    res.setThumbnail(fileServiceUrl + product.getThumbnail());
 
+                    if (res.getImageUrls() != null) {
+                        res.setImageUrls(
+                                res.getImageUrls().stream()
+                                        .map(url -> fileServiceUrl + url)
+                                        .collect(Collectors.toList())
+                        );
+                    }
+
+                    return res;
+                }).toList();
+        return ApiResponse.<List<ProductResponse>>builder()
+                .status(HttpStatus.OK.value())
+                .message("Lấy danh sách sản phẩm thành công")
+                .result(responses)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    public ApiResponse<List<ProductResponse>> getTopTenProductByAverageRate() {
+        List<Product> products = productRepository.getTopTenBestAverageRateProduct();
+        List<ProductResponse> responses = products.stream()
+                .map(product -> {
+                    ProductResponse res = productMapper.toProductWithImageResponse(product);
+                    res.setThumbnail(fileServiceUrl + product.getThumbnail());
+
+                    if (res.getImageUrls() != null) {
+                        res.setImageUrls(
+                                res.getImageUrls().stream()
+                                        .map(url -> fileServiceUrl + url)
+                                        .collect(Collectors.toList())
+                        );
+                    }
+
+                    return res;
+                }).toList();
+        return ApiResponse.<List<ProductResponse>>builder()
+                .status(HttpStatus.OK.value())
+                .message("Lấy danh sách sản phẩm thành công")
+                .result(responses)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
 
     @Transactional // Ensure atomicity
     public ApiResponse<ProductResponse> createProduct(ProductRequest request, MultipartFile thumbnail, List<MultipartFile> images) {
@@ -187,7 +235,8 @@ public class ProductService {
         product.setActive(true);
         product.setCategories(categories);
 
-
+        product.setDiscountPercent(calculateProductDiscountPercent(product.getPrice(), product.getDiscount()));
+        product.setAverageRate(0.0f);
         String thumbnailUrl = fileUploadService.uploadFileAndGetUrl(thumbnail, "thumbnail");
         product.setThumbnail(thumbnailUrl);
 
@@ -249,6 +298,7 @@ public class ProductService {
             productImageService.createImageByProduct(product, images);
         }
 
+        existProduct.setDiscountPercent(calculateProductDiscountPercent(product.getPrice(), product.getDiscount()));
         existProduct.setSlug(slugService.generateUniqueSlug(product.getTitle(), id));
         existProduct.setCategories(categories);
         Product savedProduct = productRepository.save(existProduct);
@@ -348,5 +398,12 @@ public class ProductService {
         } else {
             log.warn("orderProducts không phải là List hoặc null");
         }
+    }
+
+    public Double calculateProductDiscountPercent(Integer price, Integer discount) {
+        if (price == null || discount == null || price <= 0) {
+            return 0.0;
+        }
+        return 100 - ((double) discount / price) * 100;
     }
 }

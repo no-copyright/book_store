@@ -1,6 +1,7 @@
 package com.hau.categoryservice.service.eventProducer;
 
 
+import com.hau.categoryservice.dto.response.CategoryResponse;
 import com.hau.event.dto.CategoryEvent; // Import DTO sự kiện
 
 import lombok.RequiredArgsConstructor;
@@ -16,12 +17,18 @@ import org.springframework.stereotype.Service;
 public class CategoryEventProducer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CategoryEventProducer.class);
-    private static final String TOPIC_CATEGORY_EVENTS = "category-event"; // Tên Topic Kafka
-
+//    private static final String TOPIC_CATEGORY_EVENTS = "category-event"; // Tên Topic Kafka
+    private static final String TOPIC_CATEGORY_BLOG_EVENT = "category-blog-event";
+    private static final String TOPIC_CATEGORY_PRODUCT_EVENT = "category-product-event";
     private final KafkaTemplate<String, CategoryEvent> kafkaTemplate;
 
     public void sendCategoryEvent(CategoryEvent event) {
-        kafkaTemplate.send(TOPIC_CATEGORY_EVENTS, event);
+        CategoryResponse response = (CategoryResponse) event.getData();
+        if(response.getType().equals("PRODUCT")){
+            kafkaTemplate.send(TOPIC_CATEGORY_PRODUCT_EVENT, event);
+        } else {
+            kafkaTemplate.send(TOPIC_CATEGORY_BLOG_EVENT, event);
+        }
     }
 
     public void sendCategoryCreatedEvent(CategoryEvent event) {

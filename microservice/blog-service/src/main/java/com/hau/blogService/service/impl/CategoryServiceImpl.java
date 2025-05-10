@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -21,10 +22,26 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
 
+    @Override
+    public ApiResponse<List<CategoryResponse>> getAllCategories() {
+        List<Category> categories = categoryRepository.findAll();
+        List<CategoryResponse> responses = categories.stream()
+                        .map(categoryMapper::toCategoryResponse)
+                        .toList();
+
+        return ApiResponse.<List<CategoryResponse>>builder()
+                .status(HttpStatus.OK.value())
+                .message("Lấy danh sách danh mục thành công")
+                .result(responses)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
     @Transactional
     @Override
     public void handleCategoryCreated(CategoryRequest request) {
         Category category = categoryMapper.toCategory(request);
+
         Category savedCategory = categoryRepository.save(category);
         CategoryResponse response = categoryMapper.toCategoryResponse(savedCategory);
 
@@ -43,6 +60,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy danh mục", null));
 
         Category updatedCategory = categoryMapper.toCategoryUpdateFromRequest(request, existCategory);
+
         Category savedCategory = categoryRepository.save(updatedCategory);
         CategoryResponse response = categoryMapper.toCategoryResponse(savedCategory);
 

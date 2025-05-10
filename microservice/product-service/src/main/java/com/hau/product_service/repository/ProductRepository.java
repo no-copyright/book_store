@@ -41,4 +41,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findAllByActiveStatus(@Param("filter") ProductFilter filter,
                                       @Param("categoryIds") List<Long> categoryIds,
                                       Pageable pageable, @Param("active") Boolean active);
+
+
+    @Query("SELECT p FROM Product p WHERE p.active = true ORDER BY p.discountPercent DESC LIMIT 10 ")
+    List<Product> getTopTenBestDiscountProduct();
+
+
+    @Query("SELECT p FROM Product p WHERE p.active = true ORDER BY p.averageRate DESC LIMIT 10")
+    List<Product> getTopTenBestAverageRateProduct();
 }

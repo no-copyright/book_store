@@ -12,6 +12,7 @@ import com.hau.product_service.mapper.RateMapper;
 import com.hau.product_service.repository.ProductRepository;
 import com.hau.product_service.repository.RateRepository;
 import com.hau.product_service.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -96,6 +97,7 @@ public class RateService {
                 .build();
     }
 
+    @Transactional
     public ApiResponse<RateResponse> createRate(RateRequest request) {
         Product product = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm", "id = " + request.getProductId()));
@@ -106,10 +108,11 @@ public class RateService {
 
         newRate.setProduct(product);
         newRate.setUser(user);
+        Rate savedRate = rateRepository.save(newRate);
         Float averageRate = calculateAverageRate(newRate.getProduct().getId());
         product.setAverageRate(averageRate);
         productRepository.save(product);
-        Rate savedRate = rateRepository.save(newRate);
+
         RateResponse rateResponse = rateMapper.toRateResponse(savedRate);
 
         return ApiResponse.<RateResponse>builder()
@@ -119,6 +122,7 @@ public class RateService {
                 .build();
     }
 
+    @Transactional
     public ApiResponse<RateResponse> removeRate(Long id) {
         Rate rate = rateRepository.findById(id)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy đánh giá", "id = " + id));
@@ -137,10 +141,6 @@ public class RateService {
 
     public Float calculateAverageRate(Long productId) {
         List<Rate> rates = rateRepository.findAllByProductId(productId);
-
-        if (rates.isEmpty()) {
-            return 0f;
-        }
 
         float totalRate = 0f;
         for (Rate rate : rates) {
