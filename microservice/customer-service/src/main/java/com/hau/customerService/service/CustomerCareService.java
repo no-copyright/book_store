@@ -8,7 +8,7 @@ import com.hau.customerService.entity.CustomerCare;
 import com.hau.customerService.exception.AppException;
 import com.hau.customerService.mapper.CustomerCareMapper;
 import com.hau.customerService.repository.CustomerCareRepository;
-import com.hau.identity_service.dto.response.ApiResponse;
+import com.hau.customerService.dto.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

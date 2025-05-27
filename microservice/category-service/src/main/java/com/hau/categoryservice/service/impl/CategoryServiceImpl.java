@@ -1,5 +1,7 @@
 package com.hau.categoryservice.service.impl;
 
+import com.github.javafaker.Faker;
+import com.hau.categoryservice.enums.CategoryType;
 import com.hau.event.dto.CategoryEvent;
 import com.hau.categoryservice.dto.request.CategoryRequest;
 import com.hau.categoryservice.dto.response.ApiResponse;
@@ -22,7 +24,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,7 +38,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryMapper categoryMapper;
     private final SlugService slugService;
     private final CategoryEventProducer categoryEventProducer;
-
+    private final Faker faker = new Faker(Locale.of("vi", "VN"));
 
     public ApiResponse<List<CategoryResponse>> getAll(String name, Boolean isAsc) {
         List<Category> categories;
@@ -162,6 +167,51 @@ public class CategoryServiceImpl implements CategoryService {
         return ApiResponse.<Void>builder()
                 .status(HttpStatus.OK.value())
                 .message("Xóa danh mục thành công")
+                .result(null)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @Override
+    public ApiResponse<String> seeding(Integer numberOfRecords) {
+        List<Category> savedCategories = new ArrayList<>();
+        Random rd = new Random();
+        String[] categoryTypes = {"BLOG", "PRODUCT"};
+
+        for (int i = 0; i < numberOfRecords; i++) {
+            String name = faker.book().title();
+            String type = categoryTypes[rd.nextInt(categoryTypes.length)];
+
+            Category category = new Category();
+            category.setName(name);
+            category.setType(CategoryType.valueOf(type));
+            category.setPriority(faker.number().numberBetween(1, 20));
+
+            if (!savedCategories.isEmpty() && rd.nextDouble() < 0.3) {
+                Category parent = savedCategories.get(rd.nextInt(savedCategories.size()));
+                category.setParentId(parent.getId());
+            } else {
+                category.setParentId(null); // Root category
+            }
+
+
+            // Generate slug (giả sử slugService nhận parentId)
+            category.setSlug(slugService.generateUniqueSlug(category.getName(), category.getParentId()));
+
+            // Save từng category (vì cần ID ngay để làm parent cho cái sau)
+            Category savedCategory = categoryRepository.save(category);
+            CategoryResponse response = categoryMapper.toCategoryResponse(savedCategory);
+            CategoryEvent createdEvent = CategoryEvent.builder()
+                    .type(CategoryEvent.TYPE_CREATED)
+                    .categoryId(savedCategory.getId())
+                    .data(response)
+                    .build();
+            categoryEventProducer.sendCategoryCreatedEvent(createdEvent);
+            savedCategories.add(category);
+        }
+        return ApiResponse.<String>builder()
+                .status(200)
+                .message("Tạo dữ liệu thành công")
                 .result(null)
                 .timestamp(LocalDateTime.now())
                 .build();

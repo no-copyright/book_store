@@ -4,7 +4,7 @@ import com.hau.customerService.dto.request.CustomerCareRequest;
 import com.hau.customerService.dto.response.CustomerCareResponse;
 import com.hau.customerService.dto.response.PageResult;
 import com.hau.customerService.service.CustomerCareService;
-import com.hau.identity_service.dto.response.ApiResponse;
+import com.hau.customerService.dto.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;

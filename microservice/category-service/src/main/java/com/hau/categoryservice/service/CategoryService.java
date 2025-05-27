@@ -13,4 +13,5 @@ public interface CategoryService {
     ApiResponse<CategoryResponse> create(CategoryRequest request);
     ApiResponse<CategoryResponse> update(Long id, CategoryRequest request);
     ApiResponse<Void> delete(Long id);
+    ApiResponse<String> seeding(Integer numberOfRecords);
 }
