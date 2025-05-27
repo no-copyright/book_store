@@ -64,4 +64,11 @@ public class CategoryController {
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+    @PostMapping ("/seeding/{numberOfRecords}")
+    public ResponseEntity<ApiResponse<String>> seeding(@PathVariable Integer numberOfRecords) {
+        ApiResponse<String> response = categoryService.seeding(numberOfRecords);
+        return new ResponseEntity<ApiResponse<String>>(response, HttpStatus.CREATED);
+    }
 }
