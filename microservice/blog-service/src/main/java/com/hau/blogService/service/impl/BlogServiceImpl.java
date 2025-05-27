@@ -5,7 +5,7 @@ import com.hau.blogService.dto.request.BlogRequest;
 import com.hau.blogService.dto.request.BlogfilterRequest;
 import com.hau.blogService.dto.response.ApiResponse;
 import com.hau.blogService.dto.response.BlogResponse;
-import com.hau.blogService.dto.response.PageResult;
+import com.hau.blogService.dto.response.PageResponse;
 import com.hau.blogService.entity.Blog;
 import com.hau.blogService.entity.Category;
 import com.hau.blogService.exception.AppException;
@@ -135,7 +135,7 @@ public class BlogServiceImpl implements BlogService {
     }
 
     @Override
-    public ApiResponse<PageResult<BlogResponse>> getAllBlogs(BlogfilterRequest filterRequest ,Integer pageIndex, Integer pageSize) {
+    public ApiResponse<PageResponse<BlogResponse>> getAllBlogs(BlogfilterRequest filterRequest ,Integer pageIndex, Integer pageSize) {
         if(pageIndex <= 0) {
             pageIndex = 0;
         } else {
@@ -170,20 +170,18 @@ public class BlogServiceImpl implements BlogService {
 
 
 
-        PageResult<BlogResponse> pageResult = new PageResult<>(
-                responses,
-                blogPage.getNumber() + 1,
-                blogPage.getSize(),
-                blogPage.getTotalPages(),
-                blogPage.getTotalElements(),
-                blogPage.hasNext(),
-                blogPage.hasPrevious()
-        );
+        PageResponse<BlogResponse> pageResponse = PageResponse.<BlogResponse>builder()
+                .data(responses)
+                .currentPage(blogPage.getNumber() + 1)
+                .pageSize(blogPage.getSize())
+                .totalPages(blogPage.getTotalPages())
+                .totalElements(blogPage.getTotalElements())
+                .build();
 
-        return ApiResponse.<PageResult<BlogResponse>>builder()
+        return ApiResponse.<PageResponse<BlogResponse>>builder()
                 .status(HttpStatus.OK.value())
                 .message("Lấy danh sách blog thành công")
-                .result(pageResult)
+                .result(pageResponse)
                 .timestamp(LocalDateTime.now())
                 .build();
     }

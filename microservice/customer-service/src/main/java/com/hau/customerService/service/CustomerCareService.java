@@ -3,7 +3,7 @@ package com.hau.customerService.service;
 import com.github.javafaker.Faker;
 import com.hau.customerService.dto.request.CustomerCareRequest;
 import com.hau.customerService.dto.response.CustomerCareResponse;
-import com.hau.customerService.dto.response.PageResult;
+import com.hau.customerService.dto.response.PageResponse;
 
 import com.hau.customerService.entity.CustomerCare;
 import com.hau.customerService.exception.AppException;
@@ -18,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -26,7 +27,7 @@ import java.util.List;
 public class CustomerCareService {
     private final CustomerCareRepository customerCareRepository;
     private final CustomerCareMapper customerCareMapper;
-    public ApiResponse<PageResult<CustomerCareResponse>> findAll(Integer pageIndex, Integer pageSize, String sortDir) {
+    public ApiResponse<PageResponse<CustomerCareResponse>> findAll(Integer pageIndex, Integer pageSize, String sortDir) {
         int page = (pageIndex == null || pageIndex <= 1) ? 0 : pageIndex - 1;
 
         Sort sort;
@@ -44,20 +45,19 @@ public class CustomerCareService {
                 .map(customerCareMapper::toCustomerCareResponse)
                 .toList();
 
-        PageResult<CustomerCareResponse> result = new PageResult<>(
-                responses,
-                customerCarePage.getNumber() + 1,
-                customerCarePage.getSize(),
-                customerCarePage.getTotalPages(),
-                customerCarePage.getTotalElements(),
-                customerCarePage.hasNext(),
-                customerCarePage.hasPrevious()
-        );
+        PageResponse<CustomerCareResponse> result = PageResponse.<CustomerCareResponse>builder()
+                .data(responses)
+                .currentPage(customerCarePage.getNumber() + 1)
+                .pageSize(customerCarePage.getSize())
+                .totalPages(customerCarePage.getTotalPages())
+                .totalElements(customerCarePage.getTotalElements())
+                .build();
 
-        return ApiResponse.<PageResult<CustomerCareResponse>>builder()
+        return ApiResponse.<PageResponse<CustomerCareResponse>>builder()
                 .status(HttpStatus.OK.value())
                 .message("Lấy danh sách liên hệ thành công")
                 .result(result)
+                .timestamp(LocalDateTime.now())
                 .build();
     }
 

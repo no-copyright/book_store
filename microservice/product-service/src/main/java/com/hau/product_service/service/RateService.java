@@ -2,7 +2,7 @@ package com.hau.product_service.service;
 
 import com.hau.product_service.dto.request.RateRequest;
 import com.hau.product_service.dto.response.ApiResponse;
-import com.hau.product_service.dto.response.PageResult;
+import com.hau.product_service.dto.response.PageResponse;
 import com.hau.product_service.dto.response.RateResponse;
 import com.hau.product_service.entity.Product;
 import com.hau.product_service.entity.Rate;
@@ -32,7 +32,7 @@ public class RateService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
 
-    public ApiResponse<PageResult<RateResponse>> getAllRate(Integer pageIndex, Integer pageSize) {
+    public ApiResponse<PageResponse<RateResponse>> getAllRate(Integer pageIndex, Integer pageSize) {
         int page = (pageIndex == null || pageIndex <= 1) ? 0 : pageIndex - 1;
         Pageable pageable = PageRequest.of(page, pageSize);
 
@@ -42,18 +42,16 @@ public class RateService {
                 .map(rateMapper::toRateResponse)
                 .toList();
 
-        PageResult<RateResponse> result = new PageResult<>(
-                rateResponses,
-                rates.getNumber() + 1,
-                rates.getSize(),
-                rates.getTotalPages(),
-                rates.getTotalElements(),
-                rates.hasNext(),
-                rates.hasPrevious()
-        );
+        PageResponse<RateResponse> result = PageResponse.<RateResponse>builder()
+                .data(rateResponses)
+                .currentPage(rates.getNumber() + 1)
+                .pageSize(rates.getSize())
+                .totalPages(rates.getTotalPages())
+                .totalElements(rates.getTotalElements())
+                .build();
 
 
-        return ApiResponse.<PageResult<RateResponse>>builder()
+        return ApiResponse.<PageResponse<RateResponse>>builder()
                 .status(HttpStatus.OK.value())
                 .message("Get all rates successfully")
                 .result(result)
@@ -70,7 +68,7 @@ public class RateService {
                 .build();
     }
 
-    public ApiResponse<PageResult<RateResponse>> getRateByProductId(Long productId, Integer pageIndex, Integer pageSize) {
+    public ApiResponse<PageResponse<RateResponse>> getRateByProductId(Long productId, Integer pageIndex, Integer pageSize) {
         int page = (pageIndex == null || pageIndex <= 1) ? 0 : pageIndex - 1;
         Pageable pageable = PageRequest.of(page, pageSize);
 
@@ -80,17 +78,15 @@ public class RateService {
                 .map(rateMapper::toRateResponse)
                 .toList();
 
-        PageResult<RateResponse> result = new PageResult<>(
-                rateResponses,
-                rates.getNumber() + 1,
-                rates.getSize(),
-                rates.getTotalPages(),
-                rates.getTotalElements(),
-                rates.hasNext(),
-                rates.hasPrevious()
-        );
+        PageResponse<RateResponse> result = PageResponse.<RateResponse>builder()
+                .data(rateResponses)
+                .currentPage(rates.getNumber() + 1)
+                .pageSize(rates.getSize())
+                .totalPages(rates.getTotalPages())
+                .totalElements(rates.getTotalElements())
+                .build();
 
-        return ApiResponse.<PageResult<RateResponse>>builder()
+        return ApiResponse.<PageResponse<RateResponse>>builder()
                 .status(HttpStatus.OK.value())
                 .message("Lấy đánh giá thành công")
                 .result(result)

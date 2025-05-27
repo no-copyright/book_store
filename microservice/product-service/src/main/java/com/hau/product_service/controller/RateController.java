@@ -2,7 +2,7 @@ package com.hau.product_service.controller;
 
 import com.hau.product_service.dto.request.RateRequest;
 import com.hau.product_service.dto.response.ApiResponse;
-import com.hau.product_service.dto.response.PageResult;
+import com.hau.product_service.dto.response.PageResponse;
 import com.hau.product_service.dto.response.RateResponse;
 import com.hau.product_service.service.RateService;
 import jakarta.validation.Valid;
@@ -18,9 +18,9 @@ public class RateController {
     private final RateService rateService;
 
     @GetMapping("/rate")
-    public ResponseEntity<ApiResponse<PageResult<RateResponse>>> getAllRate(@RequestParam(required = false, defaultValue = "1")  Integer pageIndex,
+    public ResponseEntity<ApiResponse<PageResponse<RateResponse>>> getAllRate(@RequestParam(required = false, defaultValue = "1")  Integer pageIndex,
                                                                             @RequestParam(required = false, defaultValue = "10") Integer pageSize) {
-        ApiResponse<PageResult<RateResponse>> response = rateService.getAllRate(pageIndex, pageSize);
+        ApiResponse<PageResponse<RateResponse>> response = rateService.getAllRate(pageIndex, pageSize);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -31,10 +31,10 @@ public class RateController {
     }
 
     @GetMapping("/rate/product/{productId}")
-    public ResponseEntity<ApiResponse<PageResult<RateResponse>>> getRateByProductId(@PathVariable Long productId,
+    public ResponseEntity<ApiResponse<PageResponse<RateResponse>>> getRateByProductId(@PathVariable Long productId,
                                                                                      @RequestParam(required = false, defaultValue = "1") Integer pageIndex,
                                                                                      @RequestParam(required = false, defaultValue = "10") Integer pageSize) {
-        ApiResponse<PageResult<RateResponse>> response = rateService.getRateByProductId(productId, pageIndex, pageSize);
+        ApiResponse<PageResponse<RateResponse>> response = rateService.getRateByProductId(productId, pageIndex, pageSize);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
