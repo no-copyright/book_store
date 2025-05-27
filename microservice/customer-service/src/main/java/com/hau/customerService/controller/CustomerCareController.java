@@ -42,6 +42,13 @@ public class CustomerCareController {
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+    @PostMapping("/seeding/{numberOfRecords}")
+    public ResponseEntity<ApiResponse<String>> seeding(@PathVariable Integer numberOfRecords) {
+        ApiResponse<String> response = customerCareService.seeding(numberOfRecords);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteContact(@PathVariable Long id) {
         ApiResponse<Void> result = customerCareService.deleteContact(id);

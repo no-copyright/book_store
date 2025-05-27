@@ -90,4 +90,11 @@ public class UserController {
         ApiResponse<UserResponse> userResponse = userService.deleteUser(userId);
         return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/seeding/{numberOfRecords}")
+    public ResponseEntity<ApiResponse<String>> seeding(@PathVariable int numberOfRecords) {
+        ApiResponse<String> response = userService.seeding(numberOfRecords);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }

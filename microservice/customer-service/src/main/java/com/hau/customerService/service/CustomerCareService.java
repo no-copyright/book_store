@@ -1,5 +1,6 @@
 package com.hau.customerService.service;
 
+import com.github.javafaker.Faker;
 import com.hau.customerService.dto.request.CustomerCareRequest;
 import com.hau.customerService.dto.response.CustomerCareResponse;
 import com.hau.customerService.dto.response.PageResult;
@@ -89,6 +90,24 @@ public class CustomerCareService {
         return ApiResponse.<Void>builder()
                 .status(HttpStatus.OK.value())
                 .message("Xóa liên hệ thành công")
+                .build();
+    }
+
+    public ApiResponse<String> seeding(Integer numberOfRecords) {
+        Faker faker = new com.github.javafaker.Faker();
+        for (int i = 0; i < numberOfRecords; i++) {
+            CustomerCare customerCare = new CustomerCare();
+            customerCare.setName(faker.name().fullName());
+            customerCare.setPhone(faker.phoneNumber().cellPhone());
+            customerCare.setEmail(faker.internet().emailAddress());
+            customerCare.setAddress(faker.address().fullAddress());
+            customerCare.setContent(faker.lorem().sentence());
+            customerCareRepository.save(customerCare);
+        }
+        return ApiResponse.<String>builder()
+                .status(HttpStatus.OK.value())
+                .message("Seeding thành công " + numberOfRecords + " bản ghi!")
+                .result("OK")
                 .build();
     }
 }
