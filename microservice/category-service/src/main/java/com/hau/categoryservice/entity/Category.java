@@ -1,10 +1,7 @@
 package com.hau.categoryservice.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.hau.categoryservice.enums.CategoryType;
+import jakarta.persistence.*;
 import lombok.Data;
 
 
@@ -20,4 +17,6 @@ public class Category {
     private String slug;
     private int priority;
     private Long parentId;
+    @Enumerated(EnumType.STRING)
+    private CategoryType type;
 }

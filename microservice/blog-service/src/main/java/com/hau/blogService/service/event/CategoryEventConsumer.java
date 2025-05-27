@@ -15,11 +15,10 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class CategoryEventConsumer {
 
-    private static final String TOPIC_CATEGORY_EVENTS = "category-event"; // Tên Topic Kafka
-    private final CategoryService categoryService;
+    private static final String TOPIC_CATEGORY_BLOG_EVENT = "category-blog-event";    private final CategoryService categoryService;
     private final ObjectMapper objectMapper; // Inject ObjectMapper
 
-    @KafkaListener(topics = TOPIC_CATEGORY_EVENTS)
+    @KafkaListener(topics = TOPIC_CATEGORY_BLOG_EVENT)
     public void listen(CategoryEvent event) {
         log.info("Received Category Event: {}", event);
 

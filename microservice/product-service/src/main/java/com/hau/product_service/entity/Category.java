@@ -19,8 +19,10 @@ public class Category {
     private String slug;
     private Long parentId;
 
+
     @ManyToMany(mappedBy = "categories", fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private List<Product> products = new ArrayList<>();
+
 }

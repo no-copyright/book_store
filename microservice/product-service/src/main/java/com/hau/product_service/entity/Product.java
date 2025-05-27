@@ -35,6 +35,7 @@ public class Product {
     String description;
     @Column(unique = true)
     String slug;
+    Double discountPercent;
 
     @ManyToMany(fetch = FetchType.LAZY) // Use LAZY fetching
     @JoinTable(

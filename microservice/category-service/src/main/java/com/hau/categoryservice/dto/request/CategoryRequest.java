@@ -1,5 +1,6 @@
 package com.hau.categoryservice.dto.request;
 
+import com.hau.categoryservice.enums.CategoryType;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -16,4 +17,5 @@ public class CategoryRequest {
     @Min(value = 1, message = "Mức độ ưu tiên phải lớn hơn 0")
     private Integer priority;
     private Long parentId;
+    private CategoryType type;
 }

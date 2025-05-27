@@ -17,6 +17,7 @@ public class CategoryResponse {
     private String name;
     private Long priority;
     private String slug;
+    private String type;
     private Long parentId;
     private List<CategoryResponse> children;
 }

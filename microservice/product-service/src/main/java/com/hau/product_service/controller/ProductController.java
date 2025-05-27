@@ -38,6 +38,19 @@ public class ProductController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("/top-discount")
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getTopTenBestDiscountProduct() {
+        ApiResponse<List<ProductResponse>> response = productService.getTopTenProductByBestDiscountPercent();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/top-rating")
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getTopTenBestAverageRateProduct() {
+        ApiResponse<List<ProductResponse>> response = productService.getTopTenProductByAverageRate();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
     @PostMapping
     public ResponseEntity<ApiResponse<ProductResponse>> createProduct(
             @RequestPart("product") @Valid ProductRequest request,

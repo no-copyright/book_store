@@ -12,9 +12,12 @@ import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface CategoryMapper {
+    @Mapping(source = "type", target = "type")
     CategoryResponse toCategoryResponse(Category category);
 
+    @Mapping(source = "type", target = "type")
     Category toCategory(CategoryRequest categoryRequest);
 
+    @Mapping(source = "type", target = "type")
     Category toCategoryUpdateFromRequest(CategoryRequest categoryRequest, @MappingTarget Category category);
 }
