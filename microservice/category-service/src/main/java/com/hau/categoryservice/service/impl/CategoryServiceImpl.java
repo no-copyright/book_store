@@ -161,7 +161,7 @@ public class CategoryServiceImpl implements CategoryService {
         CategoryEvent deletedEvent = CategoryEvent.builder()
                 .type(CategoryEvent.TYPE_DELETED)
                 .categoryId(id)
-                .data(null)
+                .data(categoryMapper.toCategoryResponse(category))
                 .build();
         categoryEventProducer.sendCategoryDeletedEvent(deletedEvent);
 
