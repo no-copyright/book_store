@@ -101,6 +101,10 @@ public class CategoryServiceImpl implements CategoryService {
                     .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy danh mục cha", null));
         }
 
+        if(request.getType() == null) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Type không được để trống", null);
+        }
+
         Category savedCategory = categoryRepository.save(category);
         String slug = slugService.generateUniqueSlug(savedCategory.getName(), savedCategory.getId());
         savedCategory.setSlug(slug);
