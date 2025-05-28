@@ -28,7 +28,7 @@ public class User {
     private String email;
     private String profileImage;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     private Set<Role> roles;
 
     @CreationTimestamp

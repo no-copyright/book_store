@@ -2,7 +2,7 @@ package com.hau.customerService.controller;
 
 import com.hau.customerService.dto.request.CustomerCareRequest;
 import com.hau.customerService.dto.response.CustomerCareResponse;
-import com.hau.customerService.dto.response.PageResult;
+import com.hau.customerService.dto.response.PageResponse;
 import com.hau.customerService.service.CustomerCareService;
 import com.hau.customerService.dto.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -21,10 +21,10 @@ public class CustomerCareController {
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     @GetMapping
-    public ResponseEntity<ApiResponse<PageResult<CustomerCareResponse>>> findAll(@RequestParam(required = false, defaultValue = "1") Integer pageIndex,
+    public ResponseEntity<ApiResponse<PageResponse<CustomerCareResponse>>> findAll(@RequestParam(required = false, defaultValue = "1") Integer pageIndex,
                                                                                  @RequestParam(required = false, defaultValue = "10") Integer pageSize,
                                                                                  @RequestParam(required = false) String sortDir) {
-        ApiResponse<PageResult<CustomerCareResponse>> result = customerCareService.findAll(pageIndex, pageSize, sortDir);
+        ApiResponse<PageResponse<CustomerCareResponse>> result = customerCareService.findAll(pageIndex, pageSize, sortDir);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
@@ -39,6 +39,13 @@ public class CustomerCareController {
     public ResponseEntity<ApiResponse<CustomerCareResponse>> createContact(@RequestBody @Valid CustomerCareRequest request) {
         ApiResponse<CustomerCareResponse> result = customerCareService.createContact(request);
         return new ResponseEntity<>(result, HttpStatus.CREATED);
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+    @PostMapping("/seeding/{numberOfRecords}")
+    public ResponseEntity<ApiResponse<String>> seeding(@PathVariable Integer numberOfRecords) {
+        ApiResponse<String> response = customerCareService.seeding(numberOfRecords);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")

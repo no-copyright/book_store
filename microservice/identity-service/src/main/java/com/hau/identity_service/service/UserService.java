@@ -238,4 +238,63 @@ public class UserService {
             return false;
         }
     }
+
+    public ApiResponse<String> seeding(int numberOfRecords) {
+        com.github.javafaker .Faker faker = new com.github.javafaker.Faker();
+        var userRole = roleRepository.findById("USER").orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Role USER not found", "USER"));
+        var staffRole = roleRepository.findById("STAFF").orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Role STAFF not found", "STAFF"));
+
+        int usersCreated = 0;
+        int staffUsersCreated = 0;
+
+        // Create users with only USER role (first half)
+        for (int i = 0; i < numberOfRecords / 2; i++) {
+            String username = faker.name().username() + "_user_" + i;
+            String email = username + "@example.com";
+            User user = User.builder()
+                    .username(username)
+                    .email(email)
+                    .password(passwordEncoder.encode("12345"))
+                    .profileImage(defaultImage)
+                    .createdAt(LocalDateTime.now())
+                    .roles(Set.of(userRole))
+                    .build();
+            try {
+                userRepository.save(user);
+                usersCreated++;
+            } catch (Exception e) {
+                log.warn("Could not save user {}: {}", username, e.getMessage());
+            }
+        }
+
+        // Create users with both USER and STAFF roles (second half)
+        for (int i = 0; i < numberOfRecords / 2; i++) {
+            String username = faker.name().username() + "_staff_" + i;
+            String email = username + "@example.com";
+            Set<com.hau.identity_service.entity.Role> roles = new HashSet<>();
+            roles.add(userRole);
+            roles.add(staffRole);
+
+            User user = User.builder()
+                    .username(username)
+                    .email(email)
+                    .password(passwordEncoder.encode("12345"))
+                    .profileImage(defaultImage)
+                    .createdAt(LocalDateTime.now())
+                    .roles(roles)
+                    .build();
+            try {
+                userRepository.save(user);
+                staffUsersCreated++;
+            } catch (Exception e) {
+                log.warn("Could not save user with staff role {}: {}", username, e.getMessage());
+            }
+        }
+
+        return ApiResponse.<String>builder()
+                .status(HttpStatus.OK.value())
+                .message("Seeding thành công " + usersCreated + " user và " + staffUsersCreated + " user có quyền staff!")
+                .result("OK")
+                .build();
+    }
 }

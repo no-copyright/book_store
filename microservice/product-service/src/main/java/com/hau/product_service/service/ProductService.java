@@ -8,7 +8,7 @@ import com.hau.product_service.converter.StringConverter;
 import com.hau.product_service.dto.request.ProductFilter;
 import com.hau.product_service.dto.request.ProductRequest;
 import com.hau.product_service.dto.response.ApiResponse;
-import com.hau.product_service.dto.response.PageResult;
+import com.hau.product_service.dto.response.PageResponse;
 import com.hau.product_service.dto.response.ProductResponse;
 import com.hau.product_service.entity.Product;
 import com.hau.product_service.exception.AppException;
@@ -48,19 +48,18 @@ public class ProductService {
     private final SlugService slugService;
     private final CategoryService categoryService;
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private final RateService rateService;
 
 
     @Value("${app.file.download-prefix}")
     private String fileServiceUrl;
 
-    public ApiResponse<PageResult<ProductResponse>> getAllProduct(ProductFilter filter, Integer pageIndex, Integer pageSize) {
+    public ApiResponse<PageResponse<ProductResponse>> getAllProduct(ProductFilter filter, Integer pageIndex, Integer pageSize) {
         int page = (pageIndex == null || pageIndex <= 1) ? 0 : pageIndex - 1;
 
         Sort sort;
         if (filter.getSortDir() != null && !filter.getSortDir().isEmpty()) {
             Sort.Direction direction = "asc".equalsIgnoreCase(filter.getSortDir()) ? Sort.Direction.ASC : Sort.Direction.DESC;
-            sort = Sort.by(direction, "price");
+            sort = Sort.by(direction, "discount");
         } else {
             sort = Sort.by(Sort.Direction.DESC, "createdAt");
         }
@@ -93,17 +92,15 @@ public class ProductService {
                     return res;
                 }).toList();
 
-        PageResult<ProductResponse> result = new PageResult<>(
-                responses,
-                productPage.getNumber() + 1,
-                productPage.getSize(),
-                productPage.getTotalPages(),
-                productPage.getTotalElements(),
-                productPage.hasNext(),
-                productPage.hasPrevious()
-        );
+        PageResponse<ProductResponse> result = PageResponse.<ProductResponse>builder()
+                .data(responses)
+                .currentPage(productPage.getNumber() + 1)
+                .pageSize(productPage.getSize())
+                .totalPages(productPage.getTotalPages())
+                .totalElements(productPage.getTotalElements())
+                .build();
 
-        return ApiResponse.<PageResult<ProductResponse>>builder()
+        return ApiResponse.<PageResponse<ProductResponse>>builder()
                 .status(HttpStatus.OK.value())
                 .message("Lấy danh sách sản phẩm thành công")
                 .result(result)
@@ -111,13 +108,13 @@ public class ProductService {
                 .build();
     }
 
-    public ApiResponse<PageResult<ProductResponse>> getAllProductByActive(ProductFilter filter, Integer pageIndex, Integer pageSize) {
+    public ApiResponse<PageResponse<ProductResponse>> getAllProductByActive(ProductFilter filter, Integer pageIndex, Integer pageSize) {
         int page = (pageIndex == null || pageIndex <= 1) ? 0 : pageIndex - 1;
 
         Sort sort;
         if (filter.getSortDir() != null && !filter.getSortDir().isEmpty()) {
             Sort.Direction direction = "asc".equalsIgnoreCase(filter.getSortDir()) ? Sort.Direction.ASC : Sort.Direction.DESC;
-            sort = Sort.by(direction, "price");
+            sort = Sort.by(direction, "discount");
         } else {
             sort = Sort.by(Sort.Direction.DESC, "createdAt");
         }
@@ -151,17 +148,15 @@ public class ProductService {
                     return res;
                 }).toList();
 
-        PageResult<ProductResponse> result = new PageResult<>(
-                responses,
-                productPage.getNumber() + 1,
-                productPage.getSize(),
-                productPage.getTotalPages(),
-                productPage.getTotalElements(),
-                productPage.hasNext(),
-                productPage.hasPrevious()
-        );
+        PageResponse<ProductResponse> result = PageResponse.<ProductResponse>builder()
+                .data(responses)
+                .currentPage(productPage.getNumber() + 1)
+                .pageSize(productPage.getSize())
+                .totalPages(productPage.getTotalPages())
+                .totalElements(productPage.getTotalElements())
+                .build();
 
-        return ApiResponse.<PageResult<ProductResponse>>builder()
+        return ApiResponse.<PageResponse<ProductResponse>>builder()
                 .status(HttpStatus.OK.value())
                 .message("Lấy danh sách sản phẩm đang hoạt động thành công")
                 .result(result)

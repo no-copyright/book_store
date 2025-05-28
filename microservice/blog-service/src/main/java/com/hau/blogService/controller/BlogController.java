@@ -4,7 +4,7 @@ import com.hau.blogService.dto.request.BlogRequest;
 import com.hau.blogService.dto.request.BlogfilterRequest;
 import com.hau.blogService.dto.response.ApiResponse;
 import com.hau.blogService.dto.response.BlogResponse;
-import com.hau.blogService.dto.response.PageResult;
+import com.hau.blogService.dto.response.PageResponse;
 import com.hau.blogService.service.BlogService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,13 +20,13 @@ public class BlogController {
     private final BlogService blogService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PageResult<BlogResponse>>> getAllBlogs(
+    public ResponseEntity<ApiResponse<PageResponse<BlogResponse>>> getAllBlogs(
             @ModelAttribute BlogfilterRequest filter,
             @RequestParam(defaultValue = "0", required = false) Integer pageIndex,
             @RequestParam(defaultValue = "10", required = false) Integer pageSize
     ) {
         // Pass pagination and filter object to the service
-        ApiResponse<PageResult<BlogResponse>> response = blogService.getAllBlogs(filter, pageIndex, pageSize);
+        ApiResponse<PageResponse<BlogResponse>> response = blogService.getAllBlogs(filter, pageIndex, pageSize);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

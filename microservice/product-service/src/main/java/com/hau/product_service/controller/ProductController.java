@@ -4,7 +4,7 @@ import com.hau.event.dto.NotificationEvent;
 import com.hau.product_service.dto.request.ProductFilter;
 import com.hau.product_service.dto.request.ProductRequest;
 import com.hau.product_service.dto.response.ApiResponse;
-import com.hau.product_service.dto.response.PageResult;
+import com.hau.product_service.dto.response.PageResponse;
 import com.hau.product_service.dto.response.ProductResponse;
 import com.hau.product_service.service.ProductService;
 import jakarta.validation.Valid;
@@ -23,18 +23,18 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<PageResult<ProductResponse>> >getAllProduct(@ModelAttribute ProductFilter filter,
+    public ResponseEntity<ApiResponse<PageResponse<ProductResponse>> >getAllProduct(@ModelAttribute ProductFilter filter,
                                                                   @RequestParam(defaultValue = "1", required = false) Integer pageIndex,
                                                                   @RequestParam(defaultValue = "10", required = false) Integer pageSize) {
-        ApiResponse<PageResult<ProductResponse>> response = productService.getAllProduct(filter, pageIndex, pageSize);
+        ApiResponse<PageResponse<ProductResponse>> response = productService.getAllProduct(filter, pageIndex, pageSize);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/active")
-    public ResponseEntity<ApiResponse<PageResult<ProductResponse>>> getAllProductByActive(@ModelAttribute ProductFilter filter,
+    public ResponseEntity<ApiResponse<PageResponse<ProductResponse>>> getAllProductByActive(@ModelAttribute ProductFilter filter,
                                                                                           @RequestParam(defaultValue = "1", required = false) Integer pageIndex,
                                                                                           @RequestParam(defaultValue = "10", required = false) Integer pageSize) {
-        ApiResponse<PageResult<ProductResponse>> response = productService.getAllProductByActive(filter, pageIndex, pageSize);
+        ApiResponse<PageResponse<ProductResponse>> response = productService.getAllProductByActive(filter, pageIndex, pageSize);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

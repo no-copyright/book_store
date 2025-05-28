@@ -39,7 +39,7 @@ app:
     url: http://localhost:8087
   file:
     download-prefix: http://localhost:8888/api/v1/file/media/download/
-    default-image: 6b1cb0f1-8bb4-4c15-a71e-937f588abca3_avatar.jpg
+    default-image: default-avatar
 
 admin:
   username: admin
