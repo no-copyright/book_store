@@ -3,6 +3,8 @@ package com.hau.product_service.dto.response;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -30,4 +32,5 @@ public class ProductResponse {
 
     private List<String> imageUrls;
     private List<Long> categories;
+    private LocalDateTime createdAt;
 }

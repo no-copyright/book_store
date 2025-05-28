@@ -48,7 +48,6 @@ public class ProductService {
     private final SlugService slugService;
     private final CategoryService categoryService;
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private final RateService rateService;
 
 
     @Value("${app.file.download-prefix}")
@@ -60,7 +59,7 @@ public class ProductService {
         Sort sort;
         if (filter.getSortDir() != null && !filter.getSortDir().isEmpty()) {
             Sort.Direction direction = "asc".equalsIgnoreCase(filter.getSortDir()) ? Sort.Direction.ASC : Sort.Direction.DESC;
-            sort = Sort.by(direction, "price");
+            sort = Sort.by(direction, "discount");
         } else {
             sort = Sort.by(Sort.Direction.DESC, "createdAt");
         }
