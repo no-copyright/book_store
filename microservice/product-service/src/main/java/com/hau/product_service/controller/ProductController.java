@@ -9,6 +9,7 @@ import com.hau.product_service.dto.response.ProductResponse;
 import com.hau.product_service.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.shaded.com.google.protobuf.Api;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -90,4 +91,9 @@ public class ProductController {
         productService.updateProductQuantity(notificationEvent);
     }
 
+    @PutMapping(value = "/active/{id}")
+    public ResponseEntity<ApiResponse<ProductResponse>> updateProductStatus(@PathVariable Long id, @RequestBody Boolean active) {
+        ApiResponse<ProductResponse> response = productService.updateProductStatus(id, active);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }
