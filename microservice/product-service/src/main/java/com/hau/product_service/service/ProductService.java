@@ -320,6 +320,33 @@ public class ProductService {
     }
 
 
+    @Transactional
+    public ApiResponse<ProductResponse> updateProductStatus(Long id, Boolean active) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại", null));
+
+        product.setActive(active);
+        productRepository.save(product);
+
+        ProductEvent productEvent = ProductEvent.builder()
+                .id(product.getId())
+                .discount(product.getDiscount())
+                .price(product.getPrice())
+                .quantity(product.getQuantity())
+                .title(product.getTitle())
+                .build();
+        kafkaTemplate.send("product-update-topic", productEvent);
+
+        ProductResponse response = productMapper.toProductResponse(product);
+        response.setThumbnail(fileServiceUrl + product.getThumbnail());
+
+        return ApiResponse.<ProductResponse>builder()
+                .status(HttpStatus.OK.value())
+                .message("Cập nhật trạng thái sản phẩm thành công")
+                .result(response)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
 
     public ApiResponse<ProductResponse> deleteProduct(Long id) {
         Product product =  productRepository.findById(id)
