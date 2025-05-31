@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -40,14 +41,14 @@ public class PaymentController {
     }
 
     @GetMapping("/vnpay/{orderId}")
-    public ResponseEntity<ApiResponse<String>> payWithVNPay(
+    public ResponseEntity<ApiResponse<Map<String, String>>> payWithVNPay(
             @PathVariable Long orderId, HttpServletRequest request,
             @RequestParam(value = "bankCode", required = false) String bankCode) {
         String paymentURL = paymentService.createPaymentUrl(orderId, request, bankCode);
-        return ResponseEntity.ok(ApiResponse.<String>builder()
+        return ResponseEntity.ok(ApiResponse.<Map<String, String>>builder()
                 .status(HttpStatus.OK.value())
-                .message("Tạo URL thanh toán thành công")
-                .result(paymentURL)
+                .message("Tạo URL thanh toán VNPay thành công")
+                .result(Map.of("payUrl", paymentURL))
                 .timestamp(LocalDateTime.now())
                 .build());
     }
