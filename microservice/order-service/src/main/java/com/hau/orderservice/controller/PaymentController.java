@@ -15,7 +15,6 @@ public class PaymentController {
 
     @KafkaListener(topics = "payment-create-topic")
     public void handlePaymentCreateEvent(PaymentCreateEvent paymentCreateEvent) {
-        log.info("Received PaymentCreateEvent: {}", paymentCreateEvent);
         orderService.updatePaymentStatus(paymentCreateEvent);
     }
 }

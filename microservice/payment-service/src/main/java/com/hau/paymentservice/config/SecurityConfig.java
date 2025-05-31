@@ -20,6 +20,7 @@ public class SecurityConfig {
 
     private final String[] publicPostEndpoint = {
         "/vnpay_return",
+        "/momo_return",
     };
 
     private final CustomJwtDecoder customJwtDecoder;
