@@ -23,14 +23,12 @@ public class NotificationController {
 
     @KafkaListener(topics = "order-create-notification-topic")
     public void listenOrderCreateTopic(NotificationEvent notificationEvent) {
-        log.info("Received notification event: {}", notificationEvent);
         notificationService.handleNotification(notificationEvent);
         notificationProcessingService.processOrderCreateNotification(notificationEvent);
     }
 
     @KafkaListener(topics = "order-updated-status-topic")
     public void listenOrderUpdatedStatusTopic(NotificationEvent notificationEvent) {
-        log.info("Received notification event update: {}", notificationEvent);
         notificationProcessingService.processOrderUpdatedStatusNotification(notificationEvent);
     }
 }

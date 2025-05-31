@@ -2,9 +2,12 @@ package com.hau.paymentservice.service;
 
 import com.hau.event.dto.PaymentCreateEvent;
 import com.hau.paymentservice.dto.ApiResponse;
+import com.hau.paymentservice.dto.CreateMomoRequest;
+import com.hau.paymentservice.dto.MomoResponse;
 import com.hau.paymentservice.entity.Order;
 import com.hau.paymentservice.entity.Payment;
 import com.hau.paymentservice.exception.AppException;
+import com.hau.paymentservice.repository.MomoClientApi;
 import com.hau.paymentservice.repository.OrderRepository;
 import com.hau.paymentservice.repository.PaymentRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,6 +37,7 @@ public class PaymentService {
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final MomoClientApi momoClientApi;
 
     @Value("${vnpay.payUrl}")
     private String payUrl;
@@ -47,12 +51,135 @@ public class PaymentService {
     @Value("${vnpay.secretKey}")
     private String secretKey;
 
-    public String createPaymentUrl(Long orderId, HttpServletRequest request, String bankCode) {
+    @Value("${momo.partnerCode}")
+    private String partnerCode;
+
+    @Value("${momo.accessKey}")
+    private String accessKey;
+
+    @Value("${momo.secretKey}")
+    private String momoSecretKey;
+
+    @Value("${momo.returnUrl}")
+    private String momoReturnUrl;
+
+    @Value("${momo.ipn-url}")
+    private String ipnUrl;
+
+    @Value("${momo.requestType}")
+    private String requestType;
+
+    public MomoResponse createMomoQR(Long orderId) {
         Integer userId = Integer.valueOf(SecurityContextHolder.getContext().getAuthentication().getName());
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Đơn hàng không tồn tại", null));
         if (!order.getUserId().equals(userId))
             throw new AppException(HttpStatus.FORBIDDEN, "Đơn hàng không thuộc về bạn", null);
+        if (order.getPaymentStatus() == 0)
+            throw new AppException(HttpStatus.BAD_REQUEST, "Đơn hàng đã được thanh toán", null);
+        if (!(order.getPaymentMethod() == 2))
+            throw new AppException(HttpStatus.BAD_REQUEST, "Đơn hàng không hỗ trợ phương thức thanh toán này", null);
+
+        String requestId = UUID.randomUUID().toString();
+        String amount = order.getTotalPrice().toString();
+        String orderInfo = "Thanh toan don hang: " + orderId;
+        String orderIdCustom = orderId + "_" + UUID.randomUUID();
+        String extraData = "";
+        String lang = "vi";
+        try {
+            String rawSignature = "accessKey=" + accessKey
+                    + "&amount=" + amount
+                    + "&extraData=" + extraData
+                    + "&ipnUrl=" + ipnUrl
+                    + "&orderId=" + orderIdCustom
+                    + "&orderInfo=" + orderInfo
+                    + "&partnerCode=" + partnerCode
+                    + "&redirectUrl=" + momoReturnUrl
+                    + "&requestId=" + requestId
+                    + "&requestType=" + requestType;
+
+            String signature = hmacSHA256(rawSignature, momoSecretKey);
+
+            CreateMomoRequest createMomoRequest = CreateMomoRequest.builder()
+                    .partnerCode(partnerCode)
+                    .requestType(requestType)
+                    .ipnUrl(ipnUrl)
+                    .redirectUrl(momoReturnUrl)
+                    .orderId(orderIdCustom)
+                    .amount(amount)
+                    .orderInfo(orderInfo)
+                    .requestId(requestId)
+                    .extraData(extraData)
+                    .signature(signature)
+                    .lang(lang)
+                    .build();
+            return momoClientApi.createMomoQR(createMomoRequest);
+        } catch (Exception e) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Lỗi tạo chữ ký MoMo", e.getMessage());
+        }
+    }
+
+    @Transactional
+    public void processMomoReturn(HttpServletRequest request) {
+        String orderIdRequest = request.getParameter("orderId").split("_")[0];
+        Order order = orderRepository.findById(Long.valueOf(orderIdRequest))
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Đơn hàng không tồn tại", null));
+        if (request.getParameter("resultCode").equals("0")) {
+            // Giao dịch thành công
+            order.setPaymentStatus(0);
+            orderRepository.save(order);
+
+            Payment payment = Payment.builder()
+                    .id("MMP" + request.getParameter("transId"))
+                    .amount(Integer.parseInt(request.getParameter("amount")))
+                    .orderInfo(request.getParameter("orderInfo"))
+                    .paymentDate(request.getParameter("responseTime"))
+                    .paymentStatus("0" + request.getParameter("resultCode"))
+                    .orderId(order.getId())
+                    .paymentMethod(request.getParameter("payType"))
+                    .build();
+
+            paymentRepository.save(payment);
+            PaymentCreateEvent paymentCreateEvent = PaymentCreateEvent.builder()
+                    .orderId(order.getId())
+                    .paymentStatus(0)
+                    .build();
+            kafkaTemplate.send("payment-create-topic", paymentCreateEvent);
+        } else {
+            // Giao dịch thất bại
+            order.setPaymentStatus(3);
+            orderRepository.save(order);
+            PaymentCreateEvent paymentCreateEvent = PaymentCreateEvent.builder()
+                    .orderId(order.getId())
+                    .paymentStatus(3)
+                    .build();
+            kafkaTemplate.send("payment-create-topic", paymentCreateEvent);
+        }
+    }
+
+
+
+    private static String hmacSHA256(String data, String key) throws Exception {
+        Mac mac = Mac.getInstance("HmacSHA256");
+        SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        mac.init(secretKey);
+        byte[] hashBytes = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+        StringBuilder hexString = new StringBuilder();
+        for (byte b : hashBytes) {
+            String hex = Integer.toHexString(0xff & b);
+            if (hex.length() == 1) hexString.append('0');
+            hexString.append(hex);
+        }
+        return hexString.toString();
+    }
+
+    public String createPaymentUrl(Long orderId, HttpServletRequest request, String bankCode) {
+        Integer userId = Integer.valueOf(SecurityContextHolder.getContext().getAuthentication().getName());
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Đơn hàng không tồn tại", null));
+        if (!Objects.equals(order.getUserId(), userId)) {
+            throw new AppException(HttpStatus.FORBIDDEN, "Đơn hàng không thuộc về bạn", null);
+        }
         if (order.getPaymentStatus() == 0)
             throw new AppException(HttpStatus.BAD_REQUEST, "Đơn hàng đã được thanh toán", null);
         if (!(order.getPaymentMethod() == 1))
@@ -73,7 +200,7 @@ public class PaymentService {
             vnp_Params.put("vnp_BankCode", bankCode);
         }
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
-        vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + vnp_TxnRef);
+        vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang: " + vnp_TxnRef);
         vnp_Params.put("vnp_OrderType", "other");
         vnp_Params.put("vnp_Locale", "vn");
         vnp_Params.put("vnp_ReturnUrl", returnUrl);
@@ -118,12 +245,8 @@ public class PaymentService {
         return payUrl + "?" + queryUrl;
     }
 
-
     @Transactional
     public void processVnPayReturn(HttpServletRequest request) {
-//        if (paymentRepository.existsById(request.getParameter("vnp_BankTranNo"))) {
-//            throw new AppException(HttpStatus.CONFLICT, "Giao dịch thanh toán này đã được ghi nhận trước đó.", null);
-//        }
         try {
             // 1. Kiểm tra chữ ký
             Map<String, String> fields = new HashMap<>();
@@ -184,7 +307,6 @@ public class PaymentService {
                         .paymentStatus(0)
                         .build();
                 kafkaTemplate.send("payment-create-topic", paymentCreateEvent);
-                log.info("Payment created 00: {}", paymentCreateEvent);
                 ApiResponse.<String>builder()
                         .status(HttpStatus.OK.value())
                         .message("Thanh toán thành công")
@@ -199,7 +321,6 @@ public class PaymentService {
                         .paymentStatus(3)
                         .build();
                 kafkaTemplate.send("payment-create-topic", paymentCreateEvent);
-                log.info("Payment created 03: {}", paymentCreateEvent);
                 ApiResponse.<String>builder()
                         .status(HttpStatus.BAD_REQUEST.value())
                         .message("Thanh toán thất bại")
@@ -234,7 +355,6 @@ public class PaymentService {
 
     public String hmacSHA512(final String key, final String data) {
         try {
-
             if (key == null || data == null) {
                 throw new NullPointerException();
             }
