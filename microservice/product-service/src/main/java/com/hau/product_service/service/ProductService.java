@@ -30,10 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -268,6 +265,65 @@ public class ProductService {
     }
 
 
+//    @Transactional // Ensure atomicity
+//    public ApiResponse<ProductResponse> createProduct(ProductRequest request) throws IOException {
+//        MultipartFile thumbnail = FileUtils.convertPathToMultipartFile(request.getThumbnail());
+//        List<MultipartFile> images = new ArrayList<>();
+//        if(request.getImages() != null) {
+//            images = FileUtils.convertPathsToMultipartFiles(request.getImages());
+//        }
+//
+//        if(!thumbnail.getResource().isFile()) {
+//            throw new AppException(HttpStatus.BAD_REQUEST, "Không đúng định dạng file, hoặc đường dẫn", null);
+//        }
+//
+////        if (images.isEmpty()) {
+////            throw new AppException(HttpStatus.BAD_REQUEST, "Danh sách ảnh sản phẩm không được để trống", null);
+////        }
+//
+//        List<Category> categories = categoryService.handleCategoryFromProduct(request.getCategoryIds());
+//
+//        Product product = productMapper.toProduct(request);
+//        product.setActive(true);
+//        product.setCategories(categories);
+//
+//        product.setDiscountPercent(calculateProductDiscountPercent(product.getPrice(), product.getDiscount()));
+//        product.setAverageRate(0.0f);
+//        String thumbnailUrl = fileUploadService.uploadFileAndGetUrl(thumbnail, "thumbnail");
+//        product.setThumbnail(thumbnailUrl);
+//
+//        product.setSlug(StringConverter.toSlug(product.getTitle()));
+//
+//        Product savedProduct = productRepository.save(product);
+//        Long productId = savedProduct.getId();
+//
+//        String uniqueSlug = slugService.generateUniqueSlug(savedProduct.getTitle(), productId);
+//        savedProduct.setSlug(uniqueSlug);
+//
+//        productImageService.createImageByProduct(savedProduct, images);
+//
+//        savedProduct.setProductImage(null);
+//        savedProduct = productRepository.save(savedProduct);
+//
+//        ProductEvent productEvent = ProductEvent.builder()
+//                .id(savedProduct.getId())
+//                .discount(savedProduct.getDiscount())
+//                .price(savedProduct.getPrice())
+//                .quantity(savedProduct.getQuantity())
+//                .title(savedProduct.getTitle())
+//                .build();
+//        kafkaTemplate.send("product-create-topic", productEvent);
+//        ProductResponse productResponse = productMapper.toProductResponse(savedProduct);
+//        productResponse.setThumbnail(fileServiceUrl + savedProduct.getThumbnail());
+//
+//        return ApiResponse.<ProductResponse>builder()
+//                .status(HttpStatus.CREATED.value())
+//                .message("Thêm sản phẩm thành công")
+//                .result(productResponse)
+//                .timestamp(LocalDateTime.now())
+//                .build();
+//    }
+
     // Modified to handle thumbnail and image updates
     @Transactional
     public ApiResponse<ProductResponse> updateProduct(ProductRequest request, Long id, MultipartFile thumbnail, List<MultipartFile> images) {
@@ -318,6 +374,64 @@ public class ProductService {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
+
+
+//        @Transactional
+//        public ApiResponse<ProductResponse> updateProduct(Long id, ProductRequest request) throws IOException {
+//        Product existProduct = productRepository.findById(id)
+//                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại", null));
+//
+//        Product product = productMapper.updateProductFromRequest(request, existProduct);
+//
+//        List<Category> categories = categoryService.handleCategoryFromProduct(request.getCategoryIds());
+//
+//        if (request.getActive() != null) {
+//            existProduct.setActive(request.getActive());
+//        }
+//
+//        MultipartFile thumbnail = FileUtils.convertPathToMultipartFile(request.getThumbnail());
+//        List<MultipartFile> images = new ArrayList<>();
+//
+//        if(request.getImages() != null) {
+//            images = FileUtils.convertPathsToMultipartFiles(request.getImages());
+//        }
+//
+//        if (!thumbnail.isEmpty()) {
+//            fileServiceClientRepository.deleteFile(existProduct.getThumbnail());
+//            String newThumbnailUrl = fileUploadService.uploadFileAndGetUrl(thumbnail, "new thumbnail");
+//            existProduct.setThumbnail(newThumbnailUrl);
+//        }
+//
+//        if (!CollectionUtils.isEmpty(images)) {
+//            productImageService.deleteAllByProductId(id);
+//            productImageService.createImageByProduct(product, images);
+//        }
+//
+//        existProduct.setDiscountPercent(calculateProductDiscountPercent(product.getPrice(), product.getDiscount()));
+//        existProduct.setSlug(slugService.generateUniqueSlug(product.getTitle(), id));
+//        existProduct.setCategories(categories);
+//        Product savedProduct = productRepository.save(existProduct);
+//
+//        ProductEvent productEvent = ProductEvent.builder()
+//                .id(savedProduct.getId())
+//                .discount(savedProduct.getDiscount())
+//                .price(savedProduct.getPrice())
+//                .quantity(savedProduct.getQuantity())
+//                .title(savedProduct.getTitle())
+//                .build();
+//        kafkaTemplate.send("product-update-topic", productEvent);
+//
+//        ProductResponse response = productMapper.toProductResponse(savedProduct);
+//        response.setThumbnail(savedProduct.getThumbnail());
+//
+//
+//        return ApiResponse.<ProductResponse>builder()
+//                .status(HttpStatus.OK.value())
+//                .message("Cập nhật sản phẩm thành công")
+//                .result(response)
+//                .timestamp(LocalDateTime.now())
+//                .build();
+//    }
 
 
     @Transactional
