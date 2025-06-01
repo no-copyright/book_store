@@ -1,0 +1,104 @@
+name: Build and Push Microservices
+
+on:
+  push:
+    branches: [ "main" ] # Chạy khi push lên nhánh main
+  workflow_dispatch: # Cho phép chạy thủ công
+
+env:
+
+  DOCKER_REGISTRY: docker.io
+  DOCKER_IMAGE_PREFIX: your_dockerhub_username
+
+jobs:
+  build_and_push_services:
+    name: Build ${{ matrix.service-name }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # Native services
+          - service-name: blog-service
+            service-path: ./blog-service
+            dockerfile-path: ./blog-service/Dockerfile
+            is-native: true
+          - service-name: cart-service
+            service-path: ./cart-service
+            dockerfile-path: ./cart-service/Dockerfile
+            is-native: true
+          - service-name: category-service
+            service-path: ./category-service
+            dockerfile-path: ./category-service/Dockerfile
+            is-native: true
+          - service-name: customer-service
+            service-path: ./customer-service
+            dockerfile-path: ./customer-service/Dockerfile
+            is-native: true
+          - service-name: file-service
+            service-path: ./file-service
+            dockerfile-path: ./file-service/Dockerfile
+            is-native: true
+          - service-name: identity-service
+            service-path: ./identity-service
+            dockerfile-path: ./identity-service/Dockerfile
+            is-native: true
+          - service-name: notification-service
+            service-path: ./notification-service
+            dockerfile-path: ./notification-service/Dockerfile
+            is-native: true
+          - service-name: order-service
+            service-path: ./order-service
+            dockerfile-path: ./order-service/Dockerfile
+            is-native: true
+          - service-name: payment-service
+            service-path: ./payment-service
+            dockerfile-path: ./payment-service/Dockerfile
+            is-native: true
+          - service-name: product-service
+            service-path: ./product-service
+            dockerfile-path: ./product-service/Dockerfile
+            is-native: true
+          - service-name: profile-service
+            service-path: ./profile-service
+            dockerfile-path: ./profile-service/Dockerfile
+            is-native: true
+          # JVM service (API Gateway)
+          - service-name: api-gateway
+            service-path: ./api-gateway
+            dockerfile-path: ./api-gateway/Dockerfile
+            is-native: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        if: matrix.is-native == true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_PREFIX }}/${{ matrix.service-name }}
+          tags: |
+            type=sha # Tag với commit SHA ngắn
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }} # Tag là latest nếu là nhánh main
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.service-path }}
+          file: ${{ matrix.dockerfile-path }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

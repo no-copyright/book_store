@@ -50,15 +50,12 @@ public class UserService {
     @Value("${app.file.download-prefix}")
     private String fileDownloadPrefix;
 
-    @Value("${app.file.default-image}")
-    private String defaultImage;
 
     public ApiResponse<UserResponse> createUser(UserCreateRequest userCreateRequest) {
         User user = userMapper.toUser(userCreateRequest);
         var roles = roleRepository.findAllById(Set.of("USER"));
         user.setRoles(new HashSet<>(roles));
         user.setPassword(passwordEncoder.encode(userCreateRequest.getPassword()));
-        user.setProfileImage(defaultImage);
         try {
             userRepository.save(user);
             UserCreateEvent userCreateEvent = UserCreateEvent.builder()
@@ -255,7 +252,6 @@ public class UserService {
                     .username(username)
                     .email(email)
                     .password(passwordEncoder.encode("12345"))
-                    .profileImage(defaultImage)
                     .createdAt(LocalDateTime.now())
                     .roles(Set.of(userRole))
                     .build();
@@ -279,7 +275,6 @@ public class UserService {
                     .username(username)
                     .email(email)
                     .password(passwordEncoder.encode("12345"))
-                    .profileImage(defaultImage)
                     .createdAt(LocalDateTime.now())
                     .roles(roles)
                     .build();

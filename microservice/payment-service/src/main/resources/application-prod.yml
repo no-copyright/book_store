@@ -1,0 +1,45 @@
+server:
+  port: ${SERVER_PORT:8089}
+  servlet:
+    context-path: /payment
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres_db:5432/payment_db_prod}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDLAUTO:update}
+    show-sql: ${SPRING_JPA_SHOWSQL:false}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: payment-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+
+vnpay:
+  payUrl: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
+  returnUrl: ${VNPAY_RETURNURL:http://payment-service:8089/payment/vnpay_return}
+  tmnCode: ${VNPAY_TMNCODE}
+  secretKey: ${VNPAY_SECRETKEY}
+
+momo:
+  partnerCode: "MOMOBKUN20180529"
+  returnUrl: ${MOMO_RETURNURL:http://payment-service:8089/payment/momo_return}
+  endpoint: "https://test-payment.momo.vn/v2/gateway/api/"
+  ipn-url: ${MOMO_IPNURL:http://payment-service:8089/payment/momo_return}
+  accessKey: "klm05TvNBzhg7h7j"
+  secretKey: "at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa"
+  requestType: "payWithMethod"

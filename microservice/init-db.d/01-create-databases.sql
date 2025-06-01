@@ -1,0 +1,9 @@
+CREATE DATABASE blog_db_prod;
+CREATE DATABASE cart_db_prod;
+CREATE DATABASE category_db_prod;
+CREATE DATABASE customer_db_prod;
+CREATE DATABASE identity_db_prod;
+CREATE DATABASE order_db_prod;
+CREATE DATABASE payment_db_prod;
+CREATE DATABASE product_db_prod;
+CREATE DATABASE profile_db_prod;
