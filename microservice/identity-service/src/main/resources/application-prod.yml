@@ -1,0 +1,47 @@
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /identity
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres_db:5432/identity_db_prod}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDLAUTO:update}
+    show-sql: ${SPRING_JPA_SHOWSQL:false}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+jwt:
+  signerKey: ${JWT_SIGNERKEY:qxNOdgKfw1UmyuQ68SKM+tmEVoeAUqgvr1/eg50ufWkQTizklguIDWNP3oOGv8bS}
+  expirationMinutes: 1440
+  expirationRefreshMinutes: 7200
+  issuer: identity-service
+  passwordResetTokenExpiryMinutes: 15
+  otpExpiryMinutes: 5
+  otpRequestCooldownMinutes: 5
+
+app:
+  cart-service:
+    url: ${APP_CART_SERVICE_URL:http://cart-service:8083}
+  file-service:
+    url: ${APP_FILE_SERVICE_URL:http://file-service:8087}
+  file:
+    download-prefix: ${APP_FILE_DOWNLOAD_PREFIX:http://api-gateway:8888/api/v1/file/media/download/}
+
+admin:
+  username: admin
+  password: ${ADMIN_PASSWORD:admin}
+  role: ADMIN

@@ -1,0 +1,80 @@
+server:
+  port: ${SERVER_PORT:8888}
+
+app:
+  api-prefix: ${APP_API_PREFIX:/api/v1}
+  identity-service:
+    url: ${APP_IDENTITY_SERVICE_URL:http://identity-service:8080/identity}
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: identity_service
+          uri: http://identity-service:8080
+          predicates:
+            - Path=${app.api-prefix}/identity/**
+          filters:
+            - StripPrefix=2
+        - id: profile_service
+          uri: http://profile-service:8081
+          predicates:
+            - Path=${app.api-prefix}/profile/**
+          filters:
+            - StripPrefix=2
+        - id: product_service
+          uri: http://product-service:8082
+          predicates:
+            - Path=${app.api-prefix}/product/**
+          filters:
+            - StripPrefix=2
+        - id: cart_service
+          uri: http://cart-service:8083
+          predicates:
+            - Path=${app.api-prefix}/cart/**
+          filters:
+            - StripPrefix=2
+        - id: category_service
+          uri: http://category-service:8084
+          predicates:
+            - Path=${app.api-prefix}/category/**
+          filters:
+            - StripPrefix=2
+        - id: blog_service
+          uri: http://blog-service:8085
+          predicates:
+            - Path=${app.api-prefix}/blog/**
+          filters:
+            - StripPrefix=2
+        - id: customer_service
+          uri: http://customer-service:8086
+          predicates:
+            - Path=${app.api-prefix}/customer/**
+          filters:
+            - StripPrefix=2
+        - id: file_service
+          uri: http://file-service:8087
+          predicates:
+            - Path=${app.api-prefix}/file/**
+          filters:
+            - StripPrefix=2
+        - id: notification_service
+          uri: http://notification-service:8088
+          predicates:
+            - Path=${app.api-prefix}/notification/**
+          filters:
+            - StripPrefix=2
+        - id: payment_service
+          uri: http://payment-service:8089
+          predicates:
+            - Path=${app.api-prefix}/payment/**
+          filters:
+            - StripPrefix=2
+        - id: order_service
+          uri: http://order-service:8090
+          predicates:
+            - Path=${app.api-prefix}/order/**
+          filters:
+            - StripPrefix=2

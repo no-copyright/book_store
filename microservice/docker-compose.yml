@@ -1,0 +1,328 @@
+version: '3.8'
+
+services:
+  postgres_db:
+    image: postgres:15
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME:postgres}
+      POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:postgres}
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_shared_data:/var/lib/postgresql/data
+      - ./init-db.d:/docker-entrypoint-initdb.d
+    networks:
+      - my_network
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DB_MONGO_ROOT_USER:root}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_MONGO_ROOT_PASS:root}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_db_data:/data/db
+    networks:
+      - my_network
+
+  # Kafka (và Zookeeper nếu bạn không dùng KRaft mode của Kafka)
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.2
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - my_network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.2
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092" # Port cho client bên trong Docker network
+      - "9094:9094" # Port cho client bên ngoài Docker network (ví dụ: máy host của bạn)
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    networks:
+      - my_network
+
+  # Microservices
+  blog-service:
+    build:
+      context: ./blog-service
+      dockerfile: Dockerfile
+    container_name: blog-service
+    depends_on:
+      - postgres_db
+      - kafka
+    ports:
+      - "8085:8085"
+    environment:
+      SERVER_PORT: 8085
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/blog_db_prod
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:postgres}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:postgres}
+      SPRING_JPA_HIBERNATE_DDLAUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      APP_FILE_SERVICE_URL: http://file-service:8087
+      APP_FILE_DOWNLOAD_PREFIX: http://api-gateway:8888/api/v1/file/media/download/
+    networks:
+      - my_network
+
+  cart-service:
+    build:
+      context: ./cart-service
+      dockerfile: Dockerfile
+    container_name: cart-service
+    depends_on:
+      - postgres_db
+      - kafka
+    ports:
+      - "8083:8083"
+    environment:
+      SERVER_PORT: 8083
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/cart_db_prod
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:postgres}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:postgres}
+      SPRING_JPA_HIBERNATE_DDLAUTO: update
+    networks:
+      - my_network
+
+  category-service:
+    build:
+      context: ./category-service
+      dockerfile: Dockerfile
+    container_name: category-service
+    depends_on:
+      - postgres_db
+      - kafka
+    ports:
+      - "8084:8084"
+    environment:
+      SERVER_PORT: 8084
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/category_db_prod
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:postgres}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:postgres}
+      SPRING_JPA_HIBERNATE_DDLAUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    networks:
+      - my_network
+
+  customer-service:
+    build:
+      context: ./customer-service
+      dockerfile: Dockerfile
+    container_name: customer-service
+    depends_on:
+      - postgres_db
+      - kafka
+    ports:
+      - "8086:8086"
+    environment:
+      SERVER_PORT: 8086
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/customer_db_prod
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:postgres}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:postgres}
+      SPRING_JPA_HIBERNATE_DDLAUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    networks:
+      - my_network
+
+  file-service:
+    build:
+      context: ./file-service
+      dockerfile: Dockerfile
+    container_name: file-service
+    depends_on:
+      - mongodb
+    ports:
+      - "8087:8087"
+    environment:
+      SERVER_PORT: 8087
+      SPRING_DATA_MONGODB_URI: mongodb://${DB_MONGO_ROOT_USER:root}:${DB_MONGO_ROOT_PASS:root}@mongodb:27017/file_db_prod?authSource=admin
+      APP_FILE_STORAGE_DIR: /uploads
+    volumes:
+      - file_service_uploads:/uploads
+    networks:
+      - my_network
+
+  identity-service:
+    build:
+      context: ./identity-service
+      dockerfile: Dockerfile
+    container_name: identity-service
+    depends_on:
+      - postgres_db
+      - kafka
+    ports:
+      - "8080:8080"
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/identity_db_prod
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:postgres}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:postgres}
+      SPRING_JPA_HIBERNATE_DDLAUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JWT_SIGNERKEY: ${JWT_SIGNERKEY_SECRET}
+      APP_CART_SERVICE_URL: http://cart-service:8083
+      APP_FILE_SERVICE_URL: http://file-service:8087
+      APP_FILE_DOWNLOAD_PREFIX: http://api-gateway:8888/api/v1/file/media/download/
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:admin}
+    networks:
+      - my_network
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    depends_on:
+      - mongodb
+    ports:
+      - "8088:8088"
+    environment:
+      SERVER_PORT: 8088
+      SPRING_DATA_MONGODB_URI: mongodb://${DB_MONGO_ROOT_USER:root}:${DB_MONGO_ROOT_PASS:root}@mongodb:27017/notification_db_prod?authSource=admin
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      BREVO_API_KEY: ${BREVO_API_KEY}
+      FIREBASE_CONFIG_FILE_CONTENT_BASE64: ${FIREBASE_CONFIG_FILE_CONTENT_BASE64}
+    networks:
+      - my_network
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    depends_on:
+      - postgres_db
+      - kafka
+    ports:
+      - "8090:8090"
+    environment:
+      SERVER_PORT: 8090
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/order_db_prod
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:postgres}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:postgres}
+      SPRING_JPA_HIBERNATE_DDLAUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    networks:
+      - my_network
+
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile
+    container_name: payment-service
+    depends_on:
+      - postgres_db
+      - kafka
+    ports:
+      - "8089:8089"
+    environment:
+      SERVER_PORT: 8089
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/payment_db_prod
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:postgres}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:postgres}
+      SPRING_JPA_HIBERNATE_DDLAUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      VNPAY_RETURNURL: http://payment-service:8089/payment/vnpay_return
+      VNPAY_TMNCODE: ${VNPAY_TMNCODE}
+      VNPAY_SECRETKEY: ${VNPAY_SECRETKEY}
+      MOMO_RETURNURL: ${MOMO_RETURNURL:http://payment-service:8089/payment/momo_return}
+      MOMO_IPNURL: ${MOMO_IPNURL:http://payment-service:8089/payment/momo_return}
+    networks:
+      - my_network
+
+  product-service:
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    container_name: product-service
+    depends_on:
+      - postgres_db
+      - kafka
+    ports:
+      - "8082:8082"
+    environment:
+      SERVER_PORT: 8082
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/product_db_prod
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:postgres}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:postgres}
+      SPRING_JPA_HIBERNATE_DDLAUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      APP_FILE_SERVICE_URL: http://file-service:8087
+      APP_FILE_DOWNLOAD_PREFIX: http://api-gateway:8888/api/v1/file/media/download/
+    networks:
+      - my_network
+
+  profile-service:
+    build:
+      context: ./profile-service
+      dockerfile: Dockerfile
+    container_name: profile-service
+    depends_on:
+      - postgres_db
+      - kafka
+    ports:
+      - "8081:8081"
+    environment:
+      SERVER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/profile_db_prod
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:postgres}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:postgres}
+      SPRING_JPA_HIBERNATE_DDLAUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    networks:
+      - my_network
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8888:8888"
+    depends_on:
+      - identity-service
+      - profile-service
+      - product-service
+      - blog-service
+      - cart-service
+      - category-service
+      - customer-service
+      - file-service
+      - notification-service
+      - order-service
+      - payment-service
+    environment:
+      SERVER_PORT: 8888
+      APP_API_PREFIX: /api/v1
+      APP_IDENTITY_SERVICE_URL: http://identity-service:8080/identity
+    networks:
+      - my_network
+
+networks:
+  my_network:
+    driver: bridge
+
+
+volumes:
+  file_service_uploads:
+  mongo_db_data:
+  postgres_shared_data:
