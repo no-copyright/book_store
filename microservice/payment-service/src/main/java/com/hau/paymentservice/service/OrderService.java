@@ -16,6 +16,7 @@ public class OrderService {
     public void createOrder(OrderCreateEvent orderCreateEvent) {
         Order order = Order.builder()
                 .id(orderCreateEvent.getOrderId())
+                .userId(orderCreateEvent.getUserId())
                 .totalPrice(orderCreateEvent.getTotalPrice())
                 .paymentMethod(orderCreateEvent.getPaymentMethod())
                 .paymentStatus(orderCreateEvent.getPaymentStatus())

@@ -43,6 +43,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
                     "/identity/users/register",
                     "/identity/auth/.*",
                     "/payment/vnpay_return",
+                    "/payment/momo_return",
                     "/customer/.*"
             ),
             HttpMethod.GET, List.of(

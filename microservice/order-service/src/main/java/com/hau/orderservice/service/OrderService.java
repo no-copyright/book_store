@@ -209,13 +209,12 @@ public class OrderService {
         notificationEvent.setTemplateCode("order-created-email-template");
         notificationEvent.setParams(Map.ofEntries(
                 Map.entry("userId", userId),
-                Map.entry("username", userRepository.findById(userId).orElseThrow().getUsername()),
                 Map.entry("fullName", order.getFullName()),
                 Map.entry("orderId", order.getId()),
                 Map.entry("totalPrice", order.getTotalPrice()),
                 Map.entry("address", order.getAddress()),
                 Map.entry("phone", order.getPhone()),
-                Map.entry("paymentMethod", order.getPaymentMethod() == 0 ? "COD" : "VNPAY"),
+                Map.entry("paymentMethod", order.getPaymentMethod() == 0 ? "COD" : order.getPaymentMethod() == 1 ? "VNPAY" : "MOMO"),
                 Map.entry("paymentStatus", order.getPaymentStatus() == 0 ? "Đã thanh toán" : "Chưa thanh toán"),
                 Map.entry("status", order.getStatus() == 1 ? "Chờ xác nhận" : "Chờ vận chuyển"),
                 Map.entry("note", order.getNote() == null ? "" : order.getNote()),
