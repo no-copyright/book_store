@@ -21,6 +21,7 @@ public class Product {
     private Integer discount;
     private Integer price;
 
+
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderProduct> orderProducts = new ArrayList<>();
 
