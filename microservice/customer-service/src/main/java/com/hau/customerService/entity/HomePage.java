@@ -14,4 +14,8 @@ public class HomePage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
+
+    String thumbnail1;
+    String thumbnail2;
+    String thumbnail3;
 }
