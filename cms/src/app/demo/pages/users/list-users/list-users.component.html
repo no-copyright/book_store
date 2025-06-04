@@ -1,0 +1,88 @@
+<div class="row">
+  <div class="col-xl-12">
+    <app-card cardTitle="Danh sách người dùng" [options]="false" blockClass="table-border-style">
+      <!-- Thanh tìm kiếm và lọc -->
+      <div class="mb-3 d-flex align-items-center flex-wrap justify-content-between">
+        <div class="d-flex align-items-center flex-wrap">
+          <div class="me-3 mb-2">
+            <input type="text" class="form-control" [(ngModel)]="searchKeyword" placeholder="Tìm kiếm theo tên, email..." aria-label="Tìm kiếm">
+          </div>
+          <div class="me-3 mb-2">
+            <button class="btn btn-primary mb-0" type="button" (click)="searchUsers()">
+              <i class="feather icon-search"></i> Tìm kiếm
+            </button>
+          </div>
+          <!-- Bỏ phần filter theo trạng thái -->
+        </div>
+      </div>
+
+      <!-- Bảng dữ liệu -->
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Ảnh đại diện</th>
+              <th>Tên đăng nhập</th>
+              <th>Email</th>
+              <th>Vai trò</th>
+              <!-- ✅ BỎ cột "Trạng thái" -->
+              <th>Ngày tạo</th>
+              <th class="text-center">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of pagedUsers">
+              <th scope="row">{{ user.id }}</th>
+              <td>
+                <img [src]="user.profileImage || 'assets/images/user/avatar-default.jpg'" [alt]="user.username" 
+                     class="img-thumbnail rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+              </td>
+              <td>{{ user.username }}</td>
+              <td>{{ user.email }}</td>
+              <td><span class="badge {{ getRoleClass(user.role) }}">{{ getRoleText(user.role) }}</span></td>
+              <!-- ✅ BỎ cột hiển thị trạng thái -->
+              <td>{{ user.created_at | date:'dd/MM/yyyy' }}</td>
+              <td class="text-center">
+                <!-- ✅ CHỈ GIỮ LẠI nút "Xem chi tiết", BỎ nút "Xóa" -->
+                <button class="btn btn-sm btn-primary" title="Xem chi tiết" (click)="navigateToEditUser(user.id)">
+                  <i class="feather icon-eye"></i>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="filteredUsers.length === 0">
+              <!-- ✅ Cập nhật colspan từ 8 thành 7 -->
+              <td colspan="7" class="text-center">Không có người dùng nào</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Phân trang -->
+      <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="totalItems > 0">
+        <div>
+          <span>Hiển thị {{ (currentPage-1) * pageSize + 1 }} đến {{ Math.min(currentPage * pageSize, totalItems) }} trong số {{ totalItems }} người dùng</span>
+        </div>
+        <nav *ngIf="totalPages > 1">
+          <ul class="pagination justify-content-end mb-0">
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <a class="page-link" href="javascript:" (click)="changePage(currentPage - 1)">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+            <ng-container *ngFor="let page of getPageNumbers()">
+              <li class="page-item" [class.active]="currentPage === page">
+                <a class="page-link" href="javascript:" (click)="changePage(page)">{{ page }}</a>
+              </li>
+            </ng-container>
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <a class="page-link" href="javascript:" (click)="changePage(currentPage + 1)">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </app-card>
+  </div>
+</div>

@@ -1,0 +1,127 @@
+<div class="row">
+  <div class="col-xl-12">
+    <app-card cardTitle="Danh sách bài viết" [options]="false" blockClass="table-border-style">
+      
+      <!-- Loading indicator -->
+      <div *ngIf="loading" class="d-flex justify-content-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Đang tải...</span>
+        </div>
+      </div>
+
+      <!-- Search and controls -->
+      <div *ngIf="!loading" class="mb-3 d-flex align-items-center flex-wrap">
+        <div class="me-3 mb-2">
+          <input type="text" class="form-control" [(ngModel)]="searchKeyword" 
+                 placeholder="Tìm kiếm bài viết..." aria-label="Tìm kiếm">
+        </div>
+        <div class="me-3 mb-2">
+          <button class="btn btn-primary mb-0" type="button" (click)="searchArticles()">
+            <i class="feather icon-search"></i> Tìm kiếm
+          </button>
+        </div>
+        <div class="me-3 mb-2">
+          <button class="btn btn-outline-secondary mb-0" type="button" (click)="refreshData()">
+            <i class="feather icon-refresh-cw"></i> Làm mới
+          </button>
+        </div>
+        <div class="ms-auto mb-2">
+          <button class="btn btn-success" type="button" (click)="navigateToAddArticle()">
+            <i class="feather icon-plus"></i> Thêm bài viết
+          </button>
+        </div>
+      </div>
+
+      <!-- Articles table -->
+      <div *ngIf="!loading" class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Hình ảnh</th>
+              <th>Tiêu đề</th>
+              <th>Danh mục</th>
+              <th>Độ ưu tiên</th>
+              <th>Ngày tạo</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let article of articles">
+              <th scope="row">{{ article.id }}</th>
+              <td>
+                <img [src]="getArticleImageSrc(article)" 
+                     [alt]="article.title" 
+                     (error)="onImageError($event)"
+                     class="img-thumbnail" 
+                     style="width: 70px; height: 50px; object-fit: cover;"
+                     loading="lazy">
+              </td>
+              <td>
+                <div class="fw-semibold">{{ article.title }}</div>
+                <small class="text-muted">{{ truncateContent(article.content, 60) }}</small>
+              </td>
+              <td>
+                <span class="badge bg-info">{{ article.category_name || 'Không xác định' }}</span>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark">{{ article.priority }}</span>
+              </td>
+              <!-- ✅ Bỏ cột Trạng thái -->
+              <td>
+                <div>{{ article.created_at | date:'dd/MM/yyyy' }}</div>
+                <small class="text-muted">{{ article.created_at | date:'HH:mm' }}</small>
+              </td>
+              <td>
+                <div class="d-flex">
+                  <!-- ✅ Sửa nút xem chi tiết -->
+                  <button class="btn btn-sm btn-primary me-2" title="Sửa" (click)="navigateToEditArticle(article.id.toString())">
+                    <i class="feather icon-edit"></i>
+                  </button>
+                  <button class="btn btn-sm btn-danger" title="Xóa" (click)="deleteArticle(article.id.toString())">
+                    <i class="feather icon-trash-2"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="articles.length === 0">
+              <!-- ✅ Cập nhật colspan từ 8 xuống 7 -->
+              <td colspan="7" class="text-center">
+                <div class="alert alert-info mb-0">
+                  <i class="feather icon-info me-2"></i> 
+                  {{ searchKeyword ? 'Không tìm thấy bài viết nào phù hợp' : 'Không có bài viết nào' }}
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Phân trang -->
+        <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="totalItems > 0">
+          <div>
+            <span>Hiển thị {{ (currentPage-1) * pageSize + 1 }} đến {{ Math.min(currentPage * pageSize, totalItems) }} trong số {{ totalItems }} bài viết</span>
+          </div>
+          <nav *ngIf="totalPages > 1">
+            <ul class="pagination justify-content-end mb-0">
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <a class="page-link" href="javascript:" (click)="changePage(currentPage - 1)">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+              <ng-container *ngFor="let page of getPageNumbers()">
+                <li class="page-item" [class.active]="currentPage === page">
+                  <a class="page-link" href="javascript:" (click)="changePage(page)">{{ page }}</a>
+                </li>
+              </ng-container>
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <a class="page-link" href="javascript:" (click)="changePage(currentPage + 1)">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </app-card>
+  </div>
+</div>

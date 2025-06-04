@@ -1,0 +1,65 @@
+<div class="modal-header bg-primary text-white">
+  <h5 class="modal-title">Chi tiết yêu cầu tư vấn</h5>
+  <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="activeModal.close()"></button>
+</div>
+
+<div class="modal-body">
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <div class="form-group">
+        <label class="form-label fw-bold">ID</label>
+        <p class="border rounded p-2 bg-light">{{ consultation.id }}</p>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+      <div class="form-group">
+        <label class="form-label fw-bold">Thời gian tạo</label>
+        <p class="border rounded p-2 bg-light">{{ formatDate(consultation.created_at) }}</p>
+      </div>
+    </div>
+    
+    <div class="col-md-6 mb-3">
+      <div class="form-group">
+        <label class="form-label fw-bold">Tên người gửi</label>
+        <p class="border rounded p-2 bg-light">{{ consultation.name }}</p>
+      </div>
+    </div>
+    
+    <div class="col-md-6 mb-3">
+      <div class="form-group">
+        <label class="form-label fw-bold">Số điện thoại</label>
+        <p class="border rounded p-2 bg-light">{{ consultation.phone }}</p>
+      </div>
+    </div>
+    
+    <div class="col-md-12 mb-3">
+      <div class="form-group">
+        <label class="form-label fw-bold">Email</label>
+        <p class="border rounded p-2 bg-light">{{ consultation.email }}</p>
+      </div>
+    </div>
+    
+    <div class="col-md-12 mb-3">
+      <div class="form-group">
+        <label class="form-label fw-bold">Địa chỉ</label>
+        <p class="border rounded p-2 bg-light">{{ consultation.address }}</p>
+      </div>
+    </div>
+    
+    <div class="col-md-12 mb-3">
+      <div class="form-group">
+        <label class="form-label fw-bold">Nội dung yêu cầu</label>
+        <div class="border rounded p-3 bg-light consultation-content">
+          {{ consultation.content }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" (click)="activeModal.close()">
+    <i class="feather icon-x me-1"></i> Đóng
+  </button>
+</div>

@@ -1,0 +1,220 @@
+<div class="row">
+  <div class="col-xl-12">
+    <app-card [options]="false">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Chi tiết đơn hàng #{{ order?.id }}</h5>
+        <button class="btn btn-secondary" (click)="navigateBack()">
+          <i class="feather icon-arrow-left me-1"></i> Quay lại
+        </button>
+      </div>
+
+      <div *ngIf="loading" class="d-flex justify-content-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <div *ngIf="!loading && order">
+        <!-- Thông tin đơn hàng -->
+        <div class="row print-section">
+          <div class="col-md-12 mb-4">
+            <div class="d-flex flex-wrap justify-content-between">
+              <div class="order-status mb-3">
+                <span class="badge {{ getOrderStatusClass(order.status) }} fs-6 me-2">{{ getOrderStatusText(order.status) }}</span>
+                <span class="badge {{ getPaymentStatusClass(order.payment_status) }} fs-6">{{ getPaymentStatusText(order.payment_status) }}</span>
+              </div>
+
+              <div class="order-actions d-flex no-print">
+                <button class="btn btn-primary me-2" (click)="printOrder()">
+                  <i class="feather icon-printer me-1"></i> In đơn hàng
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ✅ THÔNG TIN CHỈ ĐỌC - KHÔNG CHO SỬA -->
+          <!-- Thông tin khách hàng và đơn hàng -->
+          <div class="col-md-6 mb-4">
+            <div class="card border">
+              <div class="card-header bg-light">
+                <h6 class="mb-0">Thông tin khách hàng</h6>
+              </div>
+              <div class="card-body">
+                <p class="mb-2"><strong>Họ tên:</strong> {{ order.customer_name }}</p>
+                <p class="mb-2"><strong>Số điện thoại:</strong> {{ order.phone }}</p>
+                <p class="mb-2"><strong>Email:</strong> {{ order.email }}</p>
+                <p class="mb-2"><strong>Địa chỉ:</strong> {{ order.address }}</p>
+                <p class="mb-0"><strong>User ID:</strong> {{ order.user_id }}</p>
+                <p class="mb-0"><strong>Profile ID:</strong> {{ order.profile_id }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 mb-4">
+            <div class="card border">
+              <div class="card-header bg-light">
+                <h6 class="mb-0">Thông tin đơn hàng</h6>
+              </div>
+              <div class="card-body">
+                <p class="mb-2"><strong>Mã đơn hàng:</strong> {{ order.id }}</p>
+                <p class="mb-2"><strong>Ngày đặt:</strong> {{ order.order_date | date:'dd/MM/yyyy HH:mm' }}</p>
+                <p class="mb-2"><strong>Phương thức thanh toán:</strong> {{ getPaymentMethodText(order.payment_method) }}</p>
+                <p class="mb-2"><strong>Trạng thái thanh toán:</strong> {{ getPaymentStatusText(order.payment_status) }}</p>
+                <p class="mb-0"><strong>Ghi chú:</strong> {{ order.note || 'Không có' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Danh sách sản phẩm - CHỈ ĐỌC -->
+          <div class="col-md-12 mb-4">
+            <div class="card border">
+              <div class="card-header bg-light">
+                <h6 class="mb-0">Danh sách sản phẩm</h6>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table mb-0">
+                    <thead>
+                      <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Sản phẩm</th>
+                        <th scope="col">Đơn giá</th>
+                        <th scope="col">Số lượng</th>
+                        <th scope="col" class="text-end">Thành tiền</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let item of order.items; let i = index">
+                        <th scope="row">{{ i + 1 }}</th>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <!-- ✅ CẢI THIỆN image handling -->
+                            <div class="product-image-container me-2" style="width: 50px; height: 50px; position: relative;">
+                              <!-- Loading placeholder -->
+                              <div *ngIf="isImageLoading(item)" 
+                                   class="d-flex align-items-center justify-content-center h-100 bg-light rounded" 
+                                   style="border: 1px solid #dee2e6;">
+                                <div class="spinner-border spinner-border-sm text-secondary" role="status">
+                                  <span class="visually-hidden">Loading...</span>
+                                </div>
+                              </div>
+                              
+                              <!-- ✅ SỬA: Sử dụng method onImageLoad thay vì inline code -->
+                              <img *ngIf="!isImageLoading(item)"
+                                   [src]="getImageSrc(item)" 
+                                   [alt]="item.product_name" 
+                                   (error)="onImageError($event)"
+                                   (load)="onImageLoad($event)"
+                                   class="product-image"
+                                   style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #dee2e6; opacity: 0; transition: opacity 0.3s ease;">
+                            </div>
+                            
+                            <div class="product-info">
+                              <p class="mb-0 product-name">{{ item.product_name }}</p>
+                              <small class="text-muted product-code">Mã: {{ item.product_id }}</small>
+                            </div>
+                          </div>
+                        </td>
+                        <td>{{ item.price | number:'1.0-0' }}đ</td>
+                        <td>{{ item.quantity }}</td>
+                        <td class="text-end">{{ item.total | number:'1.0-0' }}đ</td>
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <td colspan="4" class="text-end"><strong>Tổng cộng:</strong></td>
+                        <td class="text-end"><strong>{{ order.total_amount | number:'1.0-0' }}đ</strong></td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ✅ CHỈ CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG - ĐÓNG BĂNG PAYMENT STATUS -->
+          <div class="col-md-12 mb-4 no-print">
+            <div class="card border">
+              <div class="card-header bg-light">
+                <h6 class="mb-0">
+                  <i class="feather icon-edit me-2"></i>
+                  Cập nhật trạng thái đơn hàng
+                </h6>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <!-- Trạng thái đơn hàng - CÓ THỂ SỬA -->
+                  <div class="col-md-6 mb-3">
+                    <label for="orderStatus" class="form-label">Trạng thái đơn hàng</label>
+                    <select class="form-select" id="orderStatus" [(ngModel)]="orderStatusForm.status">
+                      <option value="pending">Chờ xác nhận</option>
+                      <option value="waiting_carrier">Chờ đơn vị vận chuyển</option>
+                      <option value="shipping">Đang vận chuyển</option>
+                      <option value="completed">Đã giao</option>
+                      <option value="delivered">Giao hàng thành công</option>
+                      <option value="canceled">Đã huỷ</option>
+                    </select>
+                  </div>
+                  
+                  <!-- ✅ Trạng thái thanh toán - CHỈ ĐỌC (DISABLED) -->
+                  <div class="col-md-6 mb-3">
+                    <label for="paymentStatus" class="form-label">
+                      Trạng thái thanh toán 
+                      <small class="text-muted">(Chỉ đọc)</small>
+                    </label>
+                    <div class="input-group">
+                      <input type="text" 
+                             class="form-control" 
+                             [value]="order ? getPaymentStatusText(order.payment_status) : ''"
+                             readonly
+                             disabled
+                             style="background-color: #f8f9fa; cursor: not-allowed;">
+                      <span class="input-group-text">
+                        <i class="feather icon-lock text-muted"></i>
+                      </span>
+                    </div>
+                    <small class="text-muted">Trạng thái thanh toán không thể thay đổi từ hệ thống</small>
+                  </div>
+
+                  <!-- Ghi chú - CÓ THỂ SỬA -->
+                  <div class="col-md-12 mb-3">
+                    <label for="orderNote" class="form-label">Ghi chú</label>
+                    <textarea class="form-control" id="orderNote" rows="3" 
+                              [(ngModel)]="orderStatusForm.note"
+                              placeholder="Nhập ghi chú cho đơn hàng..."></textarea>
+                  </div>
+
+                  <!-- Buttons -->
+                  <div class="col-md-12 mb-3">
+                    <div class="d-flex gap-2">
+                      <button class="btn btn-primary" 
+                              (click)="updateOrderStatus()" 
+                              [disabled]="updating || !hasChanges()">
+                        <span *ngIf="updating" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <i *ngIf="!updating" class="feather icon-save me-1"></i>
+                        {{ updating ? 'Đang cập nhật...' : 'Cập nhật trạng thái' }}
+                      </button>
+                      
+                      <button class="btn btn-outline-secondary" 
+                              (click)="resetForm()" 
+                              [disabled]="updating || !hasChanges()">
+                        <i class="feather icon-refresh-cw me-1"></i>
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ✅ Hiển thị thông báo có thay đổi -->
+                <div *ngIf="hasChanges()" class="alert alert-info d-flex align-items-center">
+                  <i class="feather icon-info me-2"></i>
+                  <span>Bạn đã thay đổi thông tin. Nhấn "Cập nhật trạng thái" để lưu hoặc "Reset" để hủy thay đổi.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </app-card>
+  </div>
+</div>

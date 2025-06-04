@@ -1,0 +1,146 @@
+<div class="row">
+  <div class="col-xl-12">
+    <app-card cardTitle="Danh sách danh mục" [options]="false" blockClass="table-border-style">
+      <!-- Loading indicator -->
+      <div *ngIf="loading" class="d-flex justify-content-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Đang tải...</span>
+        </div>
+      </div>
+
+      <!-- Search and controls -->
+      <div *ngIf="!loading" class="mb-3 d-flex align-items-center flex-wrap">
+        <div class="me-3 mb-2">
+          <input type="text" class="form-control" [(ngModel)]="searchKeyword" placeholder="Tìm kiếm danh mục..." aria-label="Tìm kiếm">
+        </div>
+        <div class="me-3 mb-2">
+          <button class="btn btn-primary mb-0" type="button" (click)="searchCategories()">
+            <i class="feather icon-search"></i> Tìm kiếm
+          </button>
+        </div>
+        <div class="btn-group me-3 mb-2">
+          <button type="button" class="btn" [class.btn-primary]="viewMode === 'hierarchical'" [class.btn-outline-primary]="viewMode !== 'hierarchical'"
+                  (click)="switchViewMode('hierarchical')">
+            <i class="feather icon-list"></i> Phân cấp
+          </button>
+          <button type="button" class="btn" [class.btn-primary]="viewMode === 'flat'" [class.btn-outline-primary]="viewMode !== 'flat'"
+                  (click)="switchViewMode('flat')">
+            <i class="feather icon-grid"></i> Đơn giản
+          </button>
+        </div>
+        <div class="ms-auto mb-2">
+          <button class="btn btn-success" type="button" (click)="navigateToAddCategory()">
+            <i class="feather icon-plus"></i> Thêm danh mục
+          </button>
+        </div>
+      </div>
+
+      <!-- Flat view table -->
+      <div *ngIf="!loading && viewMode === 'flat'" class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Tên danh mục</th>
+              <th>Slug</th>
+              <th>Loại</th>
+              <th>Ưu tiên</th>
+              <th>Danh mục cha</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let category of pagedCategories">
+              <th scope="row">{{ category.id }}</th>
+              <td>{{ getIndent(category.level) }}{{ category.name }}</td>
+              <td>{{ category.slug }}</td>
+              <td><span class="badge {{ getTypeClass(category.type) }}">{{ getTypeText(category.type) }}</span></td>
+              <td>{{ category.priority }}</td>
+              <td>{{ getParentCategoryName(category.parent_id || category.parentId) }}</td>
+              <td>
+                <div class="d-flex">
+                  <button class="btn btn-sm btn-primary me-2" title="Sửa" (click)="navigateToEditCategory(category.id)">
+                    <i class="feather icon-edit"></i>
+                  </button>
+                  <button class="btn btn-sm btn-danger" title="Xóa" (click)="deleteCategory(category.id)">
+                    <i class="feather icon-trash-2"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="flatCategories.length === 0">
+              <td colspan="7" class="text-center">Không có danh mục nào</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Phân trang -->
+        <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="totalItems > 0">
+          <div>
+            <span>Hiển thị {{ (currentPage-1) * pageSize + 1 }} đến {{ Math.min(currentPage * pageSize, totalItems) }} trong số {{ totalItems }} danh mục</span>
+          </div>
+          <nav *ngIf="totalPages > 1">
+            <ul class="pagination justify-content-end mb-0">
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <a class="page-link" href="javascript:" (click)="changePage(currentPage - 1)">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+              <ng-container *ngFor="let page of getPageNumbers()">
+                <li class="page-item" [class.active]="currentPage === page">
+                  <a class="page-link" href="javascript:" (click)="changePage(page)">{{ page }}</a>
+                </li>
+              </ng-container>
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <a class="page-link" href="javascript:" (click)="changePage(currentPage + 1)">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Hierarchical view -->
+      <div *ngIf="!loading && viewMode === 'hierarchical'" class="hierarchical-view">
+        <ng-container *ngIf="hierarchicalCategories.length > 0; else noCategories">
+          <ng-container *ngTemplateOutlet="categoryTree; context: { categories: hierarchicalCategories, level: 0 }"></ng-container>
+        </ng-container>
+        
+        <ng-template #noCategories>
+          <div class="text-center p-4">Không có danh mục nào</div>
+        </ng-template>
+        
+        <!-- Template đệ quy để hiển thị cấu trúc cây -->
+        <ng-template #categoryTree let-categories="categories" let-level="level">
+          <ul class="category-tree-list" [class.nested]="level > 0">
+            <li *ngFor="let category of categories" class="category-tree-item">
+              <div class="category-tree-content">
+                <div class="category-info">
+                  <span class="category-name">{{ category.name }}</span>
+                  <span class="category-slug">({{ category.slug }})</span>
+                  <span class="category-type ms-2 badge {{ getTypeClass(category.type) }}">{{ getTypeText(category.type) }}</span>
+                  <span class="category-priority ms-2 badge bg-light text-dark">Ưu tiên: {{ category.priority }}</span>
+                  <!-- ✅ Debug info -->
+                  <small class="text-muted ms-2">ID: {{ category.id }} | Children: {{ category.children?.length || 0 }}</small>
+                </div>
+                <div class="category-actions">
+                  <button class="btn btn-sm btn-primary me-1" title="Sửa" (click)="navigateToEditCategory(category.id)">
+                    <i class="feather icon-edit"></i>
+                  </button>
+                  <button class="btn btn-sm btn-danger" title="Xóa" (click)="deleteCategory(category.id)">
+                    <i class="feather icon-trash-2"></i>
+                  </button>
+                </div>
+              </div>
+              <!-- ✅ Hiển thị children nếu có -->
+              <ng-container *ngIf="category.children && category.children.length > 0">
+                <ng-container *ngTemplateOutlet="categoryTree; context: { categories: category.children, level: level + 1 }"></ng-container>
+              </ng-container>
+            </li>
+          </ul>
+        </ng-template>
+      </div>
+    </app-card>
+  </div>
+</div>

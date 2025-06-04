@@ -1,0 +1,168 @@
+<div class="row">
+  <div class="col-xl-12">
+    <app-card cardTitle="Chi tiết người dùng" [options]="false">
+      <div *ngIf="loading" class="d-flex justify-content-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+      
+      <!-- Hiển thị thông tin người dùng với design đẹp hơn -->
+      <div *ngIf="!loading && user" class="user-detail-view">
+        <!-- Header Section với Avatar và thông tin chính -->
+        <div class="user-header-section bg-light rounded p-4 mb-4">
+          <div class="row align-items-center">
+            <div class="col-md-3 text-center">
+              <!-- Avatar lớn với border đẹp -->
+              <div class="avatar-container position-relative">
+                <img [src]="user.profileImage || 'assets/images/user/avatar-default.jpg'" 
+                     alt="Ảnh đại diện" 
+                     class="user-avatar img-fluid rounded-circle shadow-lg"
+                     style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #fff;">
+                <div class="avatar-status position-absolute bottom-0 end-0">
+                  <span class="badge bg-success rounded-pill p-2">
+                    <i class="feather icon-check" style="font-size: 12px;"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-9">
+              <div class="user-main-info">
+                <h3 class="mb-2 text-primary">{{ user.username }}</h3>
+                <p class="text-muted mb-2">
+                  <i class="feather icon-mail me-2"></i>{{ user.email }}
+                </p>
+                <div class="user-badges">
+                  <span class="badge {{ getRoleClass(user.role) }} fs-6 px-3 py-2 me-2">
+                    <i class="feather icon-shield me-1"></i>{{ getRoleText(user.role) }}
+                  </span>
+                  <span class="badge bg-info fs-6 px-3 py-2">
+                    <i class="feather icon-hash me-1"></i>ID: {{ user.id }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thông tin chi tiết trong cards -->
+        <div class="row">
+          <!-- Thông tin cá nhân -->
+          <div class="col-lg-6 mb-4">
+            <div class="info-card h-100">
+              <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                  <h6 class="mb-0">
+                    <i class="feather icon-user me-2"></i>Thông tin cá nhân
+                  </h6>
+                </div>
+                <div class="card-body">
+                  <div class="info-item mb-3">
+                    <label class="info-label">Tên đăng nhập</label>
+                    <div class="info-value">{{ user.username }}</div>
+                  </div>
+                  
+                  <div class="info-item mb-3">
+                    <label class="info-label">Email</label>
+                    <div class="info-value">{{ user.email }}</div>
+                  </div>
+                  
+                  <div class="info-item">
+                    <label class="info-label">Vai trò</label>
+                    <div class="info-value">
+                      <span class="badge {{ getRoleClass(user.role) }} px-3 py-2">
+                        {{ getRoleText(user.role) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Thông tin hệ thống -->
+          <div class="col-lg-6 mb-4">
+            <div class="info-card h-100">
+              <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-info text-white">
+                  <h6 class="mb-0">
+                    <i class="feather icon-settings me-2"></i>Thông tin hệ thống
+                  </h6>
+                </div>
+                <div class="card-body">
+                  <div class="info-item mb-3">
+                    <label class="info-label">ID người dùng</label>
+                    <div class="info-value">
+                      <code class="bg-light px-2 py-1 rounded">#{{ user.id }}</code>
+                    </div>
+                  </div>
+                  
+                  <div class="info-item mb-3">
+                    <label class="info-label">Ngày tạo</label>
+                    <div class="info-value">
+                      <i class="feather icon-calendar me-1"></i>
+                      {{ user.created_at | date:'dd/MM/yyyy HH:mm' }}
+                    </div>
+                  </div>
+                  
+                  <div class="info-item">
+                    <label class="info-label">Cập nhật lần cuối</label>
+                    <div class="info-value">
+                      <i class="feather icon-clock me-1"></i>
+                      {{ user.updated_at | date:'dd/MM/yyyy HH:mm' }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quyền hạn từ API -->
+        <div class="row" *ngIf="user.roles && user.roles.length > 0">
+          <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0">
+                  <i class="feather icon-key me-2"></i>Quyền hạn chi tiết
+                </h6>
+              </div>
+              <div class="card-body">
+                <div class="roles-container">
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="roles-list">
+                        <div *ngFor="let role of user.roles" class="role-item mb-2">
+                          <span class="badge bg-secondary fs-6 px-3 py-2 me-2">
+                            <i class="feather icon-shield me-1"></i>
+                            {{ role.name }}
+                          </span>
+                          <small class="text-muted">{{ role.description }}</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row">
+          <div class="col-12">
+            <div class="action-buttons text-end bg-light rounded p-3">
+              <button type="button" class="btn btn-outline-secondary me-3" (click)="onCancel()">
+                <i class="feather icon-arrow-left me-2"></i>Quay lại danh sách
+              </button>
+              <button type="button" class="btn btn-danger" (click)="deleteUser()">
+                <i class="feather icon-trash-2 me-2"></i>Xóa người dùng
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </app-card>
+  </div>
+</div>
