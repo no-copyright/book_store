@@ -1,0 +1,334 @@
+<div class="row">
+  <div class="col-xl-12">
+    <app-card cardTitle="Chỉnh sửa sản phẩm" [options]="false">
+      <!-- Loading Modal -->
+      <app-loading-modal 
+        [show]="loading" 
+        message="Đang tải dữ liệu sản phẩm...">
+      </app-loading-modal>
+
+      <!-- Submitting Modal -->
+      <app-loading-modal 
+        [show]="submitting" 
+        message="Đang cập nhật sản phẩm...">
+      </app-loading-modal>
+      
+      <form *ngIf="!loading" [formGroup]="productForm" (ngSubmit)="onSubmit()">
+        <!-- ID và Tiêu đề -->
+        <div class="row">
+          <div class="col-md-3">
+            <div class="form-group mb-3">
+              <label for="productId" class="form-label">ID</label>
+              <input type="text" class="form-control" id="productId" formControlName="id" readonly>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="form-group mb-3">
+              <label for="title" class="form-label">Tiêu đề sản phẩm <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="title" formControlName="title" placeholder="Nhập tiêu đề sản phẩm">
+              <div *ngIf="productForm.get('title')?.invalid && productForm.get('title')?.touched" class="text-danger small mt-1">
+                <div *ngIf="productForm.get('title')?.errors?.['required']">Vui lòng nhập tiêu đề sản phẩm</div>
+                <div *ngIf="productForm.get('title')?.errors?.['minlength']">Tiêu đề phải có ít nhất 2 ký tự</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="form-group mb-3">
+              <label for="code" class="form-label">Mã sản phẩm</label>
+              <input type="text" class="form-control" id="code" formControlName="code" readonly>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tác giả và NXB -->
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group mb-3">
+              <label for="author" class="form-label">Tác giả</label>
+              <input type="text" class="form-control" id="author" formControlName="author" placeholder="Nhập tên tác giả">
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-group mb-3">
+              <label for="publisher" class="form-label">Nhà xuất bản <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="publisher" formControlName="publisher" placeholder="Nhập nhà xuất bản">
+              <div *ngIf="productForm.get('publisher')?.invalid && productForm.get('publisher')?.touched" class="text-danger small mt-1">
+                Vui lòng nhập nhà xuất bản
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Năm xuất bản, Kích thước, Số trang -->
+        <div class="row">
+          <div class="col-md-4">
+            <div class="form-group mb-3">
+              <label for="publicationYear" class="form-label">Năm xuất bản <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" id="publicationYear" formControlName="publicationYear" placeholder="Nhập năm xuất bản">
+              <div *ngIf="productForm.get('publicationYear')?.invalid && productForm.get('publicationYear')?.touched" class="text-danger small mt-1">
+                <div *ngIf="productForm.get('publicationYear')?.errors?.['required']">Vui lòng nhập năm xuất bản</div>
+                <div *ngIf="productForm.get('publicationYear')?.errors?.['min']">Năm xuất bản phải từ 1900 trở lên</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="form-group mb-3">
+              <label for="packageSize" class="form-label">Kích thước (cm)</label>
+              <input type="number" class="form-control" id="packageSize" formControlName="packageSize" placeholder="Kích thước bao bì">
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="form-group mb-3">
+              <label for="pageSize" class="form-label">Số trang</label>
+              <input type="number" class="form-control" id="pageSize" formControlName="pageSize" placeholder="Số trang">
+            </div>
+          </div>
+        </div>
+
+        <!-- Hình ảnh và Định dạng -->
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group mb-3">
+              <label for="thumbnail" class="form-label">Hình ảnh sản phẩm</label>
+              
+              <!-- Image Preview -->
+              <div class="image-preview-container mb-3" *ngIf="imagePreview">
+                <img [src]="imagePreview" alt="Product thumbnail" class="img-thumbnail product-preview">
+                <button type="button" class="btn btn-sm btn-danger preview-remove-btn" (click)="removeImage()">
+                  <i class="feather icon-x"></i>
+                </button>
+              </div>
+              
+              <!-- File Input -->
+              <input type="file" class="form-control" id="thumbnail" accept="image/*" (change)="onFileChange($event)">
+              <input type="hidden" formControlName="thumbnail">
+              <small class="form-text text-muted">Chọn hình ảnh từ máy tính (JPG, PNG, GIF)</small>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-group mb-3">
+              <label for="form" class="form-label">Định dạng <span class="text-danger">*</span></label>
+              <select class="form-select" id="form" formControlName="form">
+                <option value="">Chọn định dạng</option>
+                <option value="Bìa mềm">Bìa mềm</option>
+                <option value="Bìa cứng">Bìa cứng</option>
+                <option value="Ebook">Ebook</option>
+              </select>
+              <div *ngIf="productForm.get('form')?.invalid && productForm.get('form')?.touched" class="text-danger small mt-1">
+                Vui lòng chọn định dạng
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Giá, Giảm giá, Số lượng -->
+        <div class="row">
+          <div class="col-md-3">
+            <div class="form-group mb-3">
+              <label for="price" class="form-label">Giá gốc (VNĐ) <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" id="price" formControlName="price" placeholder="Nhập giá gốc">
+              <div *ngIf="productForm.get('price')?.invalid && productForm.get('price')?.touched" class="text-danger small mt-1">
+                <div *ngIf="productForm.get('price')?.errors?.['required']">Vui lòng nhập giá gốc</div>
+                <div *ngIf="productForm.get('price')?.errors?.['min']">Giá phải lớn hơn 0</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="form-group mb-3">
+              <label for="discount" class="form-label">Giảm giá (VNĐ)</label>
+              <input type="number" class="form-control" id="discount" formControlName="discount" placeholder="Số tiền giảm giá">
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="form-group mb-3">
+              <label for="discountPercent" class="form-label">% Giảm giá</label>
+              <input type="number" class="form-control" id="discountPercent" formControlName="discountPercent" placeholder="Phần trăm giảm giá" min="0" max="100">
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="form-group mb-3">
+              <label for="quantity" class="form-label">Số lượng <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" id="quantity" formControlName="quantity" placeholder="Số lượng tồn kho">
+              <div *ngIf="productForm.get('quantity')?.invalid && productForm.get('quantity')?.touched" class="text-danger small mt-1">
+                <div *ngIf="productForm.get('quantity')?.errors?.['required']">Vui lòng nhập số lượng</div>
+                <div *ngIf="productForm.get('quantity')?.errors?.['min']">Số lượng phải >= 0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Độ ưu tiên và Đánh giá -->
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group mb-3">
+              <label for="priority" class="form-label">Độ ưu tiên <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" id="priority" formControlName="priority" placeholder="Số càng nhỏ, độ ưu tiên càng cao">
+              <div *ngIf="productForm.get('priority')?.invalid && productForm.get('priority')?.touched" class="text-danger small mt-1">
+                <div *ngIf="productForm.get('priority')?.errors?.['required']">Vui lòng nhập độ ưu tiên</div>
+                <div *ngIf="productForm.get('priority')?.errors?.['min']">Độ ưu tiên phải >= 0</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-group mb-3">
+              <label for="averageRate" class="form-label">Đánh giá trung bình</label>
+              <input type="number" class="form-control" id="averageRate" formControlName="averageRate" readonly step="0.1" min="0" max="5">
+              <small class="form-text text-muted">Được tính tự động từ đánh giá của khách hàng</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mô tả -->
+        <div class="row">
+          <div class="col-md-12">
+            <div class="form-group mb-3">
+              <label for="description" class="form-label">Mô tả sản phẩm</label>
+              <textarea class="form-control" id="description" formControlName="description" rows="5" placeholder="Nhập mô tả chi tiết sản phẩm"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trạng thái -->
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group mb-3">
+              <label for="active" class="form-label">Trạng thái hoạt động</label>
+              <select class="form-select" id="active" formControlName="active">
+                <option value="true">Hoạt động</option>
+                <option value="false">Tạm ngưng</option>
+              </select>
+              
+              <!-- Debug info -->
+              <small class="form-text text-muted">
+                Giá trị hiện tại: {{ productForm.get('active')?.value }} 
+                ({{ typeof productForm.get('active')?.value }})
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Danh mục (nếu có) -->
+        <div class="row">
+          <div class="col-md-12">
+            <div class="form-group mb-3">
+              <label for="categories" class="form-label">Danh mục</label>
+              <input type="text" class="form-control" id="categories" [value]="(productForm.get('categories')?.value || []).join(', ')" placeholder="ID danh mục (phân cách bởi dấu phẩy)" readonly>
+              <small class="form-text text-muted">Danh sách ID danh mục mà sản phẩm thuộc về</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- ✅ Danh mục sản phẩm -->
+        <div class="row">
+          <div class="col-md-12">
+            <div class="form-group mb-3">
+              <label class="form-label">Danh mục sản phẩm</label>
+              
+              <!-- Display selected categories -->
+              <div class="selected-categories-display p-3 border rounded mb-3" *ngIf="selectedCategoryIds.length > 0">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <strong>Danh mục đã chọn ({{ selectedCategoryIds.length }}):</strong>
+                  <div>
+                    <button type="button" class="btn btn-sm btn-primary me-2" (click)="openCategoryModal()">
+                      <i class="feather icon-plus"></i> Chọn danh mục
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" (click)="clearAllCategories()">
+                      <i class="feather icon-x"></i> Xóa tất cả
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="selected-categories-list">
+                  <span *ngFor="let categoryId of selectedCategoryIds" class="badge bg-primary me-2 mb-2">
+                    {{ getCategoryNameById(categoryId) }}
+                    <button type="button" class="btn-close btn-close-white ms-2" (click)="toggleCategory(categoryId)"></button>
+                  </span>
+                </div>
+              </div>
+              
+              <div *ngIf="selectedCategoryIds.length === 0" class="text-muted">
+                <i class="feather icon-info me-2"></i>Chưa chọn danh mục nào
+              </div>
+              
+              <small class="form-text text-muted">Chọn một hoặc nhiều danh mục cho sản phẩm này</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- ✅ Category Selection Modal -->
+        <div class="modal fade" [class.show]="showCategoryModal" [style.display]="showCategoryModal ? 'block' : 'none'" tabindex="-1">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Chọn danh mục sản phẩm</h5>
+                <button type="button" class="btn-close" (click)="closeCategoryModal()"></button>
+              </div>
+              <div class="modal-body">
+                <div class="row">
+                  <div class="col-12">
+                    <p class="text-muted mb-3">Chọn một hoặc nhiều danh mục cho sản phẩm này:</p>
+                    
+                    <div class="category-selection-list" style="max-height: 400px; overflow-y: auto;">
+                      <div *ngFor="let category of categories" class="form-check mb-2">
+                        <input 
+                          type="checkbox" 
+                          class="form-check-input" 
+                          [id]="'edit-category-' + category.id"
+                          [checked]="isCategorySelected(category.id)"
+                          (change)="toggleCategory(category.id)">
+                        <label class="form-check-label w-100" [for]="'edit-category-' + category.id">
+                          <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                              <span>{{ formatCategoryName(category) }}</span>
+                              <small class="text-muted ms-2">({{ category.slug }})</small>
+                            </div>
+                            <span class="badge" [ngClass]="getCategoryTypeBadgeClass(category.type)">
+                              {{ getCategoryTypeText(category.type) }}
+                            </span>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                    
+                    <div *ngIf="categories.length === 0" class="text-center p-4">
+                      <i class="feather icon-info text-muted"></i>
+                      <p class="text-muted mt-2">Không có danh mục nào</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <div class="me-auto">
+                  <small class="text-muted">Đã chọn: {{ selectedCategoryIds.length }} danh mục</small>
+                </div>
+                <button type="button" class="btn btn-secondary" (click)="closeCategoryModal()">Đóng</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal backdrop -->
+        <div class="modal-backdrop fade" [class.show]="showCategoryModal" *ngIf="showCategoryModal" (click)="closeCategoryModal()"></div>
+
+        <!-- Nút thao tác -->
+        <div class="mt-4 text-end">
+          <button type="button" class="btn btn-light me-2" (click)="onCancel()">Hủy bỏ</button>
+          <button type="submit" class="btn btn-primary" [disabled]="productForm.invalid || submitting">
+            <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
+            Lưu thay đổi
+          </button>
+        </div>
+      </form>
+    </app-card>
+  </div>
+</div>

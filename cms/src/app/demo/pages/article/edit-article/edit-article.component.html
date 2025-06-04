@@ -1,0 +1,130 @@
+<div class="row">
+  <div class="col-xl-12">
+    <app-card cardTitle="Chỉnh sửa bài viết" [options]="false">
+      <div *ngIf="loading" class="d-flex justify-content-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+      
+      <form *ngIf="!loading" [formGroup]="articleForm" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <!-- Tiêu đề -->
+          <div class="col-md-8">
+            <div class="form-group mb-3">
+              <label for="title" class="form-label">Tiêu đề <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="title" formControlName="title" placeholder="Nhập tiêu đề bài viết">
+              <div *ngIf="articleForm.get('title')?.invalid && articleForm.get('title')?.touched" class="text-danger small mt-1">
+                <div *ngIf="articleForm.get('title')?.errors?.['required']">Vui lòng nhập tiêu đề</div>
+                <div *ngIf="articleForm.get('title')?.errors?.['minlength']">Tiêu đề phải có ít nhất 5 ký tự</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Danh mục -->
+          <div class="col-md-4">
+            <div class="form-group mb-3">
+              <label for="category_id" class="form-label">Danh mục <span class="text-danger">*</span></label>
+              <select class="form-select" id="category_id" formControlName="category_id">
+                <option value="">Chọn danh mục</option>
+                <!-- ✅ Chỉ hiển thị categories type BLOG -->
+                <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+              </select>
+              <div *ngIf="articleForm.get('category_id')?.invalid && articleForm.get('category_id')?.touched" class="text-danger small mt-1">
+                Vui lòng chọn danh mục
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- Slug -->
+          <div class="col-md-8">
+            <div class="form-group mb-3">
+              <label for="slug" class="form-label">Slug</label>
+              <input type="text" class="form-control" id="slug" formControlName="slug" placeholder="Slug sẽ được tự động tạo từ tiêu đề">
+              <small class="text-muted">Slug sẽ được sử dụng trong URL, tự động tạo từ tiêu đề</small>
+            </div>
+          </div>
+          
+          <!-- Độ ưu tiên -->
+          <div class="col-md-4">
+            <div class="form-group mb-3">
+              <label for="priority" class="form-label">Độ ưu tiên <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" id="priority" formControlName="priority" placeholder="Nhập độ ưu tiên">
+              <small class="text-muted">Số càng nhỏ thì độ ưu tiên càng cao</small>
+              <div *ngIf="articleForm.get('priority')?.invalid && articleForm.get('priority')?.touched" class="text-danger small mt-1">
+                <div *ngIf="articleForm.get('priority')?.errors?.['required']">Vui lòng nhập độ ưu tiên</div>
+                <div *ngIf="articleForm.get('priority')?.errors?.['min']">Độ ưu tiên không được nhỏ hơn 0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- ✅ Hình ảnh với upload và preview -->
+          <div class="col-md-12">
+            <div class="form-group mb-3">
+              <label for="thumbnail" class="form-label">Hình ảnh đại diện</label>
+              
+              <!-- ✅ Preview ảnh hiện tại hoặc ảnh mới -->
+              <div *ngIf="hasImage()" class="mb-3">
+                <div class="position-relative d-inline-block">
+                  <img [src]="getCurrentImageSrc()" 
+                       class="img-thumbnail" 
+                       style="max-width: 300px; max-height: 200px;" 
+                       alt="Current image">
+                  <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" 
+                          (click)="removeImage()" title="Xóa hình ảnh">
+                    <i class="feather icon-x"></i>
+                  </button>
+                </div>
+                <!-- ✅ Hiển thị thông tin ảnh -->
+                <div class="mt-2">
+                  <small class="text-muted">
+                    <i class="feather icon-info me-1"></i>
+                    {{ imagePreview ? 'Ảnh mới được chọn' : 'Ảnh hiện tại của bài viết' }}
+                  </small>
+                </div>
+              </div>
+              
+              <!-- File input -->
+              <input type="file" class="form-control" id="thumbnailFile" 
+                     accept="image/*" (change)="onFileSelected($event)">
+              <input type="hidden" formControlName="thumbnail">
+              <small class="text-muted">
+                Chọn ảnh mới nếu muốn thay đổi | Kích thước đề xuất: 800x450px | Định dạng: JPG, PNG | Tối đa: 5MB
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nội dung -->
+        <div class="row">
+          <div class="col-md-12">
+            <div class="form-group mb-3">
+              <label for="content" class="form-label">Nội dung <span class="text-danger">*</span></label>
+              <textarea class="form-control" id="content" formControlName="content" rows="15" placeholder="Nhập nội dung bài viết"></textarea>
+              <div *ngIf="articleForm.get('content')?.invalid && articleForm.get('content')?.touched" class="text-danger small mt-1">
+                <div *ngIf="articleForm.get('content')?.errors?.['required']">Vui lòng nhập nội dung</div>
+                <div *ngIf="articleForm.get('content')?.errors?.['minlength']">Nội dung phải có ít nhất 20 ký tự</div>
+              </div>
+              <small class="text-muted">Hỗ trợ HTML cơ bản cho định dạng.</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nút thao tác -->
+        <div class="row">
+          <div class="col-12 text-end">
+            <button type="button" class="btn btn-secondary me-2" (click)="onCancel()" [disabled]="submitting">Hủy bỏ</button>
+            <button type="submit" class="btn btn-primary" [disabled]="submitting || articleForm.invalid">
+              <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2" role="status"></span>
+              {{ submitting ? 'Đang lưu...' : 'Lưu thay đổi' }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </app-card>
+  </div>
+</div>
