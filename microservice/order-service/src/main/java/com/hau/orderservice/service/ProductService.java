@@ -20,6 +20,7 @@ public class ProductService {
                 .price(productEvent.getPrice())
                 .quantity(productEvent.getQuantity())
                 .title(productEvent.getTitle())
+                .thumbnail(productEvent.getThumbnail())
                 .build();
         productRepository.save(product);
     }
@@ -31,6 +32,7 @@ public class ProductService {
         product.setDiscount(productEvent.getDiscount());
         product.setPrice(productEvent.getPrice());
         product.setTitle(productEvent.getTitle());
+        product.setThumbnail(productEvent.getThumbnail());
         productRepository.save(product);
 
     }

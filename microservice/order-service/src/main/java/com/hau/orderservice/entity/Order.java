@@ -24,6 +24,8 @@ public class Order {
     private String fullName;
     private String phone;
     private String address;
+    //(0: giao hàng thành công, 1: chờ xác nhận, 2: chờ đơn vị vận chuyển,
+    // 3: đang vận chuyển, 4: đã giao, 5: đã huỷ)
     private Integer status;
     private Integer paymentMethod;
     private Integer paymentStatus;

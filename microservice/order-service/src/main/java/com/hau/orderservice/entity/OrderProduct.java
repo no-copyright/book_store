@@ -18,8 +18,12 @@ public class OrderProduct {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
+
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private  Product product;
+
     private Integer cartProductId;
-    private Long productId;
     private String productName;
     private Integer price;
     private Integer quantity;

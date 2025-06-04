@@ -28,7 +28,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.time.LocalDateTime;
 
 import java.util.List;
@@ -77,6 +76,39 @@ public class BlogServiceImpl implements BlogService {
                 .build();
     }
 
+//    @Transactional
+//    @Override
+//    public ApiResponse<BlogResponse> createBlog(BlogRequest request) throws IOException {
+//        MultipartFile thumbnail = FileUtils.convertPathToMultipartFile(request.getThumbnail());
+//
+//        if(thumbnail.isEmpty()) {
+//            throw new AppException(HttpStatus.BAD_REQUEST, "Thumbnail không được để trống", null);
+//        }
+//
+//        Blog blog = blogMapper.toBlog(request);
+//
+//        Category category = categoryRepository.findById(request.getCategoryId())
+//                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy danh mục với id: " + request.getCategoryId(), null));
+//
+//        blog.setCategory(category);
+//        String thumbnailUrl = fileUploadService.uploadFileAndGetUrl(thumbnail, "blog/thumbnails");
+//        blog.setThumbnail(thumbnailUrl);
+//        blog.setSlug(StringConverter.toSlug(blog.getTitle()));
+//        Blog savedBlog = blogRepository.save(blog);
+//        blog.setSlug(slugService.generateUniqueSlug(savedBlog.getTitle(), savedBlog.getId()));
+//        savedBlog = blogRepository.save(savedBlog);
+//        BlogResponse response = blogMapper.toBlogResponse(savedBlog);
+//
+//
+//
+//        return ApiResponse.<BlogResponse>builder()
+//                .status(HttpStatus.CREATED.value())
+//                .message("Tạo blog thành công")
+//                .result(response)
+//                .timestamp(LocalDateTime.now())
+//                .build();
+//    }
+
     @Transactional
     @Override
     public ApiResponse<BlogResponse> updateBlog(Long id, BlogRequest request, MultipartFile thumbnail) {
@@ -99,6 +131,31 @@ public class BlogServiceImpl implements BlogService {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
+
+//    @Transactional
+//    @Override
+//    public ApiResponse<BlogResponse> updateBlog(Long id, BlogRequest request) throws IOException {
+//        Blog blog = blogRepository.findById(id)
+//                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy blog với id: " + id, null));
+//
+//        MultipartFile thumbnail = FileUtils.convertPathToMultipartFile(request.getThumbnail());
+//
+//        if(!thumbnail.isEmpty()) {
+//            String thumbnailUrl = fileUploadService.uploadFileAndGetUrl(thumbnail, "blog/thumbnails");
+//            blog.setThumbnail(thumbnailUrl);
+//        }
+//        Blog updatedBlog = blogMapper.toBlogUpdateFromRequest(request, blog);
+//        blog.setSlug(slugService.generateUniqueSlug(updatedBlog.getTitle(), id));
+//        blogRepository.save(updatedBlog);
+//        BlogResponse response = blogMapper.toBlogResponse(updatedBlog);
+//
+//        return ApiResponse.<BlogResponse>builder()
+//                .status(HttpStatus.OK.value())
+//                .message("Cập nhật blog thành công")
+//                .result(response)
+//                .timestamp(LocalDateTime.now())
+//                .build();
+//    }
 
     @Transactional
     @Override

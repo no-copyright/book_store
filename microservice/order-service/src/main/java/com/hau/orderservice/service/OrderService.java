@@ -76,11 +76,11 @@ public class OrderService {
 
             // Create OrderProduct entity
             OrderProduct orderProduct = OrderProduct.builder()
-                    .productId(itemRequest.getProductId())
                     .quantity(itemRequest.getQuantity())
                     .productName(product.getTitle())
                     .price(product.getPrice())
                     .order(order)
+                    .product(product)
                     .build();
             product.setQuantity(product.getQuantity() - itemRequest.getQuantity());
             orderProductsEntitySet.add(orderProduct);
@@ -179,6 +179,7 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Đơn hàng không tồn tại", null));
         OrderResponse orderResponse = orderMapper.toOrderResponse(order);
+
         return ApiResponse.<OrderResponse>builder()
                 .status(HttpStatus.OK.value())
                 .message("Lấy thông tin đơn hàng thành công")
@@ -221,7 +222,7 @@ public class OrderService {
                 Map.entry("createdAt", order.getCreatedAt()),
                 Map.entry("orderProducts", order.getOrderProducts().stream()
                         .map(orderProduct -> Map.of(
-                                "productId", orderProduct.getProductId(),
+                                "productId", orderProduct.getProduct().getId(),
                                 "productName", orderProduct.getProductName(),
                                 "quantity", orderProduct.getQuantity(),
                                 "price", orderProduct.getPrice()))
