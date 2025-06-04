@@ -21,14 +21,18 @@ export class EditProductComponent implements OnInit {
   productId: string;
   loading = false;
   submitting = false;
-  selectedFile: File | null = null;
-  imagePreview: string | null = null;
-  isEditMode = false;
-
-  // Thêm properties cho file handling
-  selectedThumbnailFile?: File;
+  
+  // ✅ Image management - chỉ giữ lại properties cần thiết
+  selectedThumbnailFile: File | null = null;
+  thumbnailPreview: string | null = null;
+  currentThumbnail: string | null = null;
+  
+  // ✅ Multiple images
   selectedImageFiles: File[] = [];
-
+  imagePreviews: string[] = [];
+  currentImages: string[] = [];
+  maxImages = 5;
+  
   categories: Category[] = [];
   selectedCategoryIds: string[] = [];
   showCategoryModal = false;
@@ -43,7 +47,6 @@ export class EditProductComponent implements OnInit {
   ) {
     this.productId = this.route.snapshot.paramMap.get('id') || '';
     
-    // Đảm bảo tất cả FormControl được khởi tạo đầy đủ
     this.productForm = this.fb.group({
       id: [''],
       title: ['', [Validators.required, Validators.minLength(2)]],
@@ -61,12 +64,12 @@ export class EditProductComponent implements OnInit {
       priority: [0, [Validators.required, Validators.min(0)]],
       description: [''],
       averageRate: [0],
-      active: ['true'], // Sử dụng string thay vì boolean
+      active: ['true'],
       imageUrls: [[]],
       categories: [[]],
       createdAt: [''],
       
-      // Thêm các computed fields để tránh lỗi
+      // Computed fields
       code: [''],
       name: [''],
       image: [''],
@@ -78,17 +81,14 @@ export class EditProductComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading = true;
-    this.loadCategories(); // ✅ Load categories trước
+    this.loadCategories();
   }
 
-  // ✅ Load categories và sau đó load product data
   loadCategories(): void {
     this.categoryService.getCategoriesFlat().subscribe({
       next: (categories) => {
         this.categories = categories;
         console.log('Categories loaded:', this.categories.length);
-        
-        // ✅ Load product data sau khi đã có categories
         this.loadProductData();
       },
       error: (error) => {
@@ -105,21 +105,21 @@ export class EditProductComponent implements OnInit {
         if (product) {
           console.log('=== LOADED PRODUCT DEBUG ===');
           console.log('Product from API:', product);
-          console.log('Product categories:', product.categories);
+          console.log('Product imageUrls:', product.imageUrls);
           
-          // Set image preview from current thumbnail
-          this.imagePreview = product.thumbnail;
+          // Set current images từ API
+          this.currentThumbnail = product.thumbnail;
+          this.thumbnailPreview = product.thumbnail;
+          this.currentImages = product.imageUrls || [];
           
-          // ✅ Set selected categories từ product data TRƯỚC KHI patch form
+          // Set selected categories
           if (product.categories && Array.isArray(product.categories)) {
             this.selectedCategoryIds = product.categories.map(id => id.toString());
-            console.log('Selected category IDs set:', this.selectedCategoryIds);
           } else {
             this.selectedCategoryIds = [];
-            console.log('No categories in product, setting empty array');
           }
           
-          // Patch dữ liệu với active conversion
+          // Patch form data
           this.productForm.patchValue({
             id: product.id,
             title: product.title || '',
@@ -137,13 +137,20 @@ export class EditProductComponent implements OnInit {
             priority: product.priority || 0,
             description: product.description || '',
             averageRate: product.averageRate || 0,
-            active: product.active === true ? 'true' : 'false', // Convert boolean to string cho select
-            imageUrls: Array.isArray(product.imageUrls) ? product.imageUrls : [],
-            categories: this.selectedCategoryIds, // ✅ Sử dụng selectedCategoryIds đã set
-            createdAt: product.createdAt || new Date().toISOString()
+            active: product.active.toString(),
+            imageUrls: product.imageUrls || [],
+            categories: product.categories || [],
+            createdAt: product.createdAt || new Date().toISOString(),
+            
+            // Computed fields
+            code: `SP${product.id.toString().padStart(3, '0')}`,
+            name: product.title,
+            image: product.thumbnail,
+            originalPrice: product.price,
+            status: this.getProductStatus(product.quantity, product.active),
+            format: product.form
           });
           
-          console.log('Form patched with categories:', this.productForm.get('categories')?.value);
           console.log('Selected category IDs:', this.selectedCategoryIds);
         } else {
           this.toastService.error('Lỗi', 'Không tìm thấy sản phẩm!');
@@ -160,7 +167,115 @@ export class EditProductComponent implements OnInit {
     });
   }
 
-  // ✅ Toggle category selection
+  // ✅ GIỮ LẠI CHỈ 1 METHOD onThumbnailChange
+  onThumbnailChange(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        this.toastService.error('Lỗi', 'Vui lòng chọn file hình ảnh!');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        this.toastService.error('Lỗi', 'Kích thước file không được vượt quá 5MB!');
+        return;
+      }
+
+      this.selectedThumbnailFile = file;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.thumbnailPreview = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+      
+      console.log('New thumbnail selected:', file.name);
+    }
+  }
+
+  // ✅ Method để reset thumbnail về ảnh gốc
+  resetThumbnail(): void {
+    this.selectedThumbnailFile = null;
+    this.thumbnailPreview = this.currentThumbnail;
+    
+    const fileInput = document.getElementById('thumbnail') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  }
+
+  // ✅ Method để remove thumbnail
+  removeImage(): void {
+    this.selectedThumbnailFile = null;
+    this.thumbnailPreview = this.currentThumbnail;
+    
+    const fileInput = document.getElementById('thumbnail') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+    
+    this.productForm.patchValue({ thumbnail: this.currentThumbnail });
+  }
+
+  // ✅ Handle multiple images
+  onImagesChange(event: any): void {
+    const files = Array.from(event.target.files) as File[];
+    
+    if (files.length === 0) return;
+
+    const totalImages = this.currentImages.length + this.selectedImageFiles.length + files.length;
+    if (totalImages > this.maxImages) {
+      this.toastService.error('Lỗi', `Tổng số ảnh không được vượt quá ${this.maxImages}!`);
+      return;
+    }
+
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) {
+        this.toastService.error('Lỗi', `File ${file.name} không phải là hình ảnh!`);
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        this.toastService.error('Lỗi', `File ${file.name} vượt quá 5MB!`);
+        return;
+      }
+    }
+
+    files.forEach(file => {
+      this.selectedImageFiles.push(file);
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.imagePreviews.push(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    event.target.value = '';
+  }
+
+  // ✅ Remove current image
+  removeCurrentImage(index: number): void {
+    if (index >= 0 && index < this.currentImages.length) {
+      this.currentImages.splice(index, 1);
+      console.log('Current image removed, remaining:', this.currentImages.length);
+    }
+  }
+
+  // ✅ Remove new image
+  removeNewImage(index: number): void {
+    if (index >= 0 && index < this.selectedImageFiles.length) {
+      this.selectedImageFiles.splice(index, 1);
+      this.imagePreviews.splice(index, 1);
+      console.log('New image removed, remaining:', this.selectedImageFiles.length);
+    }
+  }
+
+  // ✅ Get total images count
+  getTotalImagesCount(): number {
+    return this.currentImages.length + this.selectedImageFiles.length;
+  }
+
+  // ✅ Category management methods
   toggleCategory(categoryId: string | number): void {
     const id = categoryId.toString();
     const index = this.selectedCategoryIds.indexOf(id);
@@ -171,7 +286,6 @@ export class EditProductComponent implements OnInit {
       this.selectedCategoryIds.push(id);
     }
     
-    // Update form control
     this.productForm.patchValue({
       categories: this.selectedCategoryIds
     });
@@ -180,14 +294,10 @@ export class EditProductComponent implements OnInit {
     console.log('Selected category IDs after toggle:', this.selectedCategoryIds);
   }
 
-  // ✅ Check if category is selected
   isCategorySelected(categoryId: string | number): boolean {
-    const isSelected = this.selectedCategoryIds.includes(categoryId.toString());
-    console.log(`Category ${categoryId} selected:`, isSelected);
-    return isSelected;
+    return this.selectedCategoryIds.includes(categoryId.toString());
   }
 
-  // ✅ Get selected category names for display
   getSelectedCategoryNames(): string {
     if (this.selectedCategoryIds.length === 0) {
       return 'Chưa chọn danh mục nào';
@@ -199,25 +309,21 @@ export class EditProductComponent implements OnInit {
     return selectedCategories.map(cat => cat.name).join(', ');
   }
 
-  // ✅ Format category name with hierarchy
   formatCategoryName(category: Category): string {
     const level = category.level || 0;
     return '•'.repeat(level) + (level > 0 ? ' ' : '') + category.name;
   }
 
-  // ✅ Open category selection modal
   openCategoryModal(): void {
     this.showCategoryModal = true;
     console.log('Category modal opened. Categories available:', this.categories.length);
     console.log('Selected categories:', this.selectedCategoryIds);
   }
 
-  // ✅ Close category selection modal
   closeCategoryModal(): void {
     this.showCategoryModal = false;
   }
 
-  // ✅ Clear all selected categories
   clearAllCategories(): void {
     this.selectedCategoryIds = [];
     this.productForm.patchValue({
@@ -226,13 +332,11 @@ export class EditProductComponent implements OnInit {
     console.log('All categories cleared');
   }
 
-  // ✅ Helper method để lấy tên category theo ID
   getCategoryNameById(categoryId: string): string {
     const category = this.categories.find(c => c.id.toString() === categoryId);
     return category ? category.name : categoryId;
   }
 
-  // ✅ Helper method để lấy class CSS cho badge type
   getCategoryTypeBadgeClass(type?: string): string {
     switch (type) {
       case 'BLOG': return 'bg-info';
@@ -241,7 +345,6 @@ export class EditProductComponent implements OnInit {
     }
   }
 
-  // ✅ Helper method để lấy text cho type
   getCategoryTypeText(type?: string): string {
     switch (type) {
       case 'BLOG': return 'Blog';
@@ -250,44 +353,22 @@ export class EditProductComponent implements OnInit {
     }
   }
 
-  onFileChange(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.selectedFile = file;
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imagePreview = reader.result as string;
-      };
-      reader.readAsDataURL(file);
+  // ✅ Helper method
+  private getProductStatus(quantity: number, active: boolean): string {
+    if (!active) {
+      return 'inactive';
     }
-  }
-
-  removeImage(): void {
-    this.selectedFile = null;
-    this.imagePreview = null;
-    this.productForm.patchValue({ thumbnail: '' });
-  }
-
-  // Method để handle thumbnail file selection
-  onThumbnailFileSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.selectedThumbnailFile = file;
-      console.log('Thumbnail file selected:', file.name);
+    if (quantity <= 0) {
+      return 'out_of_stock';
     }
+    if (quantity <= 10) {
+      return 'low_stock';
+    }
+    return 'in_stock';
   }
 
-  // Method để handle multiple image files selection
-  onImageFilesSelected(event: any): void {
-    const files = Array.from(event.target.files) as File[];
-    this.selectedImageFiles = files;
-    console.log('Image files selected:', files.map(f => f.name));
-  }
-
+  // ✅ Submit form
   onSubmit(): void {
-    // Kiểm tra form tồn tại và valid
     if (!this.productForm) {
       this.toastService.error('Lỗi', 'Form chưa được khởi tạo!');
       return;
@@ -300,6 +381,9 @@ export class EditProductComponent implements OnInit {
       console.log('=== FORM SUBMIT DEBUG ===');
       console.log('Form value before processing:', formValue);
       console.log('Selected category IDs:', this.selectedCategoryIds);
+      console.log('Current images:', this.currentImages);
+      console.log('Selected thumbnail file:', this.selectedThumbnailFile?.name);
+      console.log('Selected image files:', this.selectedImageFiles.length);
       
       // Convert active từ string về boolean
       let activeValue: boolean;
@@ -309,10 +393,10 @@ export class EditProductComponent implements OnInit {
         activeValue = Boolean(formValue.active);
       }
       
-      // ✅ Convert selectedCategoryIds to numbers for API
+      // Convert selectedCategoryIds to numbers for API
       const categoryIds = this.selectedCategoryIds.map(id => parseInt(id, 10));
       
-      // Chuẩn bị dữ liệu product
+      // Chuẩn bị dữ liệu product với current images
       const productData: Product = {
         id: formValue.id,
         title: formValue.title || '',
@@ -330,21 +414,28 @@ export class EditProductComponent implements OnInit {
         priority: Number(formValue.priority) || 0,
         description: formValue.description || '',
         averageRate: Number(formValue.averageRate) || 0,
-        active: activeValue, // Sử dụng giá trị đã convert
-        imageUrls: Array.isArray(formValue.imageUrls) ? formValue.imageUrls : [],
-        categories: categoryIds, // ✅ Sử dụng categoryIds đã convert thành number[]
-        createdAt: formValue.createdAt || new Date().toISOString()
+        active: activeValue,
+        imageUrls: this.currentImages, // Sử dụng current images
+        categories: categoryIds,
+        createdAt: formValue.createdAt || new Date().toISOString(),
+        
+        // Computed fields
+        code: formValue.code || '',
+        name: formValue.title,
+        image: formValue.thumbnail,
+        originalPrice: formValue.price,
+        status: formValue.status || 'in_stock',
+        format: formValue.form
       };
 
       console.log('=== EDIT PRODUCT DEBUG ===');
       console.log('Categories to send:', categoryIds);
       console.log('Product data to send:', JSON.stringify(productData, null, 2));
 
-      // Gọi API với multipart data
       this.productService.updateProduct(
         productData, 
-        this.selectedThumbnailFile, 
-        this.selectedImageFiles
+        this.selectedThumbnailFile || undefined, 
+        this.selectedImageFiles.length > 0 ? this.selectedImageFiles : undefined
       ).subscribe({
         next: (response) => {
           console.log('=== UPDATE SUCCESS ===');
@@ -396,7 +487,6 @@ export class EditProductComponent implements OnInit {
     });
   }
 
-  // Thêm method để debug form validation errors
   private getFormValidationErrors(): any {
     const errors: any = {};
     Object.keys(this.productForm.controls).forEach(key => {

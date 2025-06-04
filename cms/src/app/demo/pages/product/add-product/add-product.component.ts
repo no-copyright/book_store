@@ -18,11 +18,17 @@ import { ToastService } from 'src/app/services/toast.service';
 export class AddProductComponent implements OnInit {
   productForm: FormGroup;
   submitting = false;
-  selectedFile: File | null = null;
+  selectedThumbnailFile: File | null = null;
+  selectedImageFiles: File[] = [];
   imagePreview: string | null = null;
   categories: Category[] = [];
   selectedCategoryIds: string[] = [];
-  showCategoryModal = false; // ✅ Thêm để hiển thị modal chọn danh mục
+  showCategoryModal = false;
+  
+  // ✅ THÊM các properties bị thiếu
+  thumbnailPreview: string | null = null;
+  imagePreviews: string[] = [];
+  maxImages = 5; // Giới hạn số ảnh tối đa
 
   constructor(
     private fb: FormBuilder,
@@ -140,73 +146,192 @@ export class AddProductComponent implements OnInit {
     });
   }
 
-  onFileChange(event: any): void {
+  // ✅ THÊM method để handle thumbnail file selection
+  onThumbnailChange(event: any): void {
     const file = event.target.files[0];
     if (file) {
-      this.selectedFile = file;
-      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        this.toastService.error('Lỗi', 'Vui lòng chọn file hình ảnh!');
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        this.toastService.error('Lỗi', 'Kích thước file không được vượt quá 5MB!');
+        return;
+      }
+
+      this.selectedThumbnailFile = file;
+
+      // Create preview
       const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.imagePreview = e.target.result;
+      reader.onload = (e) => {
+        this.thumbnailPreview = e.target?.result as string;
+        this.imagePreview = e.target?.result as string; // Giữ backward compatibility
       };
       reader.readAsDataURL(file);
       
-      this.productForm.patchValue({
-        thumbnail: file.name
-      });
+      console.log('Thumbnail file selected:', file.name, file.size);
     }
   }
 
-  removeImage(): void {
-    this.selectedFile = null;
+  // ✅ THÊM method removeThumbnail
+  removeThumbnail(): void {
+    this.selectedThumbnailFile = null;
+    this.thumbnailPreview = null;
     this.imagePreview = null;
-    this.productForm.patchValue({
-      thumbnail: ''
-    });
+    
+    // Reset file input
+    const fileInput = document.getElementById('thumbnail') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
   }
 
+  // ✅ THÊM method onImagesChange để handle multiple images
+  onImagesChange(event: any): void {
+    const files = Array.from(event.target.files) as File[];
+    
+    if (files.length === 0) return;
+
+    // Check total images limit
+    if (this.selectedImageFiles.length + files.length > this.maxImages) {
+      this.toastService.error('Lỗi', `Chỉ được chọn tối đa ${this.maxImages} ảnh!`);
+      return;
+    }
+
+    // Validate each file
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) {
+        this.toastService.error('Lỗi', `File ${file.name} không phải là hình ảnh!`);
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        this.toastService.error('Lỗi', `File ${file.name} vượt quá 5MB!`);
+        return;
+      }
+    }
+
+    // Add files and create previews
+    this.selectedImageFiles.push(...files);
+    
+    // Create previews for new files
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.imagePreviews.push(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    console.log('Selected image files:', this.selectedImageFiles.length);
+  }
+
+  // ✅ CẬP NHẬT removeImage để nhận index parameter
+  removeImage(index?: number): void {
+    if (index !== undefined && index >= 0 && index < this.selectedImageFiles.length) {
+      // Remove specific image by index
+      this.selectedImageFiles.splice(index, 1);
+      this.imagePreviews.splice(index, 1);
+    } else {
+      // Remove thumbnail (backward compatibility)
+      this.removeThumbnail();
+    }
+  }
+
+  // ✅ THÊM method removeAllImages
+  removeAllImages(): void {
+    this.selectedImageFiles = [];
+    this.imagePreviews = [];
+    
+    // Reset file input
+    const fileInput = document.getElementById('images') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+    
+    this.toastService.info('Đã xóa', 'Đã xóa tất cả ảnh trong thư viện');
+  }
+
+  // ✅ CẬP NHẬT onSubmit để sửa lỗi type
   onSubmit(): void {
     if (this.productForm.valid) {
       this.submitting = true;
       const formValue = this.productForm.value;
-      
+
       // Convert selectedCategoryIds to numbers for API
       const categoryIds = this.selectedCategoryIds.map(id => parseInt(id, 10));
-      
+
       const productData: Product = {
-        id: 0,
-        title: formValue.title,
-        author: formValue.author,
-        publisher: formValue.publisher,
-        publicationYear: formValue.publicationYear,
-        packageSize: formValue.packageSize,
-        pageSize: formValue.pageSize,
-        form: formValue.form,
-        thumbnail: formValue.thumbnail,
-        quantity: formValue.quantity,
-        discount: formValue.discount,
-        price: formValue.price,
-        discountPercent: formValue.discountPercent,
-        priority: formValue.priority,
-        description: formValue.description,
+        id: 0, // ✅ SỬA: Sử dụng 0 thay vì '' cho number type
+        title: formValue.title || '',
+        author: formValue.author || '',
+        publisher: formValue.publisher || '',
+        publicationYear: Number(formValue.publicationYear) || new Date().getFullYear(),
+        packageSize: Number(formValue.packageSize) || 0,
+        pageSize: Number(formValue.pageSize) || 0,
+        form: formValue.form || '',
+        thumbnail: formValue.thumbnail || '',
+        quantity: Number(formValue.quantity) || 0,
+        discount: Number(formValue.discount) || 0,
+        price: Number(formValue.price) || 0,
+        discountPercent: Number(formValue.discountPercent) || 0,
+        priority: Number(formValue.priority) || 0,
+        description: formValue.description || '',
         averageRate: 0,
-        active: formValue.active,
-        imageUrls: formValue.imageUrls || [],
+        active: Boolean(formValue.active),
+        imageUrls: [],
         categories: categoryIds,
-        createdAt: ''
+        createdAt: new Date().toISOString(),
+
+        // Computed fields (sẽ bị loại bỏ trong service)
+        code: '', // ✅ String type - OK
+        name: formValue.title,
+        image: '',
+        originalPrice: Number(formValue.price),
+        status: 'in_stock',
+        format: formValue.form
       };
 
-      console.log('Sending product data:', productData);
-      
-      this.productService.addProduct(productData).subscribe({
-        next: (product) => {
-          this.toastService.success('Thành công', `Thêm sản phẩm "${product.title}" thành công!`);
-          this.router.navigate(['/product/list-product']);
+      console.log('=== ADD PRODUCT DEBUG ===');
+      console.log('Product data:', productData);
+      console.log('Selected thumbnail file:', this.selectedThumbnailFile?.name);
+      console.log('Selected image files:', this.selectedImageFiles.length);
+      console.log('Categories to send:', categoryIds);
+
+      // ✅ Gọi API với multipart data
+      this.productService.addProduct(
+        productData, 
+        this.selectedThumbnailFile || undefined, 
+        this.selectedImageFiles.length > 0 ? this.selectedImageFiles : undefined
+      ).subscribe({
+        next: (newProduct) => {
+          console.log('Product added successfully:', newProduct);
+          this.submitting = false;
+          this.toastService.success('Thành công', 'Thêm sản phẩm thành công!');
+          
+          setTimeout(() => {
+            this.router.navigate(['/product/list-product']);
+          }, 1500);
         },
         error: (error) => {
-          console.error('Lỗi khi thêm sản phẩm:', error);
-          this.toastService.error('Lỗi', 'Đã xảy ra lỗi khi thêm sản phẩm!');
+          console.error('=== ADD PRODUCT ERROR ===');
+          console.error('Error details:', error);
+          
           this.submitting = false;
+          
+          let errorMessage = 'Đã xảy ra lỗi khi thêm sản phẩm!';
+          if (error?.error?.message) {
+            errorMessage = error.error.message;
+          } else if (error?.status === 400) {
+            errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin!';
+          } else if (error?.message) {
+            errorMessage = error.message;
+          }
+          
+          this.toastService.error('Lỗi', errorMessage);
         }
       });
     } else {

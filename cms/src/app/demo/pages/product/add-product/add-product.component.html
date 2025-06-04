@@ -83,25 +83,101 @@
 
         <!-- Hình ảnh và Định dạng -->
         <div class="row">
+          <!-- ✅ THUMBNAIL IMAGE -->
           <div class="col-md-6">
             <div class="form-group mb-3">
-              <label for="thumbnail" class="form-label">Hình ảnh sản phẩm</label>
+              <label for="thumbnail" class="form-label">
+                Ảnh đại diện <span class="text-danger">*</span>
+              </label>
               
-              <!-- Image Preview -->
-              <div class="image-preview-container mb-3" *ngIf="imagePreview">
-                <img [src]="imagePreview" alt="Product thumbnail" class="img-thumbnail product-preview">
-                <button type="button" class="btn btn-sm btn-danger preview-remove-btn" (click)="removeImage()">
+              <!-- Thumbnail Preview -->
+              <div class="image-preview-container mb-3" *ngIf="thumbnailPreview">
+                <img [src]="thumbnailPreview" alt="Product thumbnail" class="img-thumbnail product-preview">
+                <button type="button" class="btn btn-sm btn-danger preview-remove-btn" (click)="removeThumbnail()">
                   <i class="feather icon-x"></i>
                 </button>
               </div>
               
-              <!-- File Input -->
-              <input type="file" class="form-control" id="thumbnail" accept="image/*" (change)="onFileChange($event)">
+              <!-- Thumbnail File Input -->
+              <input type="file" class="form-control" id="thumbnail" 
+                     accept="image/*" (change)="onThumbnailChange($event)">
               <input type="hidden" formControlName="thumbnail">
-              <small class="form-text text-muted">Chọn hình ảnh từ máy tính (JPG, PNG, GIF)</small>
+              
+              <!-- File info -->
+              <div *ngIf="selectedThumbnailFile" class="mt-2">
+                <small class="text-success">
+                  <i class="feather icon-check me-1"></i>
+                  Đã chọn: {{ selectedThumbnailFile.name }} 
+                  ({{ (selectedThumbnailFile.size / 1024 / 1024).toFixed(2) }}MB)
+                </small>
+              </div>
+              
+              <small class="form-text text-muted">
+                <span class="text-danger">*</span> Bắt buộc | Ảnh đại diện sản phẩm | Tối đa 5MB
+              </small>
             </div>
           </div>
 
+          <!-- ✅ PRODUCT GALLERY -->
+          <div class="col-md-6">
+            <div class="form-group mb-3">
+              <label for="images" class="form-label">
+                Thư viện ảnh sản phẩm ({{ selectedImageFiles.length }}/{{ maxImages }})
+              </label>
+              
+              <!-- Image Gallery Preview -->
+              <div class="image-gallery-container mb-3" *ngIf="imagePreviews.length > 0">
+                <div class="image-gallery-grid">
+                  <div *ngFor="let preview of imagePreviews; let i = index" class="image-gallery-item">
+                    <img [src]="preview" alt="Product image {{ i + 1 }}" class="img-thumbnail">
+                    <button type="button" class="btn btn-sm btn-danger gallery-remove-btn" 
+                            (click)="removeImage(i)" title="Xóa ảnh này">
+                      <i class="feather icon-x"></i>
+                    </button>
+                    <span class="image-index">{{ i + 1 }}</span>
+                  </div>
+                </div>
+                
+                <div class="mt-2 d-flex justify-content-between align-items-center">
+                  <small class="text-muted">{{ selectedImageFiles.length }} ảnh đã chọn</small>
+                  <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeAllImages()">
+                    <i class="feather icon-trash-2 me-1"></i> Xóa tất cả
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Multiple Images File Input -->
+              <input type="file" class="form-control" id="images" 
+                     accept="image/*" multiple 
+                     (change)="onImagesChange($event)"
+                     [disabled]="selectedImageFiles.length >= maxImages">
+              
+              <!-- Upload status -->
+              <div class="mt-2">
+                <div *ngIf="selectedImageFiles.length === 0" class="text-muted">
+                  <i class="feather icon-image me-1"></i>
+                  Chưa chọn ảnh nào
+                </div>
+                <div *ngIf="selectedImageFiles.length > 0" class="text-success">
+                  <i class="feather icon-check me-1"></i>
+                  Đã chọn {{ selectedImageFiles.length }} ảnh
+                </div>
+                <div *ngIf="selectedImageFiles.length >= maxImages" class="text-warning">
+                  <i class="feather icon-alert-triangle me-1"></i>
+                  Đã đạt giới hạn tối đa {{ maxImages }} ảnh
+                </div>
+              </div>
+              
+              <small class="form-text text-muted">
+                Chọn nhiều ảnh cùng lúc | Tối đa {{ maxImages }} ảnh | Mỗi ảnh tối đa 5MB
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- ✅ THÊM PHẦN ĐỊNH DẠNG -->
+        <!-- Định dạng -->
+        <div class="row">
           <div class="col-md-6">
             <div class="form-group mb-3">
               <label for="form" class="form-label">Định dạng <span class="text-danger">*</span></label>

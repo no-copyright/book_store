@@ -230,10 +230,10 @@ export class ListProductComponent implements OnInit {
       return product.imageUrls[0];
     }
     
-    return 'assets/images/product-placeholder.jpg';
+    return 'assets/images/placeholder.png';
   }
 
   onImageError(event: any): void {
-    event.target.src = 'assets/images/product-placeholder.jpg';
+    event.target.src = 'assets/images/placeholder.png';
   }
 }
