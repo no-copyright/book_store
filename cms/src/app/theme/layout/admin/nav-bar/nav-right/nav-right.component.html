@@ -1,0 +1,42 @@
+<ul class="navbar-nav ml-auto">
+  <!-- User Info Dropdown -->
+  <li class="nav-item dropdown" *ngIf="currentUser">
+    <a class="nav-link" href="javascript:" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <i class="feather icon-user"></i>
+    </a>
+    <div class="dropdown-menu dropdown-menu-right profile-notification">
+      <div class="pro-head">
+        <img src="assets/images/user/avatar-1.jpg" class="img-radius" alt="User-Profile-Image" />
+        <span>{{ currentUser.username }}</span>
+        <small class="text-muted">{{ currentUser.role }}</small>
+        <a href="javascript:" class="dud-logout" title="Đăng xuất" (click)="logout()">
+          <i class="feather icon-log-out"></i>
+        </a>
+      </div>
+      <ul class="pro-body">
+        <li>
+          <a href="javascript:" class="dropdown-item" (click)="goToProfile()">
+            <i class="feather icon-user"></i> Hồ sơ
+          </a>
+        </li>
+        <li>
+          <a href="javascript:" class="dropdown-item">
+            <i class="feather icon-settings"></i> Cài đặt
+          </a>
+        </li>
+        <li>
+          <a href="javascript:" class="dropdown-item" (click)="logout()">
+            <i class="feather icon-log-out"></i> Đăng xuất
+          </a>
+        </li>
+      </ul>
+    </div>
+  </li>
+
+  <!-- Direct Logout Button (Alternative) -->
+  <li class="nav-item" *ngIf="currentUser">
+    <a class="nav-link" href="javascript:" title="Đăng xuất: {{ currentUser.username }}" (click)="logout()">
+      <i class="feather icon-log-out"></i>
+    </a>
+  </li>
+</ul>

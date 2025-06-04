@@ -1,0 +1,15 @@
+/* Styling cho table */
+.table {
+  vertical-align: middle;
+  
+  thead th {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+  }
+}
+
+/* Hiệu ứng hover cho các nút */
+.btn:hover {
+  transform: translateY(-2px);
+  transition: all 0.2s;
+}

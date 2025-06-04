@@ -1,0 +1,124 @@
+<div class="row">
+  <div class="col-xl-12">
+    <app-card cardTitle="Danh sách sản phẩm" [options]="false" blockClass="table-border-style">
+      <!-- Loading indicator -->
+      <div *ngIf="loading" class="d-flex justify-content-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Đang tải...</span>
+        </div>
+      </div>
+
+      <!-- Search and controls -->
+      <div *ngIf="!loading" class="mb-3 d-flex align-items-center flex-wrap">
+        <div class="me-3 mb-2">
+          <input type="text" class="form-control" [(ngModel)]="searchKeyword" placeholder="Tìm kiếm sản phẩm..." aria-label="Tìm kiếm">
+        </div>
+        <div class="me-3 mb-2">
+          <button class="btn btn-primary mb-0" type="button" (click)="searchProducts()">
+            <i class="feather icon-search"></i> Tìm kiếm
+          </button>
+        </div>
+        <div class="ms-auto mb-2">
+          <button class="btn btn-success" type="button" (click)="navigateToAddProduct()">
+            <i class="feather icon-plus"></i> Thêm sản phẩm
+          </button>
+        </div>
+      </div>
+
+      <!-- Products table -->
+      <div *ngIf="!loading" class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Mã sản phẩm</th>
+              <th>Hình ảnh</th>
+              <th>Tên sản phẩm</th>
+              <th>Nhà xuất bản</th>
+              <th>Định dạng</th>
+              <th>Giá</th>
+              <th>Giảm giá</th>
+              <th>Số lượng</th>
+              <th>Trạng thái</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let product of pagedProducts">
+              <th scope="row">{{ product.code }}</th>
+              <td>
+                <img [src]="getProductImageSrc(product)" 
+                     [alt]="product.name"
+                     (error)="onImageError($event)"
+                     class="img-thumbnail" 
+                     style="width: 50px; height: 50px; object-fit: cover;">
+              </td>
+              <td>{{ product.name }}</td>
+              <td>{{ product.publisher || 'N/A' }}</td>
+              <td>{{ product.format || 'N/A' }}</td>
+              <td>{{ formatPrice(product.price) }}</td>
+              <td>{{ product.discountPercent }}%</td>
+              <td>{{ product.quantity }}</td>
+              <td>
+                <span class="badge" [class.bg-success]="product.active" [class.bg-secondary]="!product.active">
+                  {{ product.active ? 'Hoạt động' : 'Không hoạt động' }}
+                </span>
+              </td>
+              <td>
+                <div class="d-flex">
+                  <button class="btn btn-sm btn-primary me-2" title="Sửa" (click)="navigateToEditProduct(product.id)">
+                    <i class="feather icon-edit"></i>
+                  </button>
+                  <button 
+                    class="btn btn-sm me-2" 
+                    [class.btn-warning]="product.active" 
+                    [class.btn-success]="!product.active"
+                    [title]="product.active ? 'Vô hiệu hóa' : 'Kích hoạt'"
+                    (click)="toggleProductStatus(product)">
+                    <i class="feather" [class.icon-eye-off]="product.active" [class.icon-eye]="!product.active"></i>
+                  </button>
+                  <button class="btn btn-sm btn-danger" title="Xóa" (click)="deleteProduct(product.id)">
+                    <i class="feather icon-trash-2"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="filteredProducts.length === 0">
+              <td colspan="10" class="text-center">
+                <div class="alert alert-info mb-0">
+                  <i class="feather icon-info me-2"></i> 
+                  {{ searchKeyword ? 'Không tìm thấy sản phẩm nào phù hợp' : 'Không có sản phẩm nào' }}
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Phân trang -->
+        <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="totalItems > 0">
+          <div>
+            <span>Hiển thị {{ (currentPage-1) * pageSize + 1 }} đến {{ Math.min(currentPage * pageSize, totalItems) }} trong số {{ totalItems }} sản phẩm</span>
+          </div>
+          <nav *ngIf="totalPages > 1">
+            <ul class="pagination justify-content-end mb-0">
+              <li class="page-item" [class.disabled]="currentPage === 1">
+                <a class="page-link" href="javascript:" (click)="changePage(currentPage - 1)">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+              <ng-container *ngFor="let page of getPageNumbers()">
+                <li class="page-item" [class.active]="currentPage === page">
+                  <a class="page-link" href="javascript:" (click)="changePage(page)">{{ page }}</a>
+                </li>
+              </ng-container>
+              <li class="page-item" [class.disabled]="currentPage === totalPages">
+                <a class="page-link" href="javascript:" (click)="changePage(currentPage + 1)">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </app-card>
+  </div>
+</div>
