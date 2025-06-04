@@ -108,7 +108,7 @@ public class OrderService {
         return ApiResponse.<OrderResponse>builder()
                 .status(HttpStatus.CREATED.value())
                 .message("Tạo đơn hàng thành công")
-                .result(null)
+                .result(orderMapper.toOrderResponse(order))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
