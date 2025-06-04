@@ -6,7 +6,7 @@ import com.hau.orderservice.entity.Order;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {OrderProductMapper.class})
 public interface OrderMapper {
     @Mapping(target = "orderProducts", ignore = true)
     Order toOrder(OrderCreateRequest orderCreateRequest);

@@ -24,7 +24,6 @@ public class OrderProduct {
     private  Product product;
 
     private Integer cartProductId;
-    private Long productId;
     private String productName;
     private Integer price;
     private Integer quantity;

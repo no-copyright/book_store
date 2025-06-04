@@ -19,6 +19,7 @@ public class Notification {
     @MongoId
     private String id;
 
+    private Integer userId;
     private String title;
     private String body;
     private String topic;

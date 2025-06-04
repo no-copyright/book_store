@@ -251,6 +251,7 @@ public class ProductService {
                 .price(savedProduct.getPrice())
                 .quantity(savedProduct.getQuantity())
                 .title(savedProduct.getTitle())
+                .thumbnail(savedProduct.getThumbnail())
                 .build();
         kafkaTemplate.send("product-create-topic", productEvent);
         ProductResponse productResponse = productMapper.toProductResponse(savedProduct);
@@ -360,6 +361,7 @@ public class ProductService {
                 .price(savedProduct.getPrice())
                 .quantity(savedProduct.getQuantity())
                 .title(savedProduct.getTitle())
+                .thumbnail(savedProduct.getThumbnail())
                 .build();
         kafkaTemplate.send("product-update-topic", productEvent);
 
