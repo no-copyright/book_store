@@ -40,4 +40,10 @@ public class NotificationFirebaseController {
         return new ResponseEntity<>(response, HttpStatus.OK);
 
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<String>> deleteNotification(@PathVariable String id) {
+        ApiResponse<String> response = notificationProcessingService.deleteNotification(id);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }
