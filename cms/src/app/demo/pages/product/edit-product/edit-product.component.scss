@@ -61,3 +61,168 @@
     font-size: 14px;
   }
 }
+
+// Trong tệp SCSS của component (ví dụ: edit-product.component.scss)
+
+// --- STYLES CHO THƯ VIỆN ẢNH ---
+
+.image-gallery-grid {
+  display: grid; // Sử dụng CSS Grid để dễ dàng tạo lưới
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); // Tạo các cột tự động, mỗi cột tối thiểu 100px
+  gap: 1rem; // Khoảng cách giữa các ảnh
+  margin-top: 0.5rem;
+
+  .image-gallery-item {
+    position: relative; // Để định vị nút xóa và chỉ số ảnh
+    aspect-ratio: 1 / 1; // Giữ tỷ lệ vuông cho ảnh, bạn có thể thay đổi nếu muốn (ví dụ: 4 / 3)
+    border: 1px solid #e0e0e0;
+    border-radius: 0.25rem; // Bo góc nhẹ
+    overflow: hidden; // Đảm bảo ảnh không tràn ra ngoài
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+
+    &:hover {
+      transform: scale(1.05); // Phóng to nhẹ khi hover
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      z-index: 10; // Đảm bảo ảnh hover nằm trên các ảnh khác
+
+      .gallery-remove-btn {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; // Quan trọng: đảm bảo ảnh lấp đầy mà không bị méo, phần thừa sẽ bị cắt
+      display: block; // Loại bỏ khoảng trống thừa dưới ảnh
+    }
+
+    .gallery-remove-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background-color: rgba(217, 83, 79, 0.85); // Màu đỏ với độ trong suốt
+      border: none;
+      color: white;
+      border-radius: 50%; // Nút tròn
+      width: 24px; // Kích thước nút
+      height: 24px;
+      padding: 0;
+      font-size: 12px; // Kích thước icon
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0; // Mặc định ẩn
+      visibility: hidden;
+      transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+      z-index: 5; // Đảm bảo nút xóa nằm trên ảnh
+
+      &:hover {
+        background-color: #d9534f; // Đậm hơn khi hover nút
+      }
+
+      .feather { // Nếu bạn dùng icon Feather
+        width: 14px;
+        height: 14px;
+      }
+    }
+
+    .image-index {
+      position: absolute;
+      bottom: 5px;
+      left: 5px;
+      font-size: 0.7rem;
+      padding: 2px 5px;
+      border-radius: 3px;
+      color: white;
+      z-index: 5; // Đảm bảo chỉ số nằm trên ảnh
+
+      &.bg-info { // class Bootstrap
+        background-color: #17a2b8 !important; // Ghi đè nếu cần
+      }
+      &.bg-success {
+        background-color: #28a745 !important;
+      }
+    }
+  }
+}
+
+// Container cho ảnh hiện tại và ảnh mới (tùy chọn thêm nếu muốn)
+.current-images-container,
+.new-images-container {
+  padding: 1rem;
+  border: 1px solid #f0f0f0;
+  border-radius: 0.375rem; // Giống với form-control của Bootstrap
+  background-color: #fcfcfc;
+
+  h6.text-muted {
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+}
+
+// Điều chỉnh input file cho gọn hơn
+#images, #thumbnail {
+  font-size: 0.9rem; // Kích thước chữ nhỏ hơn
+}
+
+// Preview ảnh đại diện
+.image-preview-container {
+  position: relative;
+  width: 150px; // Kích thước cố định cho preview ảnh đại diện
+  height: 150px;
+  border: 1px dashed #ccc;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+
+  .product-preview {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; // Hiển thị toàn bộ ảnh trong khung
+  }
+
+  .preview-actions {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: flex;
+    gap: 5px; // Khoảng cách giữa các nút
+    .btn {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.8rem;
+    }
+  }
+
+  .preview-badge {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    font-size: 0.7rem;
+    padding: 2px 5px;
+    border-radius: 3px;
+    color: white;
+  }
+}
+
+// Responsive adjustments cho màn hình nhỏ hơn (ví dụ)
+@media (max-width: 768px) {
+  .image-gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); // Ảnh nhỏ hơn trên mobile
+    gap: 0.5rem;
+  }
+
+  .image-gallery-item .gallery-remove-btn {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+    .feather {
+      width: 12px;
+      height: 12px;
+    }
+  }
+}
