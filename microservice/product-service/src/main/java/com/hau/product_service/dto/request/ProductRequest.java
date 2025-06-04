@@ -59,6 +59,6 @@ public class ProductRequest {
     private String description;
 
     Boolean active;
-
+    @NotNull(message = "Danh mục không được để trống")
     private List<Long> categoryIds;
 }
