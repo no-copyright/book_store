@@ -7,6 +7,9 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface OrderProductMapper {
-    @Mapping(source = "product.id", target = "productId")
+    @Mapping(target = "productId", source = "product.id")
+    @Mapping(target = "thumbnail", expression = "java(orderProduct.getProduct() != null && orderProduct.getProduct().getThumbnail() != null" +
+            " ? \"http://localhost:8888/api/v1/file/media/download/\" + orderProduct.getProduct().getThumbnail()" +
+            " : \"http://localhost:8888/api/v1/file/media/download/default.img\")")
     OrderProductResponse toOrderProductResponse(OrderProduct orderProduct);
 }

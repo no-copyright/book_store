@@ -15,4 +15,5 @@ public class OrderProductResponse {
     private String productName;
     private Integer price;
     private Integer quantity;
+    private String thumbnail;
 }

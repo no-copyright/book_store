@@ -7,6 +7,7 @@ import com.hau.notificationservice.dto.NotificationResponseToUser;
 import com.hau.notificationservice.dto.PageResponse;
 import com.hau.notificationservice.entity.FcmToken;
 import com.hau.notificationservice.entity.Notification;
+import com.hau.notificationservice.exception.AppException;
 import com.hau.notificationservice.mapper.NotificationMapper;
 import com.hau.notificationservice.repository.FcmTokenRepository;
 import com.hau.notificationservice.repository.NotificationRepository;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -104,6 +106,21 @@ public class NotificationProcessingService {
                                 .totalPages(notifications.getTotalPages())
                                 .build()
                 )
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    public ApiResponse<String> deleteNotification(String notificationId) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        Integer userId = Integer.valueOf(authentication.getName());
+
+        Notification notification = notificationRepository.findByIdAndUserId(notificationId, userId)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Thông báo không tồn tại", null));
+
+        notificationRepository.delete(notification);
+        return ApiResponse.<String>builder()
+                .status(200)
+                .message("Xoá thông báo thành công")
                 .timestamp(LocalDateTime.now())
                 .build();
     }
