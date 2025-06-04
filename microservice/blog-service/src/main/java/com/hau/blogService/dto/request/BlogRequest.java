@@ -20,4 +20,6 @@ public class BlogRequest {
     private Integer priority;
     @NotNull(message = "Category ID không được để trống")
     private Long categoryId;
+//    @NotNull(message = "Thumbnail không được để trống")
+//    private String thumbnail;
 }

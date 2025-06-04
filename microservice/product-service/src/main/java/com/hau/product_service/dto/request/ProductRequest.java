@@ -38,7 +38,6 @@ public class ProductRequest {
     @NotBlank(message = "Hình thức không được để trống") // ví dụ: Bìa mềm, Bìa cứng
     private String form;
 
-
     @NotNull(message = "Số lượng không được để trống")
     @Min(value = 0, message = "Số lượng phải >= 0")
     private Integer quantity;
@@ -58,7 +57,14 @@ public class ProductRequest {
     @NotBlank(message = "Mô tả không được để trống")
     private String description;
 
+//    @NotBlank(message = "Thumbnail không được để trống")
+//    @NotEmpty(message = "Thumbnail không được để trống")
+//    String thumbnail;
+//
+//    List<String> images;
+
     Boolean active;
 
     private List<Long> categoryIds;
+
 }

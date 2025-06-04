@@ -14,6 +14,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 @RestController
 @RequiredArgsConstructor
 public class BlogController {
@@ -43,10 +45,17 @@ public class BlogController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+//    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+//    @PostMapping
+//    public ResponseEntity<ApiResponse<BlogResponse>> createBlog(@RequestBody @Valid BlogRequest request) throws IOException {
+//        ApiResponse<BlogResponse> response = blogService.createBlog(request);
+//        return new ResponseEntity<>(response, HttpStatus.CREATED);
+//    }
+
     @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<BlogResponse>> updateBlog(@PathVariable Long id, @RequestPart("blog") @Valid BlogRequest request,
-                                                                @RequestPart(value = "thumbnail") MultipartFile thumbnail) {
+                                                                @RequestPart(value = "thumbnail") MultipartFile thumbnail) throws IOException {
         ApiResponse<BlogResponse> response = blogService.updateBlog(id, request, thumbnail);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
