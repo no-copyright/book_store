@@ -1,15 +1,24 @@
 package com.hau.notificationservice.service;
 
 import com.hau.event.dto.NotificationEvent;
+import com.hau.notificationservice.dto.ApiResponse;
 import com.hau.notificationservice.dto.NotificationRequest;
+import com.hau.notificationservice.dto.NotificationResponseToUser;
+import com.hau.notificationservice.dto.PageResponse;
 import com.hau.notificationservice.entity.FcmToken;
 import com.hau.notificationservice.entity.Notification;
 import com.hau.notificationservice.mapper.NotificationMapper;
 import com.hau.notificationservice.repository.FcmTokenRepository;
 import com.hau.notificationservice.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +42,9 @@ public class NotificationProcessingService {
         Map<String, String> data = new HashMap<>();
         data.put("orderId", notificationEvent.getParams().get("orderId").toString());
         NotificationRequest notificationRequest = NotificationRequest.builder()
+                .userId(userId)
                 .topic("order created")
-                .title("Đặt hàng thành công")
+                .title("Chúc mừng bạn đã đặt hàng thành công")
                 .body("Đơn hàng của bạn đã được đặt thành công với mã đơn hàng: " + notificationEvent.getParams().get("orderId"))
                 .tokens(tokensToSend)
                 .data(data)
@@ -59,6 +69,7 @@ public class NotificationProcessingService {
         String notificationBody = getNotificationBody(oderStatus);
 
         NotificationRequest notificationRequest = NotificationRequest.builder()
+                .userId(userId)
                 .topic("order updated")
                 .title("Cập nhật trạng thái đơn hàng")
                 .body(notificationBody)
@@ -68,6 +79,33 @@ public class NotificationProcessingService {
         Notification notification = notificationMapper.toNotification(notificationRequest);
         notificationRepository.save(notification);
         fcmService.sendMessageToTokens(notificationRequest);
+    }
+
+    public ApiResponse<PageResponse<NotificationResponseToUser>> notificationResponseToUser(int pageIndex, int pageSize) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        Integer userId = Integer.valueOf(authentication.getName());
+
+        Sort sort = Sort.by("createdAt").descending();
+        Pageable pageable = PageRequest.of(pageIndex - 1, pageSize, sort);
+        Page<Notification> notifications = notificationRepository.findNotificationByUserId(userId, pageable);
+
+        List<NotificationResponseToUser> notificationResponses = notifications.stream()
+                .map(notificationMapper::toNotificationResponseToUser)
+                .toList();
+        return ApiResponse.<PageResponse<NotificationResponseToUser>>builder()
+                .status(200)
+                .message("Lấy thông báo thành công")
+                .result(
+                        PageResponse.<NotificationResponseToUser>builder()
+                                .data(notificationResponses)
+                                .currentPage(pageIndex)
+                                .pageSize(pageSize)
+                                .totalElements(notifications.getTotalElements())
+                                .totalPages(notifications.getTotalPages())
+                                .build()
+                )
+                .timestamp(LocalDateTime.now())
+                .build();
     }
 
     private static String getNotificationBody(Integer oderStatus) {

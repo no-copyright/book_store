@@ -15,4 +15,5 @@ public class ProductEvent {
     private Integer price;
     private Integer quantity;
     private String title;
+    private String thumbnail;
 }

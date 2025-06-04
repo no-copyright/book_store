@@ -20,6 +20,7 @@ public class Product {
     private Integer quantity;
     private Integer discount;
     private Integer price;
+    private String thumbnail;
 
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -101,10 +101,12 @@ public class UserService {
             }
 
             userRepository.save(user);
+            UserResponse userResponse = userMapper.toUserResponse(user);
+            userResponse.setProfileImage(fileDownloadPrefix + user.getProfileImage());
             return ApiResponse.<UserResponse>builder()
                     .status(HttpStatus.OK.value())
                     .message("Cập nhật ảnh đại diện thành công")
-                    .result(null)
+                    .result(userResponse)
                     .timestamp(LocalDateTime.now())
                     .build();
 
@@ -184,10 +186,12 @@ public class UserService {
         User user = findUserById(Long.valueOf(authentication.getName()));
         user.setEmail(userUpdateInfoRequest.getEmail());
         userRepository.save(user);
+        UserResponse userResponse = userMapper.toUserResponse(user);
+        userResponse.setProfileImage(fileDownloadPrefix + user.getProfileImage());
         return ApiResponse.<UserResponse>builder()
                 .status(HttpStatus.OK.value())
                 .message("Cập nhật thông tin user thành công")
-                .result(null)
+                .result(userResponse)
                 .timestamp(LocalDateTime.now())
                 .build();
     }
