@@ -18,6 +18,8 @@ public class Order {
 
     private Integer userId;
     private Integer totalPrice;
+    //(0: COD, 1: VNPAY, 2: MOMO)
     private Integer paymentMethod;
+    //(0: đã thanh toán, 1: chưa thanh toán, 2: đã hoàn tiền, 3: không thành công, 5: đã huỷ)
     private Integer paymentStatus;
 }
