@@ -96,7 +96,6 @@ public class ProductController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     @GetMapping("/{productId}")
     public ResponseEntity<ApiResponse<ProductResponse>> getProductById(@PathVariable Long productId) {
         ApiResponse<ProductResponse> response = productService.getProductById(productId);
