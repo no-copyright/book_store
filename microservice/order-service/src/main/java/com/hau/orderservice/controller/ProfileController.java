@@ -1,6 +1,8 @@
 package com.hau.orderservice.controller;
 
 import com.hau.event.dto.ProfileCreateEvent;
+import com.hau.event.dto.ProfileDeleteEvent;
+import com.hau.event.dto.ProfileUpdateEvent;
 import com.hau.orderservice.service.ProfileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +16,16 @@ public class ProfileController {
     private final ProfileService profileService;
     @KafkaListener(topics = "profile-create-event")
     public void handleProfileCreateEvent(ProfileCreateEvent profileCreateEvent) {
-        log.info("Received ProfileCreateEvent: {}", profileCreateEvent);
         profileService.saveProfile(profileCreateEvent);
+    }
+
+    @KafkaListener(topics = "profile-update-event")
+    public void handleProfileUpdateEvent(ProfileUpdateEvent profileUpdateEvent) {
+        profileService.updateProfile(profileUpdateEvent);
+    }
+
+    @KafkaListener(topics = "profile-delete-event")
+    public void handleProfileDeleteEvent(ProfileDeleteEvent id) {
+        profileService.deleteProfile(id);
     }
 }

@@ -1,6 +1,8 @@
 package com.hau.profile_service.service;
 
 import com.hau.event.dto.ProfileCreateEvent;
+import com.hau.event.dto.ProfileDeleteEvent;
+import com.hau.event.dto.ProfileUpdateEvent;
 import com.hau.profile_service.dto.*;
 import com.hau.profile_service.entity.Profile;
 import com.hau.profile_service.exception.AppException;
@@ -71,7 +73,14 @@ public class ProfileService {
         Profile profile = findProfileById(userId);
         profileMapper.updateUserProfile(profile, profileUpdateRequest);
         profileRepository.save(profile);
-
+        ProfileUpdateEvent profileUpdateEvent = ProfileUpdateEvent.builder()
+                .id(profile.getId())
+                .userId(profile.getUserId())
+                .fullName(profile.getFullName())
+                .phone(profile.getPhone())
+                .address(profile.getAddress())
+                .build();
+        kafkaTemplate.send("profile-update-event", profileUpdateEvent);
         return ApiResponse.<ProfileResponse>builder()
                 .status(HttpStatus.OK.value())
                 .message("Cập nhật thông tin thành công")
@@ -83,6 +92,10 @@ public class ProfileService {
     public ApiResponse<String> deleteProfile(Long profileId) {
         Profile profile = findProfileById(profileId);
         profileRepository.delete(profile);
+        ProfileDeleteEvent profileDeleteEvent = ProfileDeleteEvent.builder()
+                .id(profile.getId())
+                .build();
+        kafkaTemplate.send("profile-delete-event", profileDeleteEvent);
 
         return ApiResponse.<String>builder()
                 .status(HttpStatus.OK.value())
