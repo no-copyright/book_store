@@ -1,0 +1,129 @@
+<div class="row">
+  <div class="col-xl-12">
+    <app-card cardTitle="Chỉnh sửa cấu hình trang chủ" [options]="false">
+      <div *ngIf="loading" class="d-flex justify-content-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <form *ngIf="!loading" [formGroup]="homepageForm" (ngSubmit)="onSubmit()" class="card-body pt-0">
+        <div class="row">
+          <div class="col-12">
+            <h4 class="text-center text-primary my-4">Cấu hình banner trang chủ</h4>
+          </div>
+
+          <!-- Banner 1 -->
+          <div class="col-lg-4 mb-4">
+            <div class="card border shadow-sm h-100">
+              <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Banner 1 <span class="text-danger">*</span></h5>
+              </div>
+              <div class="card-body">
+                <div class="image-preview mb-4" *ngIf="imagePreviews.banner_1">
+                  <img [src]="imagePreviews.banner_1" class="img-fluid rounded shadow" style="max-height: 200px; width: 100%; object-fit: cover;" alt="Banner 1 Preview">
+                  <button type="button" class="btn btn-sm btn-danger mt-2" (click)="removeImage('banner_1')">
+                    <i class="feather icon-trash-2 me-1"></i> Xóa ảnh
+                  </button>
+                </div>
+                
+                <div class="form-group mb-4">
+                  <label for="file-banner_1" class="form-label">Chọn ảnh banner</label>
+                  <input type="file" class="form-control" id="file-banner_1" 
+                         accept="image/*" (change)="onFileChange($event, 'banner_1')">
+                  <input type="hidden" formControlName="banner_1">
+                  
+                  <div *ngIf="homepageForm.get('banner_1')?.invalid && homepageForm.get('banner_1')?.touched" 
+                       class="text-danger small mt-1">
+                    Bạn cần chọn ảnh cho Banner 1
+                  </div>
+                  <small class="form-text text-muted">
+                    Kích thước đề xuất: 1920x600px, Định dạng: JPG, PNG
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Banner 2 -->
+          <div class="col-lg-4 mb-4">
+            <div class="card border shadow-sm h-100">
+              <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Banner 2 <span class="text-danger">*</span></h5>
+              </div>
+              <div class="card-body">
+                <div class="image-preview mb-4" *ngIf="imagePreviews.banner_2">
+                  <img [src]="imagePreviews.banner_2" class="img-fluid rounded shadow" style="max-height: 200px; width: 100%; object-fit: cover;" alt="Banner 2 Preview">
+                  <button type="button" class="btn btn-sm btn-danger mt-2" (click)="removeImage('banner_2')">
+                    <i class="feather icon-trash-2 me-1"></i> Xóa ảnh
+                  </button>
+                </div>
+                
+                <div class="form-group mb-4">
+                  <label for="file-banner_2" class="form-label">Chọn ảnh banner</label>
+                  <input type="file" class="form-control" id="file-banner_2" 
+                         accept="image/*" (change)="onFileChange($event, 'banner_2')">
+                  <input type="hidden" formControlName="banner_2">
+                  
+                  <div *ngIf="homepageForm.get('banner_2')?.invalid && homepageForm.get('banner_2')?.touched" 
+                       class="text-danger small mt-1">
+                    Bạn cần chọn ảnh cho Banner 2
+                  </div>
+                  <small class="form-text text-muted">
+                    Kích thước đề xuất: 1920x600px, Định dạng: JPG, PNG
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Banner 3 -->
+          <div class="col-lg-4 mb-4">
+            <div class="card border shadow-sm h-100">
+              <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Banner 3 <span class="text-danger">*</span></h5>
+              </div>
+              <div class="card-body">
+                <div class="image-preview mb-4" *ngIf="imagePreviews.banner_3">
+                  <img [src]="imagePreviews.banner_3" class="img-fluid rounded shadow" style="max-height: 200px; width: 100%; object-fit: cover;" alt="Banner 3 Preview">
+                  <button type="button" class="btn btn-sm btn-danger mt-2" (click)="removeImage('banner_3')">
+                    <i class="feather icon-trash-2 me-1"></i> Xóa ảnh
+                  </button>
+                </div>
+                
+                <div class="form-group mb-4">
+                  <label for="file-banner_3" class="form-label">Chọn ảnh banner</label>
+                  <input type="file" class="form-control" id="file-banner_3" 
+                         accept="image/*" (change)="onFileChange($event, 'banner_3')">
+                  <input type="hidden" formControlName="banner_3">
+                  
+                  <div *ngIf="homepageForm.get('banner_3')?.invalid && homepageForm.get('banner_3')?.touched" 
+                       class="text-danger small mt-1">
+                    Bạn cần chọn ảnh cho Banner 3
+                  </div>
+                  <small class="form-text text-muted">
+                    Kích thước đề xuất: 1920x600px, Định dạng: JPG, PNG
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nút thao tác -->
+        <div class="row mt-4">
+          <div class="col-12 d-flex justify-content-end">
+            <button type="button" class="btn btn-outline-secondary me-2 px-4" (click)="onCancel()">
+              <i class="feather icon-x me-1"></i> Hủy bỏ
+            </button>
+            <button type="submit" class="btn btn-primary px-4" [disabled]="submitting || homepageForm.invalid">
+              <i class="feather icon-save me-1"></i>
+              <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+              Lưu cấu hình
+            </button>
+          </div>
+        </div>
+      </form>
+    </app-card>
+  </div>
+</div>

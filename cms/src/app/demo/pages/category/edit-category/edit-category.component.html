@@ -1,0 +1,96 @@
+<div class="row">
+  <div class="col-xl-12">
+    <app-card cardTitle="Chỉnh sửa danh mục" [options]="false">
+      <div *ngIf="loading" class="d-flex justify-content-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+      
+      <form *ngIf="!loading" [formGroup]="categoryForm" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <!-- Tên danh mục -->
+          <div class="col-md-6">
+            <div class="form-group mb-3">
+              <label for="name" class="form-label">Tên danh mục <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="name" formControlName="name" placeholder="Nhập tên danh mục">
+              <div *ngIf="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched" class="text-danger small mt-1">
+                <div *ngIf="categoryForm.get('name')?.errors?.['required']">Vui lòng nhập tên danh mục</div>
+                <div *ngIf="categoryForm.get('name')?.errors?.['minlength']">Tên danh mục phải có ít nhất 2 ký tự</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Slug -->
+          <div class="col-md-6">
+            <div class="form-group mb-3">
+              <label for="slug" class="form-label">Slug <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="slug" formControlName="slug" placeholder="Nhập slug">
+              <div *ngIf="categoryForm.get('slug')?.invalid && categoryForm.get('slug')?.touched" class="text-danger small mt-1">
+                Vui lòng nhập slug
+              </div>
+              <div *ngIf="slugExists" class="text-danger small mt-1">
+                Slug đã tồn tại, vui lòng chọn slug khác
+              </div>
+              <small class="form-text text-muted">Slug sẽ được sử dụng trong URL</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <!-- Độ ưu tiên -->
+          <div class="col-md-4">
+            <div class="form-group mb-3">
+              <label for="priority" class="form-label">Độ ưu tiên <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" id="priority" formControlName="priority" placeholder="Nhập độ ưu tiên">
+              <div *ngIf="categoryForm.get('priority')?.invalid && categoryForm.get('priority')?.touched" class="text-danger small mt-1">
+                <div *ngIf="categoryForm.get('priority')?.errors?.['required']">Vui lòng nhập độ ưu tiên</div>
+                <div *ngIf="categoryForm.get('priority')?.errors?.['min']">Độ ưu tiên không được âm</div>
+              </div>
+              <small class="form-text text-muted">Số càng nhỏ thì độ ưu tiên càng cao</small>
+            </div>
+          </div>
+          
+          <!-- Loại danh mục -->
+          <div class="col-md-4">
+            <div class="form-group mb-3">
+              <label for="type" class="form-label">Loại danh mục <span class="text-danger">*</span></label>
+              <select class="form-select" id="type" formControlName="type">
+                <option value="BLOG">Blog</option>
+                <option value="PRODUCT">Sản phẩm</option>
+              </select>
+              <div *ngIf="categoryForm.get('type')?.invalid && categoryForm.get('type')?.touched" class="text-danger small mt-1">
+                <div *ngIf="categoryForm.get('type')?.errors?.['required']">Vui lòng chọn loại danh mục</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Danh mục cha -->
+          <div class="col-md-4">
+            <div class="form-group mb-3">
+              <label for="parent_id" class="form-label">Danh mục cha</label>
+              <select class="form-select" id="parent_id" formControlName="parent_id">
+                <option value="">-- Không có danh mục cha --</option>
+                <option *ngFor="let category of filteredParentCategories" [value]="category.id" [disabled]="category.id === categoryId">
+                  {{ formatCategoryName(category) }}
+                </option>
+              </select>
+              <small class="form-text text-muted">Để trống nếu muốn tạo danh mục gốc</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Nút thao tác -->
+        <div class="row">
+          <div class="col-12 text-end">
+            <button type="button" class="btn btn-secondary me-2" (click)="onCancel()" [disabled]="submitting">Hủy bỏ</button>
+            <button type="submit" class="btn btn-primary" [disabled]="categoryForm.invalid || slugExists || submitting">
+              <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
+              Lưu thay đổi
+            </button>
+          </div>
+        </div>
+      </form>
+    </app-card>
+  </div>
+</div>
