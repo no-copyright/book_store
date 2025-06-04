@@ -64,7 +64,7 @@ public class ProductRequest {
 //    List<String> images;
 
     Boolean active;
-
+    @NotNull(message = "Danh mục không được để trống")
     private List<Long> categoryIds;
 
 }
