@@ -36,6 +36,14 @@ export interface UserListResponse {
   timestamp: string;
 }
 
+// ✅ THÊM interface cho Role API response
+export interface RoleResponse {
+  status: number;
+  message: string;
+  result: Role[];
+  timestamp: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -240,6 +248,68 @@ export class UserService {
         console.error('Error checking email:', error);
         const exists = this.mockUsers.some(u => u.email === email && u.id !== excludeUserId);
         return of(exists);
+      })
+    );
+  }
+
+  // ✅ THÊM method để lấy tất cả roles từ API
+  getAllRoles(): Observable<Role[]> {
+    return this.http.get<RoleResponse>(`${API_BASE_URL}/identity/roles`).pipe(
+      map(response => {
+        if (response.status === 200) {
+          return response.result;
+        }
+        return [];
+      }),
+      catchError(error => {
+        console.error('Error fetching roles:', error);
+        // Fallback roles
+        return of([
+          {
+            name: 'ADMIN',
+            description: 'Quyền quản trị viên',
+            permissions: []
+          },
+          {
+            name: 'USER',
+            description: 'Quyền người dùng thông thường',
+            permissions: []
+          },
+          {
+            name: 'STAFF',
+            description: 'Quyền nhân viên',
+            permissions: []
+          }
+        ]);
+      })
+    );
+  }
+
+  // ✅ THÊM method để cập nhật quyền người dùng
+  updateUserRoles(userId: string, roleNames: string[]): Observable<boolean> {
+    const updateData = {
+      roles: roleNames
+    };
+
+    return this.http.put<{
+      status: number;
+      message: string;
+      result?: any;
+      timestamp: string;
+    }>(`${API_BASE_URL}/identity/users/${userId}`, updateData).pipe(
+      map(response => response.status === 200),
+      catchError(error => {
+        console.error('Error updating user roles:', error);
+        
+        // Fallback: cập nhật mock data
+        const userIndex = this.mockUsers.findIndex(u => u.id === userId);
+        if (userIndex !== -1) {
+          // Chỉ cập nhật role đầu tiên trong mock data
+          this.mockUsers[userIndex].role = roleNames[0]?.toLowerCase() || 'user';
+          this.mockUsers[userIndex].updated_at = new Date();
+          return of(true);
+        }
+        return of(false);
       })
     );
   }

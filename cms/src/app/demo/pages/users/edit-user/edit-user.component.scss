@@ -2,6 +2,7 @@
   .user-header-section {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     color: white;
+    border: 1px solid #e9ecef;
     
     .user-avatar {
       transition: transform 0.3s ease;
@@ -70,11 +71,9 @@
     
     .info-item {
       .info-label {
-        font-size: 0.875rem;
         font-weight: 600;
         color: #6c757d;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        font-size: 0.875rem;
         margin-bottom: 0.25rem;
         display: block;
       }
@@ -82,21 +81,6 @@
       .info-value {
         font-size: 1rem;
         color: #495057;
-        font-weight: 500;
-        
-        code {
-          font-size: 0.9rem;
-          font-weight: 600;
-        }
-        
-        .badge {
-          font-size: 0.875rem;
-          font-weight: 500;
-        }
-        
-        i {
-          color: #6c757d;
-        }
       }
     }
   }
@@ -121,6 +105,7 @@
   
   .action-buttons {
     border: 1px solid #dee2e6;
+    border-top: 1px solid #e9ecef;
     
     .btn {
       font-weight: 500;
@@ -194,4 +179,90 @@
 
 .user-detail-view {
   animation: fadeInUp 0.5s ease-out;
+}
+
+// ✅ THÊM styles cho roles management
+.roles-editor {
+  .role-card {
+    .card {
+      border: 2px solid #e9ecef;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        border-color: #007bff;
+        box-shadow: 0 2px 4px rgba(0,123,255,0.15);
+        transform: translateY(-2px);
+      }
+      
+      &.border-primary {
+        border-color: #007bff !important;
+        box-shadow: 0 4px 8px rgba(0,123,255,0.2);
+      }
+    }
+    
+    .form-check-input {
+      transform: scale(1.2);
+    }
+  }
+}
+
+.current-roles {
+  .roles-list {
+    .role-item {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 0;
+    }
+  }
+}
+
+.selected-roles-preview {
+  .selected-roles-list {
+    .badge {
+      font-size: 0.875rem;
+    }
+  }
+}
+
+.roles-actions {
+  border-top: 1px solid #e9ecef;
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+// Badge colors
+.badge {
+  &.bg-danger {
+    background-color: #dc3545 !important;
+  }
+  
+  &.bg-warning {
+    background-color: #ffc107 !important;
+    color: #000 !important;
+  }
+  
+  &.bg-info {
+    background-color: #17a2b8 !important;
+  }
+  
+  &.bg-secondary {
+    background-color: #6c757d !important;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .user-header-section {
+    .col-md-3,
+    .col-md-9 {
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+  }
+  
+  .roles-editor {
+    .col-md-4 {
+      margin-bottom: 1rem;
+    }
+  }
 }

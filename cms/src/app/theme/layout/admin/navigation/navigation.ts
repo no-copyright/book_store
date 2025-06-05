@@ -16,22 +16,22 @@ export interface NavigationItem {
 }
 
 export const NavigationItems: NavigationItem[] = [
-  {
-    id: 'navigation',
-    title: 'Navigation',
-    type: 'group',
-    icon: 'icon-navigation',
-    children: [
-      {
-        id: 'dashboard',
-        title: 'Dashboard',
-        type: 'item',
-        url: '/dashboard',
-        icon: 'feather icon-home',
-        classes: 'nav-item'
-      }
-    ]
-  },
+  // {
+  //   id: 'navigation',
+  //   title: 'Navigation',
+  //   type: 'group',
+  //   icon: 'icon-navigation',
+  //   children: [
+  //     {
+  //       id: 'dashboard',
+  //       title: 'Dashboard',
+  //       type: 'item',
+  //       url: '/dashboard',
+  //       icon: 'feather icon-home',
+  //       classes: 'nav-item'
+  //     }
+  //   ]
+  // },
   {
     id: 'quản lý',
     title: 'Quản lý',

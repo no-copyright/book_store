@@ -54,7 +54,7 @@ export default class AuthSigninComponent implements OnInit {
           
           // Thay đổi route redirect - chỉ navigate về /dashboard thay vì /dashboard/default
           setTimeout(() => {
-            this.router.navigate(['/dashboard']).then((navigated: boolean) => {
+            this.router.navigate(['/product/list-product']).then((navigated: boolean) => {
               console.log('Navigation result:', navigated); // Debug log
               if (!navigated) {
                 console.error('Navigation failed, trying alternative route');
