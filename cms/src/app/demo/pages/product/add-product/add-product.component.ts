@@ -4,8 +4,8 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators } 
 import { Router } from '@angular/router';
 import { SharedModule } from 'src/app/theme/shared/shared.module';
 import { LoadingModalComponent } from 'src/app/theme/shared/components/loading-modal/loading-modal.component';
-import { ProductService, Product } from 'src/app/services/product.service';
-import { CategoryService, Category } from 'src/app/services/category.service';
+import { ProductService, Product, ProductCategory } from 'src/app/services/product.service'; // ✅ Import ProductCategory
+import { CategoryService, Category } from 'src/app/services/category.service'; // ✅ Giữ import này nếu còn dùng
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
@@ -21,7 +21,7 @@ export class AddProductComponent implements OnInit {
   selectedThumbnailFile: File | null = null;
   selectedImageFiles: File[] = [];
   imagePreview: string | null = null;
-  categories: Category[] = [];
+  categories: ProductCategory[] = []; // ✅ Thay đổi type thành ProductCategory
   selectedCategoryIds: string[] = [];
   showCategoryModal = false;
   
@@ -48,7 +48,6 @@ export class AddProductComponent implements OnInit {
       form: ['', Validators.required],
       price: [0, [Validators.required, Validators.min(1)]],
       discount: [0],
-      discountPercent: [0, [Validators.min(0), Validators.max(100)]],
       quantity: [0, [Validators.required, Validators.min(0)]],
       priority: [1, [Validators.required, Validators.min(0)]],
       description: [''],
@@ -74,14 +73,14 @@ export class AddProductComponent implements OnInit {
 
   // ✅ Load danh sách categories với hierarchy
   loadCategories(): void {
-    this.categoryService.getCategoriesFlat().subscribe({
+    this.productService.getProductCategories().subscribe({
       next: (categories) => {
         this.categories = categories;
-        console.log('Loaded categories:', categories);
+        console.log('Loaded product categories:', categories);
       },
       error: (error) => {
-        console.error('Lỗi khi tải danh mục:', error);
-        this.toastService.error('Lỗi', 'Không thể tải danh sách danh mục!');
+        console.error('Lỗi khi tải danh mục sản phẩm:', error);
+        this.toastService.error('Lỗi', 'Không thể tải danh sách danh mục sản phẩm!');
       }
     });
   }
@@ -123,9 +122,8 @@ export class AddProductComponent implements OnInit {
   }
 
   // ✅ Format category name with hierarchy
-  formatCategoryName(category: Category): string {
-    const level = category.level || 0;
-    return '•'.repeat(level) + (level > 0 ? ' ' : '') + category.name;
+  formatCategoryName(category: ProductCategory): string {
+    return category.name;
   }
 
   // ✅ Open category selection modal
@@ -277,7 +275,6 @@ export class AddProductComponent implements OnInit {
         quantity: Number(formValue.quantity) || 0,
         discount: Number(formValue.discount) || 0,
         price: Number(formValue.price) || 0,
-        discountPercent: Number(formValue.discountPercent) || 0,
         priority: Number(formValue.priority) || 0,
         description: formValue.description || '',
         averageRate: 0,
@@ -361,23 +358,5 @@ export class AddProductComponent implements OnInit {
   getCategoryNameById(categoryId: string): string {
     const category = this.categories.find(c => c.id.toString() === categoryId);
     return category ? category.name : categoryId;
-  }
-
-  // ✅ Helper method để lấy class CSS cho badge type
-  getCategoryTypeBadgeClass(type?: string): string {
-    switch (type) {
-      case 'BLOG': return 'bg-info';
-      case 'PRODUCT': return 'bg-success';
-      default: return 'bg-secondary';
-    }
-  }
-
-  // ✅ Helper method để lấy text cho type
-  getCategoryTypeText(type?: string): string {
-    switch (type) {
-      case 'BLOG': return 'Blog';
-      case 'PRODUCT': return 'Sản phẩm';
-      default: return 'Khác';
-    }
   }
 }

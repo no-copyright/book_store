@@ -28,6 +28,9 @@ export class ListCategoryComponent implements OnInit {
   totalPages = 1;
   Math = Math;
 
+  // ✅ THAY ĐỔI type thành Set<string> để tương thích với cả string và number
+  expandedItems: Set<string> = new Set();
+
   constructor(
     private router: Router, 
     private categoryService: CategoryService,
@@ -36,6 +39,8 @@ export class ListCategoryComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCategories();
+    // ✅ Mở rộng các danh mục gốc mặc định
+    this.expandRootCategories();
   }
 
   loadCategories(): void {
@@ -250,5 +255,54 @@ export class ListCategoryComponent implements OnInit {
       case 'PRODUCT': return 'bg-success';
       default: return 'bg-secondary';
     }
+  }
+
+  // ✅ SỬA methods cho expand/collapse
+  isExpanded(categoryId: number | string): boolean {
+    return this.expandedItems.has(categoryId.toString());
+  }
+
+  toggleExpand(categoryId: number | string): void {
+    const id = categoryId.toString();
+    if (this.expandedItems.has(id)) {
+      this.expandedItems.delete(id);
+    } else {
+      this.expandedItems.add(id);
+    }
+  }
+
+  hasChildren(category: Category): boolean {
+    return category.children && category.children.length > 0;
+  }
+
+  expandAll(): void {
+    this.expandedItems.clear();
+    this.addAllCategoryIds(this.hierarchicalCategories);
+  }
+
+  collapseAll(): void {
+    this.expandedItems.clear();
+  }
+
+  expandRootCategories(): void {
+    // Mở rộng các danh mục gốc mặc định
+    this.hierarchicalCategories.forEach(category => {
+      if (this.hasChildren(category)) {
+        this.expandedItems.add(category.id.toString());
+      }
+    });
+  }
+
+  private addAllCategoryIds(categories: Category[]): void {
+    categories.forEach(category => {
+      if (this.hasChildren(category)) {
+        this.expandedItems.add(category.id.toString());
+        this.addAllCategoryIds(category.children!);
+      }
+    });
+  }
+
+  trackByCategory(index: number, category: Category): string | number {
+    return category.id;
   }
 }

@@ -32,6 +32,14 @@ public class UserController {
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/register/staff")
+    public ResponseEntity<ApiResponse<UserResponse>> createUserforAdmin(
+            @Valid @RequestBody UserCreateRequest userCreateRequest) {
+        ApiResponse<UserResponse> userResponse = userService.createUserforAdmin(userCreateRequest);
+        return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
+    }
+
     @PutMapping("/profile-image")
     public ResponseEntity<ApiResponse<UserResponse>> updateUserProfileImage(
             @RequestParam("profileImage") MultipartFile profileImage) {

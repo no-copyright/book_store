@@ -19,7 +19,6 @@ public class UserUpdateRequest {
     @Size(min = 6, message = "Password phải có ít nhất 6 ký tự")
     private String password;
 
-    @NotBlank(message = "Email không được để trống")
     @Email(message = "Email không đúng định dạng")
     private String email;
 

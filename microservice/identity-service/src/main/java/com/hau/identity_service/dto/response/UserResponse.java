@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 @AllArgsConstructor
 @Builder
 public class UserResponse {
-    private String id;
+    private Integer id;
     private String username;
     private String email;
     private String profileImage;

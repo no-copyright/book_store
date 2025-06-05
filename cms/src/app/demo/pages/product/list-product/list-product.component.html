@@ -36,7 +36,6 @@
               <th>Nhà xuất bản</th>
               <th>Định dạng</th>
               <th>Giá</th>
-              <th>Giảm giá</th>
               <th>Số lượng</th>
               <th>Trạng thái</th>
               <th>Thao tác</th>
@@ -56,7 +55,6 @@
               <td>{{ product.publisher || 'N/A' }}</td>
               <td>{{ product.format || 'N/A' }}</td>
               <td>{{ formatPrice(product.price) }}</td>
-              <td>{{ product.discountPercent }}%</td>
               <td>{{ product.quantity }}</td>
               <td>
                 <span class="badge" [class.bg-success]="product.active" [class.bg-secondary]="!product.active">

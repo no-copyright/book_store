@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SharedModule } from 'src/app/theme/shared/shared.module';
 import { Router } from '@angular/router';
-import { ArticleService } from 'src/app/services/article.service';
-import { CategoryService, Category } from 'src/app/services/category.service';
+import { ArticleService, Article, BlogCategory } from 'src/app/services/article.service'; // ✅ Import BlogCategory
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
@@ -16,18 +15,21 @@ import { ToastService } from 'src/app/services/toast.service';
 })
 export class AddArticleComponent implements OnInit {
   articleForm: FormGroup;
-  submitting = false;
-  categories: Category[] = [];
   loading = false;
-  selectedFile: File | null = null; // ✅ Thêm file upload
-  imagePreview: string | null = null; // ✅ Thêm preview
+  submitting = false;
+  selectedFile: File | null = null;
+  imagePreview: string | null = null;
   
+  // ✅ Thay đổi type từ Category[] thành BlogCategory[]
+  categories: BlogCategory[] = [];
+
   constructor(
-    private fb: FormBuilder, 
+    private fb: FormBuilder,
     private router: Router,
     private articleService: ArticleService,
-    private categoryService: CategoryService,
     private toastService: ToastService
+    // ✅ XÓA CategoryService injection
+    // private categoryService: CategoryService
   ) {
     this.articleForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(5)]],
@@ -42,30 +44,33 @@ export class AddArticleComponent implements OnInit {
     this.loadCategories();
   }
 
-  // ✅ Load categories chỉ type BLOG
+  // ✅ CẬP NHẬT method loadCategories
   loadCategories(): void {
     this.loading = true;
-    this.categoryService.getCategories().subscribe({
+    this.articleService.getBlogCategories().subscribe({
       next: (categories) => {
-        // ✅ Filter chỉ lấy categories type BLOG
-        this.categories = categories.filter(cat => cat.type === 'BLOG');
+        this.categories = categories;
         this.loading = false;
-        console.log('Loaded BLOG categories for articles:', this.categories);
       },
       error: (error) => {
-        console.error('Error loading categories:', error);
+        console.error('Error loading blog categories:', error);
         this.toastService.error('Lỗi', 'Không thể tải danh sách danh mục');
         this.loading = false;
         
-        // ✅ Fallback categories chỉ type BLOG
+        // Fallback categories
         this.categories = [
-          { id: '1', name: 'Tin tức', slug: 'tin-tuc', priority: 1, type: 'BLOG', level: 0, children: [] },
-          { id: '2', name: 'Review sách', slug: 'review-sach', priority: 2, type: 'BLOG', level: 0, children: [] },
-          { id: '3', name: 'Khuyến mãi', slug: 'khuyen-mai', priority: 3, type: 'BLOG', level: 0, children: [] },
-          { id: '4', name: 'Sự kiện', slug: 'su-kien', priority: 4, type: 'BLOG', level: 0, children: [] }
+          { id: 1, name: 'Tin tức', priority: 1, parentId: null, slug: 'tin-tuc-1' },
+          { id: 2, name: 'Review sách', priority: 2, parentId: null, slug: 'review-sach-2' },
+          { id: 3, name: 'Khuyến mãi', priority: 3, parentId: null, slug: 'khuyen-mai-3' },
+          { id: 4, name: 'Sự kiện', priority: 4, parentId: null, slug: 'su-kien-4' }
         ];
       }
     });
+  }
+
+  // ✅ THÊM helper method để format category name
+  formatCategoryName(category: BlogCategory): string {
+    return category.name;
   }
 
   // ✅ Handle file selection

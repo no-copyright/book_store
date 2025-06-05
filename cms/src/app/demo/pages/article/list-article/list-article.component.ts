@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SharedModule } from 'src/app/theme/shared/shared.module';
-import { ArticleService, Article } from 'src/app/services/article.service';
-import { CategoryService, Category } from 'src/app/services/category.service'; // ✅ Import CategoryService
+import { ArticleService, Article, BlogCategory } from 'src/app/services/article.service'; // ✅ Import BlogCategory
 import { ToastService } from 'src/app/services/toast.service';
 import { forkJoin } from 'rxjs'; // ✅ Import forkJoin để gọi cùng lúc nhiều API
 
@@ -17,7 +16,7 @@ import { forkJoin } from 'rxjs'; // ✅ Import forkJoin để gọi cùng lúc n
 })
 export class ListArticleComponent implements OnInit {
   articles: Article[] = [];
-  categories: Category[] = []; // ✅ Thêm danh sách categories
+  categories: BlogCategory[] = []; // ✅ Thay đổi type
   loading: boolean = false;
   searchKeyword: string = '';
   Math = Math;
@@ -31,22 +30,23 @@ export class ListArticleComponent implements OnInit {
   constructor(
     private router: Router, 
     private articleService: ArticleService,
-    private categoryService: CategoryService, // ✅ Inject CategoryService
     private toastService: ToastService
+    // ✅ XÓA CategoryService injection
+    // private categoryService: CategoryService
   ) {}
 
   ngOnInit(): void {
-    this.loadData(); // ✅ Gọi method mới để load cả articles và categories
+    this.loadData();
   }
 
-  // ✅ Load cả articles và categories cùng lúc
+  // ✅ CẬP NHẬT loadData để sử dụng blog categories
   loadData(): void {
     this.loading = true;
     
     // Gọi cả hai API cùng lúc
     forkJoin({
       articles: this.articleService.getBlogsForUI('desc', this.currentPage, this.pageSize),
-      categories: this.categoryService.getCategories()
+      categories: this.articleService.getBlogCategories() // ✅ Sử dụng getBlogCategories
     }).subscribe({
       next: (response) => {
         // Set categories trước
@@ -88,7 +88,7 @@ export class ListArticleComponent implements OnInit {
     });
   }
 
-  // ✅ Map category names to articles
+  // ✅ CẬP NHẬT mapCategoryNamesToArticles để sử dụng BlogCategory
   private mapCategoryNamesToArticles(articles: Article[]): Article[] {
     return articles.map(article => ({
       ...article,
@@ -96,7 +96,7 @@ export class ListArticleComponent implements OnInit {
     }));
   }
 
-  // ✅ Get category name by ID
+  // ✅ CẬP NHẬT getCategoryNameById để sử dụng BlogCategory
   getCategoryNameById(categoryId?: string | number): string {
     if (!categoryId || !this.categories) return 'Không xác định';
     

@@ -27,8 +27,8 @@
               <label for="category_id" class="form-label">Danh mục <span class="text-danger">*</span></label>
               <select class="form-select" id="category_id" formControlName="category_id">
                 <option value="">Chọn danh mục</option>
-                <!-- ✅ Chỉ hiển thị categories type BLOG -->
-                <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+                <!-- ✅ Sử dụng BlogCategory -->
+                <option *ngFor="let cat of categories" [value]="cat.id">{{ formatCategoryName(cat) }}</option>
               </select>
               <div *ngIf="articleForm.get('category_id')?.invalid && articleForm.get('category_id')?.touched" class="text-danger small mt-1">
                 Vui lòng chọn danh mục

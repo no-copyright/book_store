@@ -16,21 +16,19 @@ import { ToastService } from 'src/app/services/toast.service';
 export class AddCategoryComponent implements OnInit {
   categoryForm: FormGroup;
   parentCategories: Category[] = [];
-  slugExists: boolean = false;
-  submitting: boolean = false;
-  
+  submitting = false;
+
   constructor(
-    private fb: FormBuilder, 
+    private fb: FormBuilder,
     private router: Router,
     private categoryService: CategoryService,
     private toastService: ToastService
   ) {
     this.categoryForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
-      slug: ['', Validators.required],
       priority: [1, [Validators.required, Validators.min(0)]],
-      parent_id: [''],
-      type: ['BLOG', Validators.required]
+      type: ['BLOG', Validators.required],
+      parent_id: ['']
     });
   }
 
@@ -44,30 +42,15 @@ export class AddCategoryComponent implements OnInit {
         this.toastService.error('Lỗi', 'Không thể tải danh sách danh mục!');
       }
     });
-    
-    // Tự động tạo slug từ tên
-    this.categoryForm.get('name')?.valueChanges.subscribe(name => {
-      if (name) {
-        const slug = this.categoryService.generateSlug(name);
-        this.categoryForm.patchValue({ slug }, { emitEvent: false });
-        this.checkSlugExistence(slug);
-      }
-    });
-    
-    // Kiểm tra slug khi thay đổi
-    this.categoryForm.get('slug')?.valueChanges.subscribe(slug => {
-      if (slug) {
-        this.checkSlugExistence(slug);
-      }
-    });
   }
 
-  checkSlugExistence(slug: string): void {
-    this.slugExists = this.categoryService.isSlugExist(slug);
+  formatCategoryName(category: Category): string {
+    const indent = '•'.repeat(category.level || 0);
+    return indent + (indent ? ' ' : '') + category.name;
   }
 
   onSubmit(): void {
-    if (this.categoryForm.valid && !this.slugExists) {
+    if (this.categoryForm.valid) {
       this.submitting = true;
       const formValue = this.categoryForm.value;
       
@@ -76,7 +59,13 @@ export class AddCategoryComponent implements OnInit {
         formValue.parent_id = null;
       }
       
-      this.categoryService.createCategory(formValue).subscribe({
+      // Thêm logic tự động tạo slug
+      const categoryData = {
+        ...formValue,
+        slug: this.categoryService.generateSlug(formValue.name)
+      };
+      
+      this.categoryService.createCategory(categoryData).subscribe({
         next: (category) => {
           this.toastService.success('Thành công', `Thêm danh mục "${category.name}" thành công!`);
           this.router.navigate(['/category']);
@@ -90,7 +79,7 @@ export class AddCategoryComponent implements OnInit {
           } else if (error?.status === 400) {
             errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin!';
           } else if (error?.status === 409) {
-            errorMessage = 'Slug đã tồn tại. Vui lòng chọn slug khác!';
+            errorMessage = 'Tên danh mục đã tồn tại. Vui lòng chọn tên khác!';
           }
           
           this.toastService.error('Lỗi', errorMessage);
@@ -104,11 +93,7 @@ export class AddCategoryComponent implements OnInit {
         control?.markAsTouched();
       });
       
-      if (this.slugExists) {
-        this.toastService.warning('Cảnh báo', 'Slug đã tồn tại. Vui lòng chọn slug khác!');
-      } else {
-        this.toastService.warning('Cảnh báo', 'Vui lòng kiểm tra lại thông tin đã nhập!');
-      }
+      this.toastService.warning('Cảnh báo', 'Vui lòng kiểm tra lại thông tin đã nhập!');
     }
   }
 
@@ -123,10 +108,5 @@ export class AddCategoryComponent implements OnInit {
     } else {
       this.router.navigate(['/category']);
     }
-  }
-  
-  formatCategoryName(category: Category): string {
-    const level = category.level || 0;
-    return '•'.repeat(level) + (level > 0 ? ' ' : '') + category.name;
   }
 }
