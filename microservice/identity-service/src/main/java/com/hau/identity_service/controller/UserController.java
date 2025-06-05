@@ -32,6 +32,7 @@ public class UserController {
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/register/staff")
     public ResponseEntity<ApiResponse<UserResponse>> createUserforAdmin(
             @Valid @RequestBody UserCreateRequest userCreateRequest) {

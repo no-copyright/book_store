@@ -23,7 +23,6 @@ public class SecurityConfig {
 
     private final String[] publicPostEndpoint = {
             "/users/register",
-            "/users/register/staff",
             "/auth/**",
     };
 
