@@ -113,7 +113,8 @@ public class TokenService {
             JWTClaimsSet claimsSet = validateTokenClaims(token, false);
             return IntrospectResponse.builder()
                     .valid(true)
-                    .username(claimsSet.getSubject())
+                    .id(Integer.valueOf(claimsSet.getSubject()))
+                    .roles(claimsSet.getClaims().get("scope"))
                     .build();
         } catch (AppException e) {
             return IntrospectResponse.builder().valid(false).build(); // Consistent error handling
