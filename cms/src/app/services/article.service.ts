@@ -46,6 +46,22 @@ export interface Article {
   author?: string;
 }
 
+// ✅ THÊM interface cho Blog Category
+export interface BlogCategory {
+  id: number;
+  name: string;
+  priority: number | null;
+  parentId: number | null;
+  slug: string;
+}
+
+export interface BlogCategoryResponse {
+  status: number;
+  message: string;
+  result: BlogCategory[];
+  timestamp: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -101,8 +117,55 @@ export class ArticleService {
     );
   }
 
-  // ✅ Helper để lấy tên category
+  // ✅ THÊM method để lấy categories cho blog
+  getBlogCategories(): Observable<BlogCategory[]> {
+    return this.http.get<BlogCategoryResponse>(`${API_BASE_URL}/blog/category`).pipe(
+      map(response => {
+        if (response.status === 200) {
+          return response.result;
+        }
+        return [];
+      }),
+      catchError(error => {
+        console.error('Error fetching blog categories:', error);
+        // Fallback với mock data
+        return of([
+          {
+            id: 1,
+            name: 'Tin tức',
+            priority: 1,
+            parentId: null,
+            slug: 'tin-tuc-1'
+          },
+          {
+            id: 2,
+            name: 'Review sách',
+            priority: 2,
+            parentId: null,
+            slug: 'review-sach-2'
+          },
+          {
+            id: 3,
+            name: 'Khuyến mãi',
+            priority: 3,
+            parentId: null,
+            slug: 'khuyen-mai-3'
+          },
+          {
+            id: 4,
+            name: 'Sự kiện',
+            priority: 4,
+            parentId: null,
+            slug: 'su-kien-4'
+          }
+        ]);
+      })
+    );
+  }
+
+  // ✅ CẬP NHẬT helper để sử dụng dynamic categories
   private getCategoryName(categoryId?: number): string {
+    // Tạm thời giữ nguyên logic cũ, sau này có thể optimize
     const categoryMap: { [key: number]: string } = {
       1: 'Tin tức',
       2: 'Review sách',

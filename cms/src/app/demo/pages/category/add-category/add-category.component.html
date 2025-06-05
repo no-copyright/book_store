@@ -4,7 +4,7 @@
       <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()">
         <div class="row">
           <!-- Tên danh mục -->
-          <div class="col-md-6">
+          <div class="col-md-12">
             <div class="form-group mb-3">
               <label for="name" class="form-label">Tên danh mục <span class="text-danger">*</span></label>
               <input type="text" class="form-control" id="name" formControlName="name" placeholder="Nhập tên danh mục">
@@ -12,21 +12,7 @@
                 <div *ngIf="categoryForm.get('name')?.errors?.['required']">Vui lòng nhập tên danh mục</div>
                 <div *ngIf="categoryForm.get('name')?.errors?.['minlength']">Tên danh mục phải có ít nhất 2 ký tự</div>
               </div>
-            </div>
-          </div>
-          
-          <!-- Slug -->
-          <div class="col-md-6">
-            <div class="form-group mb-3">
-              <label for="slug" class="form-label">Slug <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="slug" formControlName="slug" placeholder="Nhập slug">
-              <div *ngIf="categoryForm.get('slug')?.invalid && categoryForm.get('slug')?.touched" class="text-danger small mt-1">
-                Vui lòng nhập slug
-              </div>
-              <div *ngIf="slugExists" class="text-danger small mt-1">
-                Slug đã tồn tại, vui lòng chọn slug khác
-              </div>
-              <small class="form-text text-muted">Slug sẽ được sử dụng trong URL, tự động tạo từ tên</small>
+              <small class="form-text text-muted">Slug sẽ được tự động tạo từ tên danh mục</small>
             </div>
           </div>
         </div>
@@ -78,13 +64,13 @@
         <div class="row">
           <div class="col-12 text-end">
             <button type="button" class="btn btn-secondary me-2" (click)="onCancel()" [disabled]="submitting">Hủy bỏ</button>
-            <button type="submit" class="btn btn-primary" [disabled]="categoryForm.invalid || slugExists || submitting">
+            <button type="submit" class="btn btn-primary" [disabled]="categoryForm.invalid || submitting">
               <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
               Thêm danh mục
             </button>
           </div>
         </div>
-      </form>
+      </form> <!-- ✅ Đảm bảo chỉ có 1 thẻ đóng form -->
     </app-card>
   </div>
 </div>

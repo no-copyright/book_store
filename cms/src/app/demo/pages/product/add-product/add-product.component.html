@@ -213,14 +213,7 @@
               <input type="number" class="form-control" id="discount" formControlName="discount" placeholder="Số tiền giảm giá">
             </div>
           </div>
-
-          <div class="col-md-3">
-            <div class="form-group mb-3">
-              <label for="discountPercent" class="form-label">% Giảm giá</label>
-              <input type="number" class="form-control" id="discountPercent" formControlName="discountPercent" placeholder="Phần trăm giảm giá" min="0" max="100">
-            </div>
-          </div>
-
+          
           <div class="col-md-3">
             <div class="form-group mb-3">
               <label for="quantity" class="form-label">Số lượng <span class="text-danger">*</span></label>
@@ -333,9 +326,7 @@
                       <span>{{ formatCategoryName(category) }}</span>
                       <small class="text-muted ms-2">({{ category.slug }})</small>
                     </div>
-                    <span class="badge" [ngClass]="getCategoryTypeBadgeClass(category.type)">
-                      {{ getCategoryTypeText(category.type) }}
-                    </span>
+                    <!-- ✅ XÓA phần badge type vì không có trong API mới -->
                   </div>
                 </label>
               </div>
