@@ -538,6 +538,66 @@ public class ProductService {
         }
     }
 
+    @Transactional
+    public ApiResponse<ProductResponse> updateProductThumbnail(Long productId, MultipartFile thumbnail) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại", null));
+
+        if (thumbnail == null || thumbnail.isEmpty()) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Ảnh thumbnail không được để trống", null);
+        }
+
+        if(product.getThumbnail() != null) {
+            fileServiceClientRepository.deleteFile(product.getThumbnail());
+        }
+        String newThumbnailUrl = fileUploadService.uploadFileAndGetUrl(thumbnail, "thumbnail");
+        product.setThumbnail(newThumbnailUrl);
+
+        product.setSlug(slugService.generateUniqueSlug(product.getTitle(), productId));
+        Product savedProduct = productRepository.save(product);
+
+        ProductResponse response = productMapper.toProductResponse(savedProduct);
+        response.setThumbnail(fileServiceUrl + savedProduct.getThumbnail());
+
+        return ApiResponse.<ProductResponse>builder()
+                .status(HttpStatus.OK.value())
+                .message("Cập nhật ảnh thumbnail sản phẩm thành công")
+                .result(response)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @Transactional
+    public ApiResponse<ProductResponse> createProductWithoutThumbnail(ProductRequest request) {
+        List<Category> categories = categoryService.handleCategoryFromProduct(request.getCategoryIds());
+
+        Product product = productMapper.toProduct(request);
+        product.setActive(true);
+        product.setCategories(categories);
+
+        product.setDiscountPercent(calculateProductDiscountPercent(product.getPrice(), product.getDiscount()));
+        product.setAverageRate(0.0f);
+        product.setThumbnail(null); // No thumbnail for this case
+        product.setProductImage(null);
+        product.setSlug(StringConverter.toSlug(product.getTitle()));
+
+        Product savedProduct = productRepository.save(product);
+        Long productId = savedProduct.getId();
+
+        String uniqueSlug = slugService.generateUniqueSlug(savedProduct.getTitle(), productId);
+        savedProduct.setSlug(uniqueSlug);
+
+        ProductResponse response = productMapper.toProductResponse(savedProduct);
+        response.setThumbnail(null); // No thumbnail for this case
+
+        return ApiResponse.<ProductResponse>builder()
+                .status(HttpStatus.CREATED.value())
+                .message("Thêm sản phẩm thành công")
+                .result(response)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
     public Double calculateProductDiscountPercent(Integer price, Integer discount) {
         if (price == null || discount == null || price <= 0) {
             return 0.0;

@@ -113,4 +113,21 @@ public class ProductController {
         ApiResponse<ProductResponse> response = productService.updateProductStatus(id, active);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+    @PostMapping(value = "/noImage")
+    public ResponseEntity<ApiResponse<ProductResponse>> createProductWithoutThumbnail(@RequestBody @Valid ProductRequest request) {
+        ApiResponse<ProductResponse> response = productService.createProductWithoutThumbnail(request);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+    @PutMapping(value = "/thumbnail/{productId}")
+    public ResponseEntity<ApiResponse<ProductResponse>> updateProductThumbnail(
+            @PathVariable Long productId,
+            @RequestPart("thumbnail") MultipartFile thumbnail
+    ) {
+        ApiResponse<ProductResponse> response = productService.updateProductThumbnail(productId, thumbnail);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }
