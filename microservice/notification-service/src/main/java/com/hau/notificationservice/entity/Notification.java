@@ -1,7 +1,6 @@
 package com.hau.notificationservice.entity;
 
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
@@ -20,6 +19,7 @@ public class Notification {
     private String id;
 
     private Integer userId;
+    private Boolean isRead;
     private String title;
     private String body;
     private String topic;
@@ -27,6 +27,5 @@ public class Notification {
     private List<String> tokens;
     private Map<String, String> data;
 
-    @CreatedDate
     private LocalDateTime createdAt;
 }

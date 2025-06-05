@@ -45,11 +45,13 @@ public class NotificationProcessingService {
         data.put("orderId", notificationEvent.getParams().get("orderId").toString());
         NotificationRequest notificationRequest = NotificationRequest.builder()
                 .userId(userId)
-                .topic("order created")
+                .isRead(false)
+                .topic("Order created")
                 .title("Chúc mừng bạn đã đặt hàng thành công")
                 .body("Đơn hàng của bạn đã được đặt thành công với mã đơn hàng: " + notificationEvent.getParams().get("orderId"))
                 .tokens(tokensToSend)
                 .data(data)
+                .createdAt(LocalDateTime.now())
                 .build();
         Notification notification = notificationMapper.toNotification(notificationRequest);
         notificationRepository.save(notification);
@@ -72,15 +74,52 @@ public class NotificationProcessingService {
 
         NotificationRequest notificationRequest = NotificationRequest.builder()
                 .userId(userId)
-                .topic("order updated")
+                .isRead(false)
+                .topic("Order updated")
                 .title("Cập nhật trạng thái đơn hàng")
                 .body(notificationBody)
                 .tokens(tokensToSend)
                 .data(data)
+                .createdAt(LocalDateTime.now())
                 .build();
         Notification notification = notificationMapper.toNotification(notificationRequest);
         notificationRepository.save(notification);
         fcmService.sendMessageToTokens(notificationRequest);
+    }
+
+    public ApiResponse<NotificationResponseToUser> markAsRead(String id) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        Integer userId = Integer.valueOf(authentication.getName());
+
+        Notification notification = notificationRepository.findByIdAndUserId(id, userId)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Thông báo không tồn tại", null));
+
+        notification.setIsRead(true);
+        notificationRepository.save(notification);
+
+        NotificationResponseToUser response = notificationMapper.toNotificationResponseToUser(notification);
+        return ApiResponse.<NotificationResponseToUser>builder()
+                .status(200)
+                .message("Đã đọc")
+                .result(response)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    public ApiResponse<String> markAllAsRead() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        Integer userId = Integer.valueOf(authentication.getName());
+
+        List<Notification> notifications = notificationRepository.findNotificationByUserId(userId);
+
+        notifications.forEach(notification -> notification.setIsRead(true));
+        notificationRepository.saveAll(notifications);
+
+        return ApiResponse.<String>builder()
+                .status(200)
+                .message("Đã đọc tất cả")
+                .timestamp(LocalDateTime.now())
+                .build();
     }
 
     public ApiResponse<PageResponse<NotificationResponseToUser>> notificationResponseToUser(int pageIndex, int pageSize) {
@@ -121,6 +160,20 @@ public class NotificationProcessingService {
         return ApiResponse.<String>builder()
                 .status(200)
                 .message("Xoá thông báo thành công")
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    public ApiResponse<String> deleteAllNotification() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        Integer userId = Integer.valueOf(authentication.getName());
+
+        List<Notification> notification = notificationRepository.findNotificationByUserId(userId);
+
+        notificationRepository.deleteAll(notification);
+        return ApiResponse.<String>builder()
+                .status(200)
+                .message("Xoá tất cả thông báo thành công")
                 .timestamp(LocalDateTime.now())
                 .build();
     }
