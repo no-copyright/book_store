@@ -156,6 +156,9 @@ public class OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Đơn hàng không tồn tại", null));
         order.setStatus(orderUpdateStatus.getStatus());
+        if (order.getStatus() == 0) {
+            order.setPaymentStatus(0);
+        }
         orderRepository.save(order);
         NotificationEvent notificationEvent = NotificationEvent.builder()
                 .params(
