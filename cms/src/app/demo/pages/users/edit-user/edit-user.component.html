@@ -7,13 +7,12 @@
         </div>
       </div>
       
-      <!-- Hiển thị thông tin người dùng với design đẹp hơn -->
+      <!-- Hiển thị thông tin người dùng -->
       <div *ngIf="!loading && user" class="user-detail-view">
         <!-- Header Section với Avatar và thông tin chính -->
         <div class="user-header-section bg-light rounded p-4 mb-4">
           <div class="row align-items-center">
             <div class="col-md-3 text-center">
-              <!-- Avatar lớn với border đẹp -->
               <div class="avatar-container position-relative">
                 <img [src]="user.profileImage || 'assets/images/user/avatar-default.jpg'" 
                      alt="Ảnh đại diện" 
@@ -119,31 +118,143 @@
           </div>
         </div>
 
-        <!-- Quyền hạn từ API -->
-        <div class="row" *ngIf="user.roles && user.roles.length > 0">
+        <!-- ✅ THÊM Section quản lý quyền -->
+        <div class="row">
           <div class="col-12 mb-4">
             <div class="card border-0 shadow-sm">
-              <div class="card-header bg-warning text-dark">
+              <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">
-                  <i class="feather icon-key me-2"></i>Quyền hạn chi tiết
+                  <i class="feather icon-key me-2"></i>Quản lý quyền
                 </h6>
+                <button class="btn btn-sm btn-outline-dark" 
+                        (click)="toggleRolesEditor()" 
+                        [disabled]="rolesLoading || updatingRoles">
+                  <i class="feather" [class.icon-edit]="!showRolesEditor" [class.icon-x]="showRolesEditor"></i>
+                  {{ showRolesEditor ? 'Hủy' : 'Chỉnh sửa' }}
+                </button>
               </div>
               <div class="card-body">
-                <div class="roles-container">
+                
+                <!-- Current roles display -->
+                <div *ngIf="!showRolesEditor" class="current-roles">
                   <div class="row">
                     <div class="col-md-12">
-                      <div class="roles-list">
+                      <label class="form-label fw-bold">Quyền hiện tại:</label>
+                      <div *ngIf="user.roles && user.roles.length > 0" class="roles-list">
                         <div *ngFor="let role of user.roles" class="role-item mb-2">
-                          <span class="badge bg-secondary fs-6 px-3 py-2 me-2">
+                          <span class="badge {{ getRoleClass(role.name) }} fs-6 px-3 py-2 me-2">
                             <i class="feather icon-shield me-1"></i>
-                            {{ role.name }}
+                            {{ getRoleText(role.name) }}
                           </span>
-                          <small class="text-muted">{{ role.description }}</small>
+                          <span class="text-muted">{{ role.description }}</span>
                         </div>
+                      </div>
+                      <div *ngIf="!user.roles || user.roles.length === 0">
+                        <span class="badge bg-secondary px-3 py-2">Chưa có quyền</span>
                       </div>
                     </div>
                   </div>
                 </div>
+
+                <!-- Roles editor -->
+                <div *ngIf="showRolesEditor" class="roles-editor">
+                  <div *ngIf="rolesLoading" class="text-center py-3">
+                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                    <span class="ms-2">Đang tải danh sách quyền...</span>
+                  </div>
+
+                  <div *ngIf="!rolesLoading">
+                    <div class="row">
+                      <div class="col-md-12 mb-3">
+                        <label class="form-label fw-bold">Chọn quyền:</label>
+                        <small class="text-muted d-block">Chọn một hoặc nhiều quyền cho người dùng này.</small>
+                      </div>
+                    </div>
+                    
+                    <div class="roles-selection">
+                      <div class="row">
+                        <div *ngFor="let role of availableRoles" class="col-md-4 mb-3">
+                          <div class="role-card">
+                            <div class="card h-100" 
+                                 [class.border-primary]="isRoleSelected(role.name)"
+                                 [class.bg-light]="isRoleSelected(role.name)"
+                                 style="cursor: pointer; transition: all 0.2s;"
+                                 (click)="toggleRole(role.name)">
+                              <div class="card-body text-center">
+                                <div class="form-check mb-2">
+                                  <input class="form-check-input" 
+                                         type="checkbox" 
+                                         [id]="'role-' + role.name"
+                                         [checked]="isRoleSelected(role.name)"
+                                         (change)="toggleRole(role.name)">
+                                  <label class="form-check-label fw-bold" 
+                                         [for]="'role-' + role.name">
+                                    {{ getRoleText(role.name) }}
+                                  </label>
+                                </div>
+                                
+                                <div class="role-badge mb-2">
+                                  <span class="badge {{ getRoleClass(role.name) }} px-3 py-2">
+                                    <i class="feather icon-shield me-1"></i>{{ role.name }}
+                                  </span>
+                                </div>
+                                
+                                <p class="text-muted small mb-0">
+                                  {{ role.description }}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Selected roles preview -->
+                    <div class="selected-roles-preview mt-3" *ngIf="selectedRoles.length > 0">
+                      <div class="alert alert-info">
+                        <h6 class="alert-heading">
+                          <i class="feather icon-eye me-2"></i>Quyền sẽ được cập nhật:
+                        </h6>
+                        <div class="selected-roles-list">
+                          <span *ngFor="let roleName of selectedRoles" 
+                                class="badge {{ getRoleClass(roleName) }} me-2 px-3 py-2">
+                            <i class="feather icon-shield me-1"></i>{{ getRoleText(roleName) }}
+                          </span>
+                        </div>
+                        <hr class="my-2">
+                        <p class="mb-0 small">
+                          Tổng cộng: <strong>{{ selectedRoles.length }}</strong> quyền được chọn
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- Warning if no roles selected -->
+                    <div class="alert alert-warning mt-3" *ngIf="selectedRoles.length === 0">
+                      <i class="feather icon-alert-triangle me-2"></i>
+                      <strong>Cảnh báo:</strong> Bạn chưa chọn quyền nào. Vui lòng chọn ít nhất một quyền cho người dùng.
+                    </div>
+
+                    <!-- Action buttons for roles -->
+                    <div class="roles-actions mt-3 text-end">
+                      <button type="button" 
+                              class="btn btn-outline-secondary me-2" 
+                              (click)="cancelRolesEditing()" 
+                              [disabled]="updatingRoles">
+                        <i class="feather icon-x me-2"></i>Hủy
+                      </button>
+                      
+                      <button type="button" 
+                              class="btn btn-primary" 
+                              (click)="updateUserRoles()" 
+                              [disabled]="selectedRoles.length === 0 || updatingRoles || !hasRolesChanged()">
+                        <span *ngIf="updatingRoles" class="spinner-border spinner-border-sm me-2"></span>
+                        <i *ngIf="!updatingRoles" class="feather icon-save me-2"></i>
+                        {{ updatingRoles ? 'Đang cập nhật...' : 'Cập nhật quyền' }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>

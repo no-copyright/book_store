@@ -82,4 +82,227 @@
   .category-actions {
     white-space: nowrap;
   }
+  
+  .category-tree-container {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  .category-item {
+    margin-bottom: 4px;
+    
+    .category-header {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      background: white;
+      border: 1px solid #e3e6f0;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+
+      &:hover {
+        background: #f1f3f4;
+        border-color: #4e73df;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      &.has-children.expanded {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        border-bottom-color: transparent;
+      }
+
+      .expand-btn {
+        background: none;
+        border: none;
+        padding: 4px;
+        margin-right: 8px;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        color: #6c757d;
+
+        &:hover {
+          background: #e9ecef;
+          color: #495057;
+        }
+
+        i {
+          font-size: 14px;
+          transition: transform 0.2s ease;
+        }
+      }
+
+      .category-icon {
+        margin-right: 12px;
+        display: flex;
+        align-items: center;
+
+        i {
+          font-size: 18px;
+        }
+      }
+
+      .category-content {
+        flex: 1;
+        min-width: 0;
+
+        .category-main-info {
+          display: flex;
+          align-items: center;
+          margin-bottom: 4px;
+
+          .category-name {
+            font-weight: 600;
+            color: #2d3748;
+            margin-right: 8px;
+          }
+
+          .category-slug {
+            color: #718096;
+            font-size: 0.875rem;
+            font-style: italic;
+          }
+        }
+
+        .category-meta {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          flex-wrap: wrap;
+
+          .badge {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+          }
+
+          .children-count {
+            background: #17a2b8 !important;
+          }
+        }
+      }
+
+      .category-actions {
+        display: flex;
+        gap: 4px;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+
+        .action-btn {
+          background: none;
+          border: none;
+          padding: 6px 8px;
+          border-radius: 4px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          
+          &.edit-btn {
+            color: #4e73df;
+            
+            &:hover {
+              background: #4e73df;
+              color: white;
+            }
+          }
+
+          &.delete-btn {
+            color: #e74a3b;
+            
+            &:hover {
+              background: #e74a3b;
+              color: white;
+            }
+          }
+
+          i {
+            font-size: 14px;
+          }
+        }
+      }
+
+      &:hover .category-actions {
+        opacity: 1;
+      }
+    }
+
+    .category-children {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      background: white;
+      border: 1px solid #e3e6f0;
+      border-top: none;
+      border-bottom-left-radius: 6px;
+      border-bottom-right-radius: 6px;
+
+      &.expanded {
+        max-height: 2000px;
+        padding: 8px 0;
+      }
+
+      .category-tree-level {
+        padding-left: 0;
+      }
+    }
+  }
+
+  // Animation cho expand/collapse
+  .category-children {
+    &:not(.expanded) {
+      max-height: 0 !important;
+      padding: 0;
+      border: none;
+    }
+  }
+
+  // Responsive
+  @media (max-width: 768px) {
+    .category-item {
+      margin-left: 0 !important;
+      
+      .category-header {
+        flex-direction: column;
+        align-items: flex-start;
+        
+        .category-content {
+          width: 100%;
+          margin: 8px 0;
+        }
+        
+        .category-actions {
+          opacity: 1;
+          width: 100%;
+          justify-content: flex-end;
+        }
+      }
+    }
+  }
+}
+
+// Badge styles
+.badge {
+  &.bg-success {
+    background-color: #198754 !important;
+  }
+  
+  &.bg-primary {
+    background-color: #0d6efd !important;
+  }
+  
+  &.bg-warning {
+    background-color: #ffc107 !important;
+    color: #000 !important;
+  }
+}
+
+// Loading and empty states
+.text-center {
+  i {
+    opacity: 0.5;
+  }
 }

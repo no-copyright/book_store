@@ -17,7 +17,6 @@ export interface Product {
   quantity: number;
   discount: number;
   price: number;
-  discountPercent: number;
   priority: number;
   description: string;
   averageRate: number;
@@ -48,6 +47,20 @@ export interface ProductListResponse {
   timestamp: string;
 }
 
+export interface ProductCategory {
+  id: number;
+  name: string;
+  priority: number | null;
+  parentId: number | null;
+  slug: string;
+}
+
+export interface ProductCategoryResponse {
+  status: number;
+  message: string;
+  result: ProductCategory[];
+  timestamp: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -183,7 +196,6 @@ addProduct(product: Product, thumbnailFile?: File, imageFiles?: File[]): Observa
     quantity: rawProduct.quantity || 0,
     discount: rawProduct.discount || 0,
     price: rawProduct.price || 0,
-    discountPercent: rawProduct.discountPercent || 0,
     priority: rawProduct.priority || 0,
     description: rawProduct.description || '',
     categoryIds: Array.isArray(rawProduct.categories) ? rawProduct.categories : [],
@@ -255,7 +267,6 @@ updateProduct(product: Product, thumbnailFile?: File, imageFiles?: File[]): Obse
     quantity: rawProduct.quantity || 0,
     discount: rawProduct.discount || 0,
     price: rawProduct.price || 0,
-    discountPercent: rawProduct.discountPercent || 0,
     priority: rawProduct.priority || 0,
     description: rawProduct.description || '',
     categoryIds: Array.isArray(rawProduct.categories) ? rawProduct.categories : [],
@@ -355,4 +366,14 @@ toggleProductActive(id: string, currentActiveState: boolean): Observable<boolean
     })
   );
 }
+getProductCategories(): Observable<ProductCategory[]> {
+    return this.http.get<ProductCategoryResponse>(`${API_BASE_URL}/product/category`).pipe(
+      map(response => {
+        if (response.status === 200) {
+          return response.result;
+        }
+        return [];
+      })
+    );
+  }
 }

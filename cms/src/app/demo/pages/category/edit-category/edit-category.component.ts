@@ -16,29 +16,27 @@ import { ToastService } from 'src/app/services/toast.service'; // ✅ Import Toa
 export class EditCategoryComponent implements OnInit {
   categoryForm: FormGroup;
   categoryId: string;
-  loading = false;
-  submitting = false; // ✅ Thêm submitting state
   parentCategories: Category[] = [];
   filteredParentCategories: Category[] = [];
-  originalSlug: string = '';
-  slugExists: boolean = false;
-  
+  loading = false;
+  submitting = false;
+
   constructor(
-    private fb: FormBuilder, 
+    private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
     private categoryService: CategoryService,
-    private toastService: ToastService // ✅ Inject ToastService
+    private toastService: ToastService
   ) {
     this.categoryId = this.route.snapshot.paramMap.get('id') || '';
     
     this.categoryForm = this.fb.group({
-      id: [this.categoryId],
+      id: [''],
       name: ['', [Validators.required, Validators.minLength(2)]],
-      slug: ['', Validators.required],
+      slug: [''],
       priority: [1, [Validators.required, Validators.min(0)]],
-      parent_id: [''],
-      type: ['BLOG', Validators.required] // ✅ Thêm type field
+      type: ['BLOG', Validators.required],
+      parent_id: ['']
     });
   }
 
@@ -49,9 +47,8 @@ export class EditCategoryComponent implements OnInit {
     this.categoryService.getCategoryById(this.categoryId).subscribe({
       next: (category) => {
         if (category) {
-          this.originalSlug = category.slug;
-          
           this.categoryForm.patchValue({
+            id: category.id,
             name: category.name,
             slug: category.slug,
             priority: category.priority,
@@ -87,30 +84,15 @@ export class EditCategoryComponent implements OnInit {
         this.router.navigate(['/category']);
       }
     });
-    
-    // Tự động tạo slug từ tên
-    this.categoryForm.get('name')?.valueChanges.subscribe(name => {
-      if (name && this.originalSlug === this.categoryForm.get('slug')?.value) {
-        const slug = this.categoryService.generateSlug(name);
-        this.categoryForm.patchValue({ slug }, { emitEvent: false });
-        this.checkSlugExistence(slug);
-      }
-    });
-    
-    // Kiểm tra slug khi thay đổi
-    this.categoryForm.get('slug')?.valueChanges.subscribe(slug => {
-      if (slug) {
-        this.checkSlugExistence(slug);
-      }
-    });
   }
 
-  checkSlugExistence(slug: string): void {
-    this.slugExists = this.categoryService.isSlugExist(slug, this.categoryId);
+  formatCategoryName(category: Category): string {
+    const indent = '•'.repeat(category.level || 0);
+    return indent + (indent ? ' ' : '') + category.name;
   }
 
   onSubmit(): void {
-    if (this.categoryForm.valid && !this.slugExists) {
+    if (this.categoryForm.valid) {
       this.submitting = true;
       const formValue = this.categoryForm.value;
       
@@ -139,8 +121,6 @@ export class EditCategoryComponent implements OnInit {
             errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin!';
           } else if (error?.status === 404) {
             errorMessage = 'Danh mục không tồn tại!';
-          } else if (error?.status === 409) {
-            errorMessage = 'Slug đã tồn tại. Vui lòng chọn slug khác!';
           }
           
           this.toastService.error('Lỗi', errorMessage);
@@ -154,16 +134,11 @@ export class EditCategoryComponent implements OnInit {
         control?.markAsTouched();
       });
       
-      if (this.slugExists) {
-        this.toastService.warning('Cảnh báo', 'Slug đã tồn tại. Vui lòng chọn slug khác!');
-      } else {
-        this.toastService.warning('Cảnh báo', 'Vui lòng kiểm tra lại thông tin đã nhập!');
-      }
+      this.toastService.warning('Cảnh báo', 'Vui lòng kiểm tra lại thông tin đã nhập!');
     }
   }
 
   onCancel(): void {
-    // ✅ Sử dụng ToastService thay vì browser confirm
     if (this.categoryForm.dirty) {
       this.toastService.showConfirmation(
         'Xác nhận hủy',
@@ -174,10 +149,5 @@ export class EditCategoryComponent implements OnInit {
     } else {
       this.router.navigate(['/category']);
     }
-  }
-  
-  formatCategoryName(category: Category): string {
-    const level = category.level || 0;
-    return '•'.repeat(level) + (level > 0 ? ' ' : '') + category.name;
   }
 }

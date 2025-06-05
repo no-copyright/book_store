@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SharedModule } from 'src/app/theme/shared/shared.module';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ArticleService, Article } from 'src/app/services/article.service';
-import { CategoryService, Category } from 'src/app/services/category.service';
+import { ArticleService, Article, BlogCategory } from 'src/app/services/article.service'; // ✅ Import BlogCategory
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
@@ -19,18 +18,21 @@ export class EditArticleComponent implements OnInit {
   articleId: string;
   loading = false;
   submitting = false;
-  categories: Category[] = [];
   selectedFile: File | null = null;
   imagePreview: string | null = null;
   currentThumbnail: string | null = null;
   
+  // ✅ Thay đổi type từ Category[] thành BlogCategory[]
+  categories: BlogCategory[] = [];
+
   constructor(
-    private fb: FormBuilder, 
+    private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
     private articleService: ArticleService,
-    private categoryService: CategoryService,
     private toastService: ToastService
+    // ✅ XÓA CategoryService injection
+    // private categoryService: CategoryService
   ) {
     this.articleId = this.route.snapshot.paramMap.get('id') || '';
     
@@ -47,41 +49,43 @@ export class EditArticleComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loading = true;
     this.loadCategories();
-    this.loadArticleData();
-    
-    // Auto-generate slug when title changes
-    this.articleForm.get('title')?.valueChanges.subscribe(title => {
-      const currentSlug = this.articleForm.get('slug')?.value;
-      if (title && (!currentSlug || this.shouldUpdateSlug(title, currentSlug))) {
-        this.articleForm.patchValue({
-          slug: this.articleService.generateSlug(title)
-        }, { emitEvent: false });
-      }
-    });
   }
 
-  // ✅ Load categories chỉ type BLOG
+  // ✅ CẬP NHẬT method loadCategories
   loadCategories(): void {
-    this.categoryService.getCategories().subscribe({
+    this.articleService.getBlogCategories().subscribe({
       next: (categories) => {
-        // ✅ Filter chỉ lấy categories type BLOG
-        this.categories = categories.filter(cat => cat.type === 'BLOG');
-        console.log('Loaded BLOG categories for articles:', this.categories);
+        this.categories = categories;
+        this.loadArticleData();
       },
       error: (error) => {
-        console.error('Error loading categories:', error);
+        console.error('Error loading blog categories:', error);
         this.toastService.error('Lỗi', 'Không thể tải danh sách danh mục');
         
         // Fallback categories
         this.categories = [
-          { id: '1', name: 'Tin tức', slug: 'tin-tuc', priority: 1, type: 'BLOG', level: 0, children: [] },
-          { id: '2', name: 'Review sách', slug: 'review-sach', priority: 2, type: 'BLOG', level: 0, children: [] },
-          { id: '3', name: 'Khuyến mãi', slug: 'khuyen-mai', priority: 3, type: 'BLOG', level: 0, children: [] },
-          { id: '4', name: 'Sự kiện', slug: 'su-kien', priority: 4, type: 'BLOG', level: 0, children: [] }
+          { id: 1, name: 'Tin tức', priority: 1, parentId: null, slug: 'tin-tuc-1' },
+          { id: 2, name: 'Review sách', priority: 2, parentId: null, slug: 'review-sach-2' },
+          { id: 3, name: 'Khuyến mãi', priority: 3, parentId: null, slug: 'khuyen-mai-3' },
+          { id: 4, name: 'Sự kiện', priority: 4, parentId: null, slug: 'su-kien-4' }
         ];
+        
+        this.loadArticleData();
       }
     });
+  }
+
+  // ✅ THÊM helper method để format category name
+  formatCategoryName(category: BlogCategory): string {
+    return category.name;
+  }
+
+  // ✅ THÊM helper method để lấy category name theo ID
+  getCategoryNameById(categoryId: string | number): string {
+    const category = this.categories.find(c => c.id.toString() === categoryId.toString());
+    return category ? category.name : 'Không xác định';
   }
 
   // ✅ Handle file selection
@@ -187,7 +191,6 @@ export class EditArticleComponent implements OnInit {
             author: article.author || 'Admin'
           });
           
-          console.log('Loaded article with thumbnail:', this.currentThumbnail);
         } else {
           this.toastService.error('Lỗi', 'Không tìm thấy bài viết!');
           this.router.navigateByUrl('/article/list-article');

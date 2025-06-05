@@ -21,18 +21,14 @@
             </div>
           </div>
           
-          <!-- Slug -->
+          <!-- Slug - Read Only -->
           <div class="col-md-6">
             <div class="form-group mb-3">
-              <label for="slug" class="form-label">Slug <span class="text-danger">*</span></label>
-              <input type="text" class="form-control" id="slug" formControlName="slug" placeholder="Nhập slug">
-              <div *ngIf="categoryForm.get('slug')?.invalid && categoryForm.get('slug')?.touched" class="text-danger small mt-1">
-                Vui lòng nhập slug
-              </div>
-              <div *ngIf="slugExists" class="text-danger small mt-1">
-                Slug đã tồn tại, vui lòng chọn slug khác
-              </div>
-              <small class="form-text text-muted">Slug sẽ được sử dụng trong URL</small>
+              <label for="slug" class="form-label">Slug</label>
+              <!-- ✅ THÊM readonly attribute -->
+              <input type="text" class="form-control" id="slug" formControlName="slug" placeholder="Slug" readonly>
+              <!-- ✅ XÓA validation errors vì không thể sửa -->
+              <small class="form-text text-muted">Slug không thể thay đổi sau khi tạo</small>
             </div>
           </div>
         </div>
@@ -84,9 +80,10 @@
         <div class="row">
           <div class="col-12 text-end">
             <button type="button" class="btn btn-secondary me-2" (click)="onCancel()" [disabled]="submitting">Hủy bỏ</button>
-            <button type="submit" class="btn btn-primary" [disabled]="categoryForm.invalid || slugExists || submitting">
+            <!-- ✅ XÓA điều kiện slugExists -->
+            <button type="submit" class="btn btn-primary" [disabled]="categoryForm.invalid || submitting">
               <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
-              Lưu thay đổi
+              Cập nhật danh mục
             </button>
           </div>
         </div>

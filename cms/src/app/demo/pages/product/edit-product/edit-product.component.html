@@ -236,13 +236,6 @@
 
           <div class="col-md-3">
             <div class="form-group mb-3">
-              <label for="discountPercent" class="form-label">% Giảm giá</label>
-              <input type="number" class="form-control" id="discountPercent" formControlName="discountPercent" placeholder="Phần trăm giảm giá" min="0" max="100">
-            </div>
-          </div>
-
-          <div class="col-md-3">
-            <div class="form-group mb-3">
               <label for="quantity" class="form-label">Số lượng <span class="text-danger">*</span></label>
               <input type="number" class="form-control" id="quantity" formControlName="quantity" placeholder="Số lượng tồn kho">
               <div *ngIf="productForm.get('quantity')?.invalid && productForm.get('quantity')?.touched" class="text-danger small mt-1">
@@ -379,9 +372,6 @@
                               <span>{{ formatCategoryName(category) }}</span>
                               <small class="text-muted ms-2">({{ category.slug }})</small>
                             </div>
-                            <span class="badge" [ngClass]="getCategoryTypeBadgeClass(category.type)">
-                              {{ getCategoryTypeText(category.type) }}
-                            </span>
                           </div>
                         </label>
                       </div>
