@@ -75,7 +75,7 @@ public class UserService {
             return ApiResponse.<UserResponse>builder()
                     .status(HttpStatus.CREATED.value())
                     .message("Tạo mới user thành công")
-                    .result(null)
+                    .result(userMapper.toUserResponse(user))
                     .timestamp(LocalDateTime.now())
                     .build();
         } catch (DataIntegrityViolationException ex) {
@@ -84,6 +84,25 @@ public class UserService {
             log.error("Lỗi khi tạo giỏ hàng cho user {}: {}", user.getUsername(), feignException.getMessage(), feignException);
         }
         return null;
+    }
+
+    public ApiResponse<UserResponse> createUserforAdmin(UserCreateRequest userCreateRequest) {
+        User user = userMapper.toUser(userCreateRequest);
+        var roles = roleRepository.findAllById(Set.of("STAFF"));
+        user.setRoles(new HashSet<>(roles));
+        user.setPassword(passwordEncoder.encode(userCreateRequest.getPassword()));
+        user.setProfileImage(defaultImage);
+        try {
+            userRepository.save(user);
+            return ApiResponse.<UserResponse>builder()
+                    .status(HttpStatus.CREATED.value())
+                    .message("Tạo mới user thành công")
+                    .result(userMapper.toUserResponse(user))
+                    .timestamp(LocalDateTime.now())
+                    .build();
+        } catch (DataIntegrityViolationException ex) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "username đã tồn tại", null);
+        }
     }
 
     public ApiResponse<UserResponse> updateUserProfileImage(MultipartFile profileImage) {
@@ -165,18 +184,43 @@ public class UserService {
                 .build();
     }
 
-    public ApiResponse<UserResponse> updateUser(Long id, UserUpdateRequest userUpdateRequest) {
-        User user = findUserById(id);
-        userMapper.toUserUpdateRequest(user, userUpdateRequest);
-        var roles = roleRepository.findAllById(userUpdateRequest.getRoles());
-        user.setRoles(new HashSet<>(roles));
-        user.setPassword(passwordEncoder.encode(userUpdateRequest.getPassword()));
+//    public ApiResponse<UserResponse> updateUser(Long id, UserUpdateRequest userUpdateRequest) {
+//        User user = findUserById(id);
+//        userMapper.toUserUpdateRequest(user, userUpdateRequest);
+//        var roles = roleRepository.findAllById(userUpdateRequest.getRoles());
+//        user.setRoles(new HashSet<>(roles));
+//
+//        userRepository.save(user);
+//        return ApiResponse.<UserResponse>builder()
+//                .status(HttpStatus.OK.value())
+//                .message("Cập nhật thông tin user thành công")
+//                .result(null)
+//                .timestamp(LocalDateTime.now())
+//                .build();
+//    }
+
+    public ApiResponse<UserResponse> updateUser(Long userId, UserUpdateRequest userUpdateRequest) {
+        User user = findUserById(userId);
+
+        if (userUpdateRequest.getEmail() != null) {
+            user.setEmail(userUpdateRequest.getEmail());
+        }
+        if (userUpdateRequest.getPassword() != null) {
+            user.setPassword(passwordEncoder.encode(userUpdateRequest.getPassword()));
+        }
+        if (userUpdateRequest.getRoles() != null && !userUpdateRequest.getRoles().isEmpty()) {
+            var roles = roleRepository.findAllById(userUpdateRequest.getRoles());
+            user.setRoles(new HashSet<>(roles));
+        }
+//        if (userUpdateRequest.getProfileImage() != null) {
+//            user.setProfileImage(userUpdateRequest.getProfileImage());
+//        }
 
         userRepository.save(user);
         return ApiResponse.<UserResponse>builder()
                 .status(HttpStatus.OK.value())
-                .message("Cập nhật thông tin user thành công")
-                .result(null)
+                .message("Cập nhật thông tin thành công")
+                .result(userMapper.toUserResponse(user))
                 .timestamp(LocalDateTime.now())
                 .build();
     }

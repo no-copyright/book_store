@@ -41,6 +41,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     Map<HttpMethod, List<String>> publicEndpointsByMethod = Map.of(
             HttpMethod.POST, List.of(
                     "/identity/users/register",
+                    "/identity/users/register/staff",
                     "/identity/auth/.*",
                     "/payment/vnpay_return",
                     "/payment/momo_return",
