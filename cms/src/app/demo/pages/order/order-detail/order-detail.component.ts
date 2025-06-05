@@ -62,7 +62,6 @@ export class OrderDetailComponent implements OnInit {
           };
         }
         
-        console.log('Loaded order details:', this.order);
       },
       error: (err) => {
         console.error('Lỗi khi tải thông tin đơn hàng:', err);
@@ -231,7 +230,6 @@ export class OrderDetailComponent implements OnInit {
 
   // ✅ THÊM method để handle image error
   onImageError(event: any): void {
-    console.log('Image failed to load, using placeholder');
     const target = event.target as HTMLImageElement;
     target.src = this.getDefaultProductImage();
   }

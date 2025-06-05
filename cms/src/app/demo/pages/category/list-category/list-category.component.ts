@@ -126,7 +126,8 @@ export class ListCategoryComponent implements OnInit {
   }
 
   navigateToEditCategory(id: string | number): void {
-    this.router.navigate(['/category/edit', id.toString()]);
+    console.log('Navigating to edit category with ID:', id);
+    this.router.navigate(['/category/edit-category', id]);
   }
 
   // ✅ Cập nhật deleteCategory để sử dụng ToastService

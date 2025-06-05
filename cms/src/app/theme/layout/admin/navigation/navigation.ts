@@ -2,114 +2,126 @@ export interface NavigationItem {
   id: string;
   title: string;
   type: 'item' | 'collapse' | 'group';
-  translate?: string;
   icon?: string;
-  hidden?: boolean;
   url?: string;
   classes?: string;
-  exactMatch?: boolean;
   external?: boolean;
   target?: boolean;
   breadcrumbs?: boolean;
-
+  hidden?: boolean;
   children?: NavigationItem[];
 }
 
+// ✅ CẬP NHẬT navigation items - LOẠI BỎ dashboard
 export const NavigationItems: NavigationItem[] = [
+  // ✅ LOẠI BỎ dashboard item
   // {
-  //   id: 'navigation',
-  //   title: 'Navigation',
-  //   type: 'group',
-  //   icon: 'icon-navigation',
-  //   children: [
-  //     {
-  //       id: 'dashboard',
-  //       title: 'Dashboard',
-  //       type: 'item',
-  //       url: '/dashboard',
-  //       icon: 'feather icon-home',
-  //       classes: 'nav-item'
-  //     }
-  //   ]
+  //   id: 'dashboard',
+  //   title: 'Dashboard',
+  //   type: 'item',
+  //   icon: 'feather icon-home',
+  //   url: '/dashboard'
   // },
   {
-    id: 'quản lý',
-    title: 'Quản lý',
+    id: 'main',
+    title: 'Quản lý chính',
     type: 'group',
-    icon: 'feather icon-settings',
     children: [
       {
-        id: 'list-product',
-        title: 'Danh sách sản phẩm',
-        type: 'item',
-        url: '/product/list-product',
-        classes: 'nav-item',
-        icon: 'feather icon-package'
+        id: 'product',
+        title: 'Quản lý sản phẩm',
+        type: 'collapse',
+        icon: 'feather icon-package',
+        children: [
+          {
+            id: 'list-product',
+            title: 'Danh sách sản phẩm',
+            type: 'item',
+            url: '/product/list-product'
+          },
+          {
+            id: 'add-product',
+            title: 'Thêm sản phẩm',
+            type: 'item',
+            url: '/product/add-product'
+          }
+        ]
       },
       {
         id: 'order',
-        title: 'Danh sách đơn hàng',
-        type: 'item',
-        url: '/order', 
-        classes: 'nav-item',
-        icon: 'feather icon-shopping-cart'
+        title: 'Quản lý đơn hàng',
+        type: 'collapse',
+        icon: 'feather icon-shopping-cart',
+        children: [
+          {
+            id: 'list-order',
+            title: 'Danh sách đơn hàng',
+            type: 'item',
+            url: '/order/list-order'
+          }
+        ]
       },
       {
         id: 'category',
-        title: 'Danh sách danh mục',
-        type: 'item',
-        url: '/category',
-        classes: 'nav-item',
-        icon: 'feather icon-grid'
+        title: 'Quản lý danh mục',
+        type: 'collapse',
+        icon: 'feather icon-grid',
+        children: [
+          {
+            id: 'list-category',
+            title: 'Danh sách danh mục',
+            type: 'item',
+            url: '/category/list-category'
+          },
+          {
+            id: 'add-category',
+            title: 'Thêm danh mục',
+            type: 'item',
+            url: '/category/add-category'
+          }
+        ]
       },
       {
         id: 'article',
-        title: 'Danh sách bài viết',
-        type: 'item',
-        url: '/article',
-        classes: 'nav-item',
-        icon: 'feather icon-file-text' 
+        title: 'Quản lý bài viết',
+        type: 'collapse',
+        icon: 'feather icon-edit',
+        children: [
+          {
+            id: 'list-article',
+            title: 'Danh sách bài viết',
+            type: 'item',
+            url: '/article/list-article'
+          },
+          {
+            id: 'add-article',
+            title: 'Thêm bài viết',
+            type: 'item',
+            url: '/article/add-article'
+          }
+        ]
       },
       {
-        id: 'users',
-        title: 'Danh sách người dùng',
+        id: 'consultation',
+        title: 'Yêu cầu tư vấn',
         type: 'item',
-        url: '/users',
-        classes: 'nav-item',
-        icon: 'feather icon-users'
-      },
-      {
-        id: 'evaluate',
-        title: 'Danh sách đánh giá',
-        type: 'item',
-        url: '/evaluate',
-        classes: 'nav-item',
-        icon: 'feather icon-star'
-      },
-      {
-        id: 'request-consultation',
-        title: 'Danh sách yêu cầu tư vấn',
-        type: 'item',
-        url: '/request-consultation',
-        classes: 'nav-item',
-        icon: 'feather icon-message-circle'
-      },
+        icon: 'feather icon-help-circle',
+        url: '/request-consultation/list-consultation'
+      }
     ]
   },
   {
-    id: 'suport',
-    title: 'Mô tả',
+    id: 'admin',
+    title: 'Quản trị hệ thống',
     type: 'group',
-    icon: 'feather icon-layers',
     children: [
       {
-        id: 'support-page',
-        title: 'Mô tả',
+        id: 'users',
+        title: 'Quản lý người dùng',
         type: 'item',
-        url: '/sample-page',
-        classes: 'nav-item',
-        icon: 'feather icon-file'
-      },
+        icon: 'feather icon-users',
+        url: '/users/list'
+      }
     ]
   }
 ];
