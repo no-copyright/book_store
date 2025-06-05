@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +15,7 @@ import java.util.Map;
 @Data
 public class NotificationRequest {
     private Integer userId;
+    private Boolean isRead;
     private String title;
     private String body;
     private String topic;
@@ -22,4 +24,5 @@ public class NotificationRequest {
     private List<String> tokens;
     // Dữ liệu bổ sung
     private Map<String, String> data;
+    private LocalDateTime createdAt;
 }

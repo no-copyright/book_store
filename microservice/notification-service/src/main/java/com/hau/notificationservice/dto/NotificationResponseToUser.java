@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Builder
@@ -13,9 +13,12 @@ import java.util.Map;
 @AllArgsConstructor
 @Data
 public class NotificationResponseToUser {
+    private String id;
     private Integer userId;
+    private Boolean isRead;
     private String title;
     private String body;
     private String topic;
     private Map<String, String> data;
+    private LocalDateTime createdAt;
 }

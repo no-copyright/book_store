@@ -41,9 +41,27 @@ public class NotificationFirebaseController {
 
     }
 
-    @DeleteMapping("/{id}")
+    @PatchMapping("/my-notification/mark-as-read/{id}")
+    public ResponseEntity<ApiResponse<NotificationResponseToUser>> markNotificationAsRead(@PathVariable String id) {
+        ApiResponse<NotificationResponseToUser> response = notificationProcessingService.markAsRead(id);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PatchMapping("/my-notification/mark-all-as-read")
+    public ResponseEntity<ApiResponse<String>> markAllNotificationsAsRead() {
+        ApiResponse<String> response = notificationProcessingService.markAllAsRead();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/my-notification/{id}")
     public ResponseEntity<ApiResponse<String>> deleteNotification(@PathVariable String id) {
         ApiResponse<String> response = notificationProcessingService.deleteNotification(id);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/my-notification")
+    public ResponseEntity<ApiResponse<String>> deleteAllNotifications() {
+        ApiResponse<String> response = notificationProcessingService.deleteAllNotification();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
