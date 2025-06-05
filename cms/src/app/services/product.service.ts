@@ -166,31 +166,9 @@ searchProducts(keyword: string, pageIndex: number = 1, pageSize: number = 10): O
 
   // Các method khác
   // Cập nhật method addProduct
-addProduct(product: Product): Observable<Product> {
-  // Loại bỏ ID khi thêm mới (server sẽ tự sinh)
-  // Nếu server addProduct cũng yêu cầu FormData, bạn cần thay đổi tương tự như updateProduct
-  const { id, code, name, image, originalPrice, status, format, ...productToSend } = product;
-
-  // Giả sử addProduct vẫn chấp nhận JSON
-  return this.http.post<{
-    status: number;
-    message: string;
-    result: Product;
-    timestamp: string;
-  }>(`${API_BASE_URL}/product/`, productToSend).pipe(
-    map(response => {
-      if (response.status === 200 || response.status === 201) {
-        return response.result;
-      }
-      throw new Error(response.message || 'Thêm sản phẩm thất bại');
-    })
-  );
-}
-
-// Cập nhật method updateProduct để gửi multipart/form-data
-updateProduct(product: Product, thumbnailFile?: File, imageFiles?: File[]): Observable<Product> {
-  // Loại bỏ các computed fields trước khi gửi API
-  const { code, name, image, originalPrice, status, format, ...rawProduct } = product;
+addProduct(product: Product, thumbnailFile?: File, imageFiles?: File[]): Observable<Product> {
+  // Loại bỏ các computed fields và ID (server sẽ tự sinh ID)
+  const { id, code, name, image, originalPrice, status, format, ...rawProduct } = product;
   
   // Chuẩn bị data theo format API yêu cầu
   const productData = {
@@ -205,14 +183,18 @@ updateProduct(product: Product, thumbnailFile?: File, imageFiles?: File[]): Obse
     quantity: rawProduct.quantity || 0,
     discount: rawProduct.discount || 0,
     price: rawProduct.price || 0,
+    discountPercent: rawProduct.discountPercent || 0,
     priority: rawProduct.priority || 0,
     description: rawProduct.description || '',
     categoryIds: Array.isArray(rawProduct.categories) ? rawProduct.categories : [],
     active: rawProduct.active === true
   };
   
-  console.log('Update product data:', JSON.stringify(productData, null, 2));
+  console.log('=== ADD PRODUCT DEBUG ===');
+  console.log('Product data:', JSON.stringify(productData, null, 2));
   console.log('CategoryIds type and value:', typeof productData.categoryIds, productData.categoryIds);
+  console.log('Thumbnail file:', thumbnailFile?.name, thumbnailFile?.size);
+  console.log('Image files count:', imageFiles?.length || 0);
   
   // Tạo FormData cho multipart request
   const formData = new FormData();
@@ -236,21 +218,96 @@ updateProduct(product: Product, thumbnailFile?: File, imageFiles?: File[]): Obse
     });
   }
   
-  console.log('FormData prepared for multipart request');
+  console.log('FormData prepared for ADD product multipart request');
   
   // Gửi request không set Content-Type header (để browser tự động set multipart/form-data)
+  return this.http.post<{
+    status: number;
+    message: string;
+    result: Product;
+    timestamp: string;
+  }>(`${API_BASE_URL}/product/`, formData).pipe(
+    map(response => {
+      console.log('Add product response:', response);
+      if (response.status === 200 || response.status === 201) {
+        return response.result;
+      }
+      throw new Error(response.message || 'Thêm sản phẩm thất bại');
+    })
+  );
+}
+
+// Cập nhật method updateProduct để gửi multipart/form-data
+updateProduct(product: Product, thumbnailFile?: File, imageFiles?: File[]): Observable<Product> {
+  // Loại bỏ các computed fields
+  const { code, name, image, originalPrice, status, format, ...rawProduct } = product;
+  
+  // Chuẩn bị data theo format API yêu cầu
+  const productData = {
+    title: rawProduct.title || '',
+    author: rawProduct.author || '',
+    publisher: rawProduct.publisher || '',
+    publicationYear: rawProduct.publicationYear || new Date().getFullYear(),
+    packageSize: rawProduct.packageSize || 0,
+    pageSize: rawProduct.pageSize || 0,
+    form: rawProduct.form || '',
+    thumbnail: rawProduct.thumbnail || '',
+    quantity: rawProduct.quantity || 0,
+    discount: rawProduct.discount || 0,
+    price: rawProduct.price || 0,
+    discountPercent: rawProduct.discountPercent || 0,
+    priority: rawProduct.priority || 0,
+    description: rawProduct.description || '',
+    categoryIds: Array.isArray(rawProduct.categories) ? rawProduct.categories : [],
+    active: rawProduct.active === true,
+    // ✅ THÊM current imageUrls để server biết ảnh nào cần giữ lại
+    currentImageUrls: Array.isArray(rawProduct.imageUrls) ? rawProduct.imageUrls : []
+  };
+  
+  console.log('=== UPDATE PRODUCT DEBUG ===');
+  console.log('Product data for update:', JSON.stringify(productData, null, 2));
+  console.log('CategoryIds type and value:', typeof productData.categoryIds, productData.categoryIds);
+  console.log('Current image URLs:', productData.currentImageUrls);
+  console.log('New thumbnail file:', thumbnailFile?.name, thumbnailFile?.size);
+  console.log('New image files count:', imageFiles?.length || 0);
+  
+  // Tạo FormData cho multipart request
+  const formData = new FormData();
+  
+  // Append product data như JSON RequestPart
+  formData.append('product', new Blob([JSON.stringify(productData)], {
+    type: 'application/json'
+  }));
+  
+  // Append thumbnail file nếu có
+  if (thumbnailFile) {
+    formData.append('thumbnail', thumbnailFile);
+    console.log('New thumbnail file added:', thumbnailFile.name, thumbnailFile.size);
+  }
+  
+  // Append image files nếu có
+  if (imageFiles && imageFiles.length > 0) {
+    imageFiles.forEach((file, index) => {
+      formData.append('images', file);
+      console.log(`New image file ${index + 1} added:`, file.name, file.size);
+    });
+  }
+  
+  console.log('FormData prepared for UPDATE product multipart request');
+  
+  // Gửi request không set Content-Type header
   return this.http.put<{
     status: number;
     message: string;
     result: Product;
     timestamp: string;
-  }>(`${API_BASE_URL}/product/${rawProduct.id}`, formData).pipe(
+  }>(`${API_BASE_URL}/product/${product.id}`, formData).pipe(
     map(response => {
       console.log('Update product response:', response);
       if (response.status === 200) {
         return response.result;
       }
-      throw new Error(response.message || 'Cập nhật thất bại');
+      throw new Error(response.message || 'Cập nhật sản phẩm thất bại');
     })
   );
 }
