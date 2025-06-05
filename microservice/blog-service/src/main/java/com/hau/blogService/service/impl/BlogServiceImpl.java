@@ -242,4 +242,50 @@ public class BlogServiceImpl implements BlogService {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
+
+    @Override
+    public ApiResponse<BlogResponse> upThumbnail(Long id, MultipartFile thumbnail) {
+        Blog blog = blogRepository.findById(id)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy blog với id: " + id, null));
+
+        if(thumbnail == null || thumbnail.isEmpty()) {
+            throw new AppException(HttpStatus.BAD_REQUEST, "Thumbnail không được để trống", null);
+        }
+
+        String thumbnailUrl = fileUploadService.uploadFileAndGetUrl(thumbnail, "blog/thumbnails");
+        blog.setThumbnail(thumbnailUrl);
+        blogRepository.save(blog);
+        BlogResponse response = blogMapper.toBlogResponse(blog);
+        response.setThumbnail(fileServiceUrl + response.getThumbnail());
+
+        return ApiResponse.<BlogResponse>builder()
+                .status(HttpStatus.OK.value())
+                .message("Cập nhật thumbnail bài viết thành công")
+                .result(response)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @Override
+    public ApiResponse<BlogResponse> createBlogWithoutThumbnail(BlogRequest request) {
+        Blog blog = blogMapper.toBlog(request);
+
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy danh mục với id: " + request.getCategoryId(), null));
+
+        blog.setCategory(category);
+        blog.setThumbnail(null); // No thumbnail for this blog
+        blog.setSlug(StringConverter.toSlug(blog.getTitle()));
+        Blog savedBlog = blogRepository.save(blog);
+        blog.setSlug(slugService.generateUniqueSlug(savedBlog.getTitle(), savedBlog.getId()));
+        savedBlog = blogRepository.save(savedBlog);
+        BlogResponse response = blogMapper.toBlogResponse(savedBlog);
+
+        return ApiResponse.<BlogResponse>builder()
+                .status(HttpStatus.CREATED.value())
+                .message("Tạo blog thành công")
+                .result(response)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
 }
