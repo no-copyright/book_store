@@ -288,4 +288,22 @@ public class BlogServiceImpl implements BlogService {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
+
+    @Override
+    public ApiResponse<BlogResponse> updateBlogWithoutThumbnail(Long id, BlogRequest request) {
+        Blog blog = blogRepository.findById(id)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy blog với id: " + id, null));
+
+        Blog updatedBlog = blogMapper.toBlogUpdateFromRequest(request, blog);
+        updatedBlog.setSlug(slugService.generateUniqueSlug(updatedBlog.getTitle(), id));
+        blogRepository.save(updatedBlog);
+        BlogResponse response = blogMapper.toBlogResponse(updatedBlog);
+
+        return ApiResponse.<BlogResponse>builder()
+                .status(HttpStatus.OK.value())
+                .message("Cập nhật blog thành công")
+                .result(response)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
 }
