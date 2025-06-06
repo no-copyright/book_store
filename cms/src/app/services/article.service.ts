@@ -255,15 +255,7 @@ export class ArticleService {
       categoryId: blogData.categoryId
     };
     
-    // ✅ Debug logs
-    console.log('=== DEBUG FORM DATA ===');
-    console.log('Blog data:', blogJson);
-    console.log('Thumbnail file:', {
-      name: thumbnailFile.name,
-      size: thumbnailFile.size,
-      type: thumbnailFile.type,
-      lastModified: thumbnailFile.lastModified
-    });
+
     
     // ✅ Thêm blog JSON vào FormData - dùng Blob với correct content type
     const blogBlob = new Blob([JSON.stringify(blogJson)], { 
@@ -274,11 +266,7 @@ export class ArticleService {
     // ✅ Đảm bảo append file đúng cách
     formData.append('thumbnail', thumbnailFile, thumbnailFile.name);
     
-    // ✅ Debug FormData - TypeScript compatible way
-    console.log('FormData prepared with:');
-    console.log('- Blog JSON blob added');
-    console.log('- Thumbnail file added:', thumbnailFile.name);
-    console.log('=== END DEBUG ===');
+
 
     return this.http.post<{
       status: number;
@@ -287,7 +275,6 @@ export class ArticleService {
       timestamp: string;
     }>(`${API_BASE_URL}/blog/`, formData).pipe(
       map(response => {
-        console.log('Success response:', response);
         const blog = response.result;
         return {
           id: blog.id.toString(),
@@ -327,9 +314,7 @@ export class ArticleService {
       priority: blogData.priority,
       categoryId: blogData.categoryId
     };
-    
-    console.log('=== UPDATE BLOG DEBUG ===');
-    console.log('Blog data:', blogJson);
+
     
     // ✅ Thêm blog JSON vào FormData với đúng content type
     const blogBlob = new Blob([JSON.stringify(blogJson)], { 
@@ -340,12 +325,9 @@ export class ArticleService {
     // Thêm thumbnail file nếu có
     if (thumbnailFile) {
       formData.append('thumbnail', thumbnailFile, thumbnailFile.name);
-      console.log('Thumbnail file added:', thumbnailFile.name, thumbnailFile.size);
     } else {
-      console.log('No thumbnail file provided for update');
     }
     
-    console.log('=== END UPDATE DEBUG ===');
 
     return this.http.put<{
       status: number;

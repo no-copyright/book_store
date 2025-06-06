@@ -1,6 +1,81 @@
 <nav>
   <div class="navbar-wrapper">
     <app-nav-logo [navCollapsed]="navCollapsed" (NavCollapse)="navCollapse()" class="navbar-brand header-logo" />
-    <app-nav-content (NavCollapsedMob)="navCollapseMob()" class="scroll-div w-100" />
+    
+    <!-- ✅ Navigation content -->
+    <div class="scroll-div w-100">
+      <div class="navbar-content">
+        <ul class="nav pcoded-inner-navbar">
+          <ng-container *ngFor="let item of navigation">
+            <!-- Group Items -->
+            <ng-container *ngIf="item.type === 'group'">
+              <li class="nav-item pcoded-menu-caption">
+                <label>{{ item.title }}</label>
+              </li>
+              <ng-container *ngFor="let child of item.children">
+                <!-- ✅ Collapse Items - LOẠI BỎ MŨI TÊN -->
+                <ng-container *ngIf="child.type === 'collapse'">
+                  <li class="nav-item pcoded-hasmenu" 
+                      [class.pcoded-trigger]="isMenuOpen(child.id)">
+                    <!-- ✅ Menu toggle header - KHÔNG CÓ MŨI TÊN -->
+                    <a href="javascript:void(0)" 
+                       class="nav-link" 
+                       (click)="toggleMenu(child.id)">
+                      <span class="pcoded-micon" *ngIf="child.icon">
+                        <i [class]="child.icon"></i>
+                      </span>
+                      <span class="pcoded-mtext">{{ child.title }}</span>
+                      <!-- ✅ LOẠI BỎ HOÀN TOÀN CARET -->
+                    </a>
+                    
+                    <!-- ✅ Submenu -->
+                    <ul class="pcoded-submenu" 
+                        [class.show]="isMenuOpen(child.id)"
+                        [style.display]="isMenuOpen(child.id) ? 'block' : 'none'">
+                      <li *ngFor="let subChild of child.children" 
+                          [routerLinkActive]="['active']">
+                        <a [routerLink]="[subChild.url]" 
+                           class="nav-link"
+                           (click)="navigateToPage(subChild.url!)">
+                          {{ subChild.title }}
+                        </a>
+                      </li>
+                    </ul>
+                  </li>
+                </ng-container>
+                
+                <!-- ✅ Direct Items -->
+                <ng-container *ngIf="child.type === 'item'">
+                  <li class="nav-item" [routerLinkActive]="['active']">
+                    <a [routerLink]="[child.url]" 
+                       class="nav-link"
+                       (click)="navigateToPage(child.url!)">
+                      <span class="pcoded-micon" *ngIf="child.icon">
+                        <i [class]="child.icon"></i>
+                      </span>
+                      <span class="pcoded-mtext">{{ child.title }}</span>
+                    </a>
+                  </li>
+                </ng-container>
+              </ng-container>
+            </ng-container>
+            
+            <!-- Direct Items at root level -->
+            <ng-container *ngIf="item.type === 'item'">
+              <li class="nav-item" [routerLinkActive]="['active']">
+                <a [routerLink]="[item.url]" 
+                   class="nav-link"
+                   (click)="navigateToPage(item.url!)">
+                  <span class="pcoded-micon" *ngIf="item.icon">
+                    <i [class]="item.icon"></i>
+                  </span>
+                  <span class="pcoded-mtext">{{ item.title }}</span>
+                </a>
+              </li>
+            </ng-container>
+          </ng-container>
+        </ul>
+      </div>
+    </div>
   </div>
 </nav>

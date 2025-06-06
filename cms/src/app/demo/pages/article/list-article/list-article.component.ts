@@ -78,10 +78,8 @@ export class ListArticleComponent implements OnInit {
         this.currentPage = response.currentPage;
         this.loading = false;
         
-        console.log('Loaded articles:', this.articles);
       },
       error: (error) => {
-        console.error('Error loading articles:', error);
         this.handleLoadError(error);
         this.loading = false;
       }

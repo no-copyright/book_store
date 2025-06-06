@@ -1,0 +1,46 @@
+.user-info {
+  text-align: right;
+  
+  .fw-semibold {
+    font-size: 0.9rem;
+    margin-bottom: 2px;
+  }
+  
+  small {
+    font-size: 0.75rem;
+    line-height: 1;
+  }
+}
+
+.badge {
+  font-size: 0.65rem;
+  padding: 0.25em 0.5em;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .user-info {
+    display: none;
+  }
+  
+  .d-flex {
+    .me-3:not(:last-child) {
+      margin-right: 0.5rem !important;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .badge {
+    display: none;
+  }
+  
+  .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    
+    .feather {
+      display: none;
+    }
+  }
+}

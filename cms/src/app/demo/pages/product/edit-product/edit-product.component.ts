@@ -87,7 +87,6 @@ export class EditProductComponent implements OnInit {
     this.categoryService.getCategoriesFlat().subscribe({
       next: (categories) => {
         this.categories = categories;
-        console.log('Categories loaded:', this.categories.length);
         this.loadProductData();
       },
       error: (error) => {
@@ -102,9 +101,7 @@ export class EditProductComponent implements OnInit {
     this.productService.getProductById(this.productId).subscribe({
       next: (product) => {
         if (product) {
-          console.log('=== LOADED PRODUCT DEBUG ===');
-          console.log('Product from API:', product);
-          console.log('Product imageUrls:', product.imageUrls);
+
           
           // Set current images từ API
           this.currentThumbnail = product.thumbnail;
@@ -149,7 +146,6 @@ export class EditProductComponent implements OnInit {
             format: product.form
           });
           
-          console.log('Selected category IDs:', this.selectedCategoryIds);
         } else {
           this.toastService.error('Lỗi', 'Không tìm thấy sản phẩm!');
           this.router.navigate(['/product/list-product']);
@@ -187,7 +183,6 @@ export class EditProductComponent implements OnInit {
       };
       reader.readAsDataURL(file);
       
-      console.log('New thumbnail selected:', file.name);
     }
   }
 
@@ -255,7 +250,6 @@ export class EditProductComponent implements OnInit {
   removeCurrentImage(index: number): void {
     if (index >= 0 && index < this.currentImages.length) {
       this.currentImages.splice(index, 1);
-      console.log('Current image removed, remaining:', this.currentImages.length);
     }
   }
 
@@ -264,7 +258,6 @@ export class EditProductComponent implements OnInit {
     if (index >= 0 && index < this.selectedImageFiles.length) {
       this.selectedImageFiles.splice(index, 1);
       this.imagePreviews.splice(index, 1);
-      console.log('New image removed, remaining:', this.selectedImageFiles.length);
     }
   }
 
@@ -288,8 +281,6 @@ export class EditProductComponent implements OnInit {
       categories: this.selectedCategoryIds
     });
     
-    console.log('Category toggled:', id);
-    console.log('Selected category IDs after toggle:', this.selectedCategoryIds);
   }
 
   isCategorySelected(categoryId: string | number): boolean {
@@ -314,8 +305,6 @@ export class EditProductComponent implements OnInit {
 
   openCategoryModal(): void {
     this.showCategoryModal = true;
-    console.log('Category modal opened. Categories available:', this.categories.length);
-    console.log('Selected categories:', this.selectedCategoryIds);
   }
 
   closeCategoryModal(): void {
@@ -327,7 +316,6 @@ export class EditProductComponent implements OnInit {
     this.productForm.patchValue({
       categories: []
     });
-    console.log('All categories cleared');
   }
 
   getCategoryNameById(categoryId: string): string {
@@ -375,13 +363,7 @@ export class EditProductComponent implements OnInit {
     if (this.productForm.valid) {
       this.submitting = true;
       const formValue = this.productForm.value;
-      
-      console.log('=== FORM SUBMIT DEBUG ===');
-      console.log('Form value before processing:', formValue);
-      console.log('Selected category IDs:', this.selectedCategoryIds);
-      console.log('Current images:', this.currentImages);
-      console.log('Selected thumbnail file:', this.selectedThumbnailFile?.name);
-      console.log('Selected image files:', this.selectedImageFiles.length);
+
       
       // Convert active từ string về boolean
       let activeValue: boolean;
@@ -425,9 +407,6 @@ export class EditProductComponent implements OnInit {
         format: formValue.form
       };
 
-      console.log('=== EDIT PRODUCT DEBUG ===');
-      console.log('Categories to send:', categoryIds);
-      console.log('Product data to send:', JSON.stringify(productData, null, 2));
 
       this.productService.updateProduct(
         productData, 
@@ -435,8 +414,6 @@ export class EditProductComponent implements OnInit {
         this.selectedImageFiles.length > 0 ? this.selectedImageFiles : undefined
       ).subscribe({
         next: (response) => {
-          console.log('=== UPDATE SUCCESS ===');
-          console.log('API response:', response);
           
           this.submitting = false;
           this.toastService.success('Thành công', 'Cập nhật sản phẩm thành công!');
@@ -445,7 +422,6 @@ export class EditProductComponent implements OnInit {
           }, 1500);
         },
         error: (error) => {
-          console.log('=== UPDATE ERROR ===');
           console.error('Update error:', error);
           
           this.submitting = false;
@@ -461,8 +437,6 @@ export class EditProductComponent implements OnInit {
         }
       });
     } else {
-      console.log('=== FORM INVALID ===');
-      console.log('Form errors:', this.getFormValidationErrors());
       
       this.markFormGroupTouched(this.productForm);
       this.toastService.warning('Cảnh báo', 'Vui lòng kiểm tra lại thông tin đã nhập!');
