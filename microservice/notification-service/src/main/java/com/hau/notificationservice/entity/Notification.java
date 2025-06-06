@@ -23,8 +23,6 @@ public class Notification {
     private String title;
     private String body;
     private String topic;
-    private String token;
-    private List<String> tokens;
     private Map<String, String> data;
 
     private LocalDateTime createdAt;

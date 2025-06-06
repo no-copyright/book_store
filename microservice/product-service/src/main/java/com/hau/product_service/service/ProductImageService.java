@@ -77,7 +77,7 @@ public class ProductImageService {
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy ảnh sản phẩm", null));
 
         try {
-            fileServiceClient.deleteFile(productImage.getUrl());
+//            fileServiceClient.deleteFile(productImage.getUrl());
             productImageRepository.delete(productImage);
         } catch (Exception e) {
             throw new AppException(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi khi xóa ảnh sản phẩm", e);

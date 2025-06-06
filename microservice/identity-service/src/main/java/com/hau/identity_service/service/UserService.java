@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.hau.event.dto.UserCreateEvent;
+import com.hau.event.dto.UserUpdateEvent;
 import com.hau.identity_service.dto.request.*;
 import com.hau.identity_service.dto.response.PageResponse;
 import com.hau.identity_service.repository.CartServiceClient;
@@ -230,6 +231,11 @@ public class UserService {
         User user = findUserById(Long.valueOf(authentication.getName()));
         user.setEmail(userUpdateInfoRequest.getEmail());
         userRepository.save(user);
+        UserUpdateEvent userUpdateEvent = UserUpdateEvent.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .build();
+        kafkaTemplate.send("user-updated-topic", userUpdateEvent);
         UserResponse userResponse = userMapper.toUserResponse(user);
         userResponse.setProfileImage(fileDownloadPrefix + user.getProfileImage());
         return ApiResponse.<UserResponse>builder()
