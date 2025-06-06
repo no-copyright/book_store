@@ -27,75 +27,79 @@ export default class AuthSigninComponent implements OnInit {
   ) {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
-      password: ['', [Validators.required]] // Bỏ minLength cho password
+      password: ['', [Validators.required]]
     });
   }
 
+  ngOnInit(): void {
+    // ✅ Redirect nếu đã login
+    if (this.authService.isAuthenticated()) {
+      this.router.navigate(['/product/list-product']);
+    }
+  }
+
+  // ✅ CẬP NHẬT onSubmit method
   onSubmit(): void {
-  if (this.loginForm.valid) {
-    this.loading = true;
-    const credentials = this.loginForm.value;
+    if (this.loginForm.valid) {
+      this.loading = true;
+      const credentials = this.loginForm.value;
 
-    console.log('Attempting login with:', credentials); // Debug log
 
-    this.authService.login(credentials).subscribe({
-      next: (response) => {
-        console.log('Login response:', response); // Debug log
-        this.loading = false;
-        
-        if (response.status === 200 && response.result.authenticated) {
-          console.log('Login successful, checking auth state...'); // Debug log
+      this.authService.login(credentials).subscribe({
+        next: (response) => {
+          this.loading = false;
           
-          // Kiểm tra state sau khi đăng nhập
-          console.log('Is authenticated:', this.authService.isAuthenticated()); // Debug log
-          console.log('Current user:', this.authService.getCurrentUser()); // Debug log
-          
-          this.toastService.success('Thành công', 'Đăng nhập thành công!');
-          
-          // Thay đổi route redirect - chỉ navigate về /dashboard thay vì /dashboard/default
-          setTimeout(() => {
-            this.router.navigate(['/product/list-product']).then((navigated: boolean) => {
-              console.log('Navigation result:', navigated); // Debug log
-              if (!navigated) {
-                console.error('Navigation failed, trying alternative route');
-                // Fallback routes nếu /dashboard không hoạt động
-                this.router.navigate(['/']);
+          if (response.status === 200 && response.result.authenticated) {
+            
+            const user = this.authService.getCurrentUser();
+            if (user) {
+              
+              // ✅ Kiểm tra quyền trước khi redirect
+              if (this.authService.hasAnyRole(['ADMIN', 'STAFF'])) {
+                this.toastService.success('Thành công', 'Đăng nhập thành công!');
+                
+                // ✅ Redirect đến trang sản phẩm
+                setTimeout(() => {
+                  this.router.navigate(['/product/list-product']).then((navigated: boolean) => {
+                    if (!navigated) {
+                      console.error('Navigation failed, trying alternative route');
+                      this.router.navigate(['/']);
+                    }
+                  });
+                }, 1000);
+              } else {
+                // ✅ User không có quyền
+                this.toastService.error('Lỗi', 'Bạn không có quyền truy cập vào hệ thống quản trị!');
+                this.authService.logout();
               }
-            });
-          }, 1000);
-        } else {
-          this.toastService.error('Lỗi', response.message || 'Đăng nhập thất bại!');
+            }
+          } else {
+            this.toastService.error('Lỗi', response.message || 'Đăng nhập thất bại!');
+          }
+        },
+        error: (error) => {
+          this.loading = false;
+          console.error('Login error:', error);
+          
+          let errorMessage = 'Đã xảy ra lỗi khi đăng nhập!';
+          if (error?.error?.message) {
+            errorMessage = error.error.message;
+          } else if (error?.status === 401) {
+            errorMessage = 'Tài khoản hoặc mật khẩu không chính xác!';
+          } else if (error?.status === 403) {
+            errorMessage = 'Bạn không có quyền truy cập vào hệ thống!';
+          } else if (error?.status === 0) {
+            errorMessage = 'Không thể kết nối đến server!';
+          }
+          
+          this.toastService.error('Lỗi đăng nhập', errorMessage);
         }
-      },
-      error: (error) => {
-        this.loading = false;
-        console.error('Login error:', error);
-        
-        let errorMessage = 'Đã xảy ra lỗi khi đăng nhập!';
-        if (error?.error?.message) {
-          errorMessage = error.error.message;
-        } else if (error?.status === 401) {
-          errorMessage = 'Tài khoản hoặc mật khẩu không chính xác!';
-        } else if (error?.status === 0) {
-          errorMessage = 'Không thể kết nối đến server!';
-        }
-        
-        this.toastService.error('Lỗi đăng nhập', errorMessage);
-      }
-    });
-  } else {
-    this.markFormGroupTouched();
-    this.toastService.warning('Cảnh báo', 'Vui lòng kiểm tra lại thông tin đăng nhập!');
+      });
+    } else {
+      this.markFormGroupTouched();
+      this.toastService.warning('Cảnh báo', 'Vui lòng kiểm tra lại thông tin đăng nhập!');
+    }
   }
-}
-
-ngOnInit(): void {
-  // Nếu đã đăng nhập thì redirect về dashboard
-  if (this.authService.isAuthenticated()) {
-    console.log('Already authenticated, redirecting to dashboard'); // Debug log
-    this.router.navigate(['/dashboard']); // Sửa từ /dashboard/default thành /dashboard
-  }
-}
 
   togglePassword(): void {
     this.showPassword = !this.showPassword;

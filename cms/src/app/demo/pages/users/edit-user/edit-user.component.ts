@@ -70,7 +70,6 @@ export class EditUserComponent implements OnInit {
     this.userService.getAllRoles().subscribe({
       next: (roles) => {
         this.availableRoles = roles;
-        console.log('Loaded available roles:', this.availableRoles);
         this.rolesLoading = false;
       },
       error: (error) => {
@@ -112,7 +111,6 @@ export class EditUserComponent implements OnInit {
       // Add role
       this.selectedRoles.push(roleName);
     }
-    console.log('Selected roles updated:', this.selectedRoles);
   }
 
   // Check if roles have changed

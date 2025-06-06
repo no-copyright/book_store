@@ -136,7 +136,6 @@ export class AddArticleComponent implements OnInit {
         author: formData.author
       };
       
-      console.log('Submitting with file:', this.selectedFile?.name); // Debug log
       
       // ✅ Đảm bảo truyền file vào service
       this.articleService.createBlog(articleData, this.selectedFile).subscribe({

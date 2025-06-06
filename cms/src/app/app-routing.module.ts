@@ -1,69 +1,125 @@
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 import { AdminComponent } from './theme/layout/admin/admin.component';
-import { GuestComponent } from './theme/layout/guest/guest.component';
+import { AuthGuard } from './guards/auth.guard';
+import { RoleGuard } from './guards/role.guard';
+
+// ✅ Import components
+import { ListProductComponent } from './demo/pages/product/list-product/list-product.component';
+import { AddProductComponent } from './demo/pages/product/add-product/add-product.component';
+import { EditProductComponent } from './demo/pages/product/edit-product/edit-product.component';
+import { ListUsersComponent } from './demo/pages/users/list-users/list-users.component';
+import { EditUserComponent } from './demo/pages/users/edit-user/edit-user.component';
+import { ListArticleComponent } from './demo/pages/article/list-article/list-article.component';
+import { AddArticleComponent } from './demo/pages/article/add-article/add-article.component';
+import { EditArticleComponent } from './demo/pages/article/edit-article/edit-article.component';
+import { ListCategoryComponent } from './demo/pages/category/list-category/list-category.component';
+import { AddCategoryComponent } from './demo/pages/category/add-category/add-category.component';
+import { EditCategoryComponent } from './demo/pages/category/edit-category/edit-category.component';
+import { ListConsultationComponent } from './demo/pages/request-consultation/list-consultation/list-consultation.component';
 
 const routes: Routes = [
   {
     path: '',
     component: AdminComponent,
+    canActivate: [AuthGuard],
     children: [
       {
         path: '',
-        redirectTo: '/auth/signin',
+        redirectTo: '/product/list-product',
         pathMatch: 'full'
       },
-      {
-        path: 'dashboard',
-        loadComponent: () => import('./demo/dashboard/dashboard.component').then((c) => c.DashboardComponent)
-      },
-      {
-        path: 'sample-page',
-        loadComponent: () => import('./demo/extra/sample-page/sample-page.component')
-      },
+      // ✅ LOẠI BỎ dashboard route
+      // {
+      //   path: 'dashboard',
+      //   loadComponent: () => import('./demo/dashboard/dashboard.component').then((c) => c.DashboardComponent),
+      //   canActivate: [AuthGuard]
+      // },
+      
+      // ✅ Product module - ADMIN và STAFF
       {
         path: 'product',
-        loadChildren: () => import('./demo/pages/product/product.module').then((m) => m.ProductModule)
+        canActivate: [AuthGuard],
+        children: [
+          { path: '', redirectTo: 'list-product', pathMatch: 'full' },
+          { path: 'list-product', component: ListProductComponent },
+          { path: 'add-product', component: AddProductComponent },
+          { path: 'edit-product/:id', component: EditProductComponent }
+        ]
       },
+      // ✅ Order module - ADMIN và STAFF
       {
         path: 'order',
-        loadChildren: () => import('./demo/pages/order/order.module').then((m) => m.OrderModule)
+        canActivate: [AuthGuard],
+        children: [
+          { path: '', redirectTo: 'list-order', pathMatch: 'full' },
+          {
+            path: 'list-order',
+            loadComponent: () => import('./demo/pages/order/list-order/list-order.component').then(c => c.ListOrderComponent)
+          },
+          {
+            path: 'order-detail/:id',
+            loadComponent: () => import('./demo/pages/order/order-detail/order-detail.component').then(c => c.OrderDetailComponent)
+          }
+        ]
       },
-      {
-        path: 'article',
-        loadChildren: () => import('./demo/pages/article/article.module').then((m) => m.ArticleModule)
-      },
+      // ✅ Category module - ADMIN và STAFF
       {
         path: 'category',
-        loadChildren: () => import('./demo/pages/category/category.module').then((m) => m.CategoryModule)
+        canActivate: [AuthGuard],
+        children: [
+          { path: '', redirectTo: 'list-category', pathMatch: 'full' },
+          { path: 'list-category', component: ListCategoryComponent },
+          { path: 'add-category', component: AddCategoryComponent },
+          { path: 'edit-category/:id', component: EditCategoryComponent } // ✅ ĐÚNG ROUTE
+        ]
       },
+      // ✅ Article module - ADMIN và STAFF
       {
-        path: 'users',  
-        loadChildren: () => import('./demo/pages/users/users.module').then((m) => m.UsersModule)
+        path: 'article',
+        canActivate: [AuthGuard],
+        children: [
+          { path: '', redirectTo: 'list-article', pathMatch: 'full' },
+          { path: 'list-article', component: ListArticleComponent },
+          { path: 'add-article', component: AddArticleComponent },
+          { path: 'edit-article/:id', component: EditArticleComponent }
+        ]
       },
-      {
-        path: 'evaluate',
-        loadChildren: () => import('./demo/pages/evaluate/evaluate.module').then((m) => m.EvaluateModule)
-      },
-      {
-        path: 'homepage',
-        loadChildren: () => import('./demo/pages/homepage/homepage.module').then((m) => m.HomepageModule)
-      },
+      // ✅ Consultation module - ADMIN và STAFF
       {
         path: 'request-consultation',
-        loadChildren: () => import('./demo/pages/request-consultation/request-consultation.module').then((m) => m.RequestConsultationModule)
+        canActivate: [AuthGuard],
+        children: [
+          { path: '', redirectTo: 'list-consultation', pathMatch: 'full' },
+          { path: 'list-consultation', component: ListConsultationComponent }
+        ]
+      },
+      // ✅ Users module - CHỈ ADMIN
+      {
+        path: 'users',
+        canActivate: [AuthGuard, RoleGuard],
+        data: { roles: ['ADMIN'] },
+        children: [
+          { path: '', redirectTo: 'list', pathMatch: 'full' },
+          { path: 'list', component: ListUsersComponent },
+          { path: 'edit/:id', component: EditUserComponent }
+        ]
       }
     ]
   },
   {
-    path: '',
-    component: GuestComponent,
+    path: 'auth',
     children: [
-      {
-        path: 'auth',
-        loadChildren: () => import('./demo/pages/authentication/authentication.module').then((m) => m.AuthenticationModule)
+      { path: '', redirectTo: 'signin', pathMatch: 'full' },
+      { 
+        path: 'signin', 
+        loadComponent: () => import('./demo/pages/authentication/auth-signin/auth-signin.component')
       }
     ]
+  },
+  {
+    path: '**',
+    redirectTo: '/auth/signin'
   }
 ];
 

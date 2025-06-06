@@ -16,4 +16,6 @@ public interface BlogService {
     ApiResponse<Void> deleteBlog(Long id);
     ApiResponse<BlogResponse> findById(Long id);
     ApiResponse<PageResponse<BlogResponse>> getAllBlogs(BlogfilterRequest filter, Integer pageIndex, Integer pageSize);
+    ApiResponse<BlogResponse> upThumbnail(Long id, MultipartFile thumbnail);
+    ApiResponse<BlogResponse> createBlogWithoutThumbnail(BlogRequest request);
 }

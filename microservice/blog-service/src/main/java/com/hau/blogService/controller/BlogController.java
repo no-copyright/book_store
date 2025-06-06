@@ -14,7 +14,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -55,7 +54,7 @@ public class BlogController {
     @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<BlogResponse>> updateBlog(@PathVariable Long id, @RequestPart("blog") @Valid BlogRequest request,
-                                                                @RequestPart(value = "thumbnail") MultipartFile thumbnail) throws IOException {
+                                                                @RequestPart(value = "thumbnail") MultipartFile thumbnail) {
         ApiResponse<BlogResponse> response = blogService.updateBlog(id, request, thumbnail);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -65,6 +64,20 @@ public class BlogController {
     public ResponseEntity<ApiResponse<Void>> deleteBlog(@PathVariable Long id) {
         ApiResponse<Void> response = blogService.deleteBlog(id);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+    @PutMapping("/thumbnail/{id}")
+    public ResponseEntity<ApiResponse<BlogResponse>> updateThumbnail(@PathVariable Long id, @RequestPart("thumbnail") MultipartFile thumbnail) {
+        ApiResponse<BlogResponse> response = blogService.upThumbnail(id, thumbnail);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+    @PostMapping("/noThumbnail")
+    public ResponseEntity<ApiResponse<BlogResponse>> createBlogWithoutThumbnail(@RequestBody @Valid BlogRequest request) {
+        ApiResponse<BlogResponse> response = blogService.createBlogWithoutThumbnail(request);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
 }

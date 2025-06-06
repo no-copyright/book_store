@@ -202,11 +202,7 @@ addProduct(product: Product, thumbnailFile?: File, imageFiles?: File[]): Observa
     active: rawProduct.active === true
   };
   
-  console.log('=== ADD PRODUCT DEBUG ===');
-  console.log('Product data:', JSON.stringify(productData, null, 2));
-  console.log('CategoryIds type and value:', typeof productData.categoryIds, productData.categoryIds);
-  console.log('Thumbnail file:', thumbnailFile?.name, thumbnailFile?.size);
-  console.log('Image files count:', imageFiles?.length || 0);
+
   
   // Tạo FormData cho multipart request
   const formData = new FormData();
@@ -219,18 +215,15 @@ addProduct(product: Product, thumbnailFile?: File, imageFiles?: File[]): Observa
   // Append thumbnail file nếu có
   if (thumbnailFile) {
     formData.append('thumbnail', thumbnailFile);
-    console.log('Thumbnail file added:', thumbnailFile.name, thumbnailFile.size);
   }
   
   // Append image files nếu có
   if (imageFiles && imageFiles.length > 0) {
     imageFiles.forEach((file, index) => {
       formData.append('images', file);
-      console.log(`Image file ${index + 1} added:`, file.name, file.size);
     });
   }
   
-  console.log('FormData prepared for ADD product multipart request');
   
   // Gửi request không set Content-Type header (để browser tự động set multipart/form-data)
   return this.http.post<{
@@ -240,7 +233,6 @@ addProduct(product: Product, thumbnailFile?: File, imageFiles?: File[]): Observa
     timestamp: string;
   }>(`${API_BASE_URL}/product/`, formData).pipe(
     map(response => {
-      console.log('Add product response:', response);
       if (response.status === 200 || response.status === 201) {
         return response.result;
       }
@@ -275,12 +267,7 @@ updateProduct(product: Product, thumbnailFile?: File, imageFiles?: File[]): Obse
     currentImageUrls: Array.isArray(rawProduct.imageUrls) ? rawProduct.imageUrls : []
   };
   
-  console.log('=== UPDATE PRODUCT DEBUG ===');
-  console.log('Product data for update:', JSON.stringify(productData, null, 2));
-  console.log('CategoryIds type and value:', typeof productData.categoryIds, productData.categoryIds);
-  console.log('Current image URLs:', productData.currentImageUrls);
-  console.log('New thumbnail file:', thumbnailFile?.name, thumbnailFile?.size);
-  console.log('New image files count:', imageFiles?.length || 0);
+
   
   // Tạo FormData cho multipart request
   const formData = new FormData();
@@ -293,18 +280,15 @@ updateProduct(product: Product, thumbnailFile?: File, imageFiles?: File[]): Obse
   // Append thumbnail file nếu có
   if (thumbnailFile) {
     formData.append('thumbnail', thumbnailFile);
-    console.log('New thumbnail file added:', thumbnailFile.name, thumbnailFile.size);
   }
   
   // Append image files nếu có
   if (imageFiles && imageFiles.length > 0) {
     imageFiles.forEach((file, index) => {
       formData.append('images', file);
-      console.log(`New image file ${index + 1} added:`, file.name, file.size);
     });
   }
   
-  console.log('FormData prepared for UPDATE product multipart request');
   
   // Gửi request không set Content-Type header
   return this.http.put<{
@@ -314,7 +298,6 @@ updateProduct(product: Product, thumbnailFile?: File, imageFiles?: File[]): Obse
     timestamp: string;
   }>(`${API_BASE_URL}/product/${product.id}`, formData).pipe(
     map(response => {
-      console.log('Update product response:', response);
       if (response.status === 200) {
         return response.result;
       }
@@ -340,12 +323,7 @@ toggleProductActive(id: string, currentActiveState: boolean): Observable<boolean
   // Endpoint này có thể vẫn chấp nhận JSON cho một boolean đơn giản.
   // Nếu nó cũng yêu cầu FormData, bạn cần thay đổi tương tự.
   // Tuy nhiên, gửi một boolean trong body PUT thường dùng application/json.
-  console.log('Toggle request:', {
-    productId: id,
-    currentState: currentActiveState,
-    newState: newActiveState,
-    typeof_newState: typeof newActiveState
-  });
+ 
 
   return this.http.put<{
     status: number;
@@ -358,7 +336,6 @@ toggleProductActive(id: string, currentActiveState: boolean): Observable<boolean
     }
   }).pipe(
     map(response => {
-      console.log('Toggle response:', response);
       if (response.status === 200) {
         return true;
       }
