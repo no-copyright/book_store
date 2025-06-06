@@ -558,7 +558,11 @@ public class ProductService {
 
         ProductResponse response = productMapper.toProductResponse(savedProduct);
         response.setThumbnail(fileServiceUrl + savedProduct.getThumbnail());
-
+        ProductEvent productEvent = ProductEvent.builder()
+                .id(product.getId())
+                .thumbnail(product.getThumbnail())
+                .build();
+        kafkaTemplate.send("product-update-topic", productEvent);
         return ApiResponse.<ProductResponse>builder()
                 .status(HttpStatus.OK.value())
                 .message("Cập nhật ảnh thumbnail sản phẩm thành công")
@@ -589,6 +593,15 @@ public class ProductService {
 
         ProductResponse response = productMapper.toProductResponse(savedProduct);
         response.setThumbnail(null); // No thumbnail for this case
+
+        ProductEvent productEvent = ProductEvent.builder()
+                .id(product.getId())
+                .discount(product.getDiscount())
+                .price(product.getPrice())
+                .quantity(product.getQuantity())
+                .title(product.getTitle())
+                .build();
+        kafkaTemplate.send("product-crate-topic", productEvent);
 
         return ApiResponse.<ProductResponse>builder()
                 .status(HttpStatus.CREATED.value())
