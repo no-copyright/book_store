@@ -145,7 +145,6 @@ export class EditArticleComponent implements OnInit {
 
   // ✅ Handle image error - THÊM METHOD NÀY
   onImageError(event: any): void {
-    console.log('Image error occurred, setting fallback image');
     event.target.src = 'assets/images/gallery/img-gal-1.jpg'; // Fallback image
     // Hoặc nếu không có fallback image, có thể ẩn ảnh
     // event.target.style.display = 'none';

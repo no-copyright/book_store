@@ -10,14 +10,15 @@ export interface Role {
   permissions: any[];
 }
 
+// ✅ CẬP NHẬT User interface để support multiple roles
 export interface User {
   id: string;
   username: string;
   email: string;
   password?: string;
-  profileImage?: string; // Sử dụng profileImage theo API
-  roles?: Role[];
-  role?: string;
+  profileImage?: string;
+  roles?: Role[]; // ✅ Multiple roles
+  role?: string; // Keep for backward compatibility
   created_at?: Date;
   updated_at?: Date;
   status?: 'active' | 'inactive' | 'banned';
@@ -271,13 +272,13 @@ export class UserService {
             permissions: []
           },
           {
-            name: 'USER',
-            description: 'Quyền người dùng thông thường',
+            name: 'STAFF',
+            description: 'Quyền nhân viên',
             permissions: []
           },
           {
-            name: 'STAFF',
-            description: 'Quyền nhân viên',
+            name: 'USER',
+            description: 'Quyền người dùng thông thường',
             permissions: []
           }
         ]);
@@ -285,7 +286,7 @@ export class UserService {
     );
   }
 
-  // ✅ THÊM method để cập nhật quyền người dùng
+  // ✅ THÊM method để update user roles
   updateUserRoles(userId: string, roleNames: string[]): Observable<boolean> {
     const updateData = {
       roles: roleNames
@@ -296,19 +297,10 @@ export class UserService {
       message: string;
       result?: any;
       timestamp: string;
-    }>(`${API_BASE_URL}/identity/users/${userId}`, updateData).pipe(
+    }>(`${API_BASE_URL}/identity/users/${userId}/roles`, updateData).pipe(
       map(response => response.status === 200),
       catchError(error => {
         console.error('Error updating user roles:', error);
-        
-        // Fallback: cập nhật mock data
-        const userIndex = this.mockUsers.findIndex(u => u.id === userId);
-        if (userIndex !== -1) {
-          // Chỉ cập nhật role đầu tiên trong mock data
-          this.mockUsers[userIndex].role = roleNames[0]?.toLowerCase() || 'user';
-          this.mockUsers[userIndex].updated_at = new Date();
-          return of(true);
-        }
         return of(false);
       })
     );

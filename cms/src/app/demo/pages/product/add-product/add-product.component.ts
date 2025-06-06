@@ -76,7 +76,6 @@ export class AddProductComponent implements OnInit {
     this.productService.getProductCategories().subscribe({
       next: (categories) => {
         this.categories = categories;
-        console.log('Loaded product categories:', categories);
       },
       error: (error) => {
         console.error('Lỗi khi tải danh mục sản phẩm:', error);
@@ -101,7 +100,6 @@ export class AddProductComponent implements OnInit {
       categories: this.selectedCategoryIds
     });
     
-    console.log('Selected category IDs:', this.selectedCategoryIds);
   }
 
   // ✅ Check if category is selected
@@ -170,7 +168,6 @@ export class AddProductComponent implements OnInit {
       };
       reader.readAsDataURL(file);
       
-      console.log('Thumbnail file selected:', file.name, file.size);
     }
   }
 
@@ -224,7 +221,6 @@ export class AddProductComponent implements OnInit {
       reader.readAsDataURL(file);
     });
 
-    console.log('Selected image files:', this.selectedImageFiles.length);
   }
 
   // ✅ CẬP NHẬT removeImage để nhận index parameter
@@ -292,11 +288,7 @@ export class AddProductComponent implements OnInit {
         format: formValue.form
       };
 
-      console.log('=== ADD PRODUCT DEBUG ===');
-      console.log('Product data:', productData);
-      console.log('Selected thumbnail file:', this.selectedThumbnailFile?.name);
-      console.log('Selected image files:', this.selectedImageFiles.length);
-      console.log('Categories to send:', categoryIds);
+
 
       // ✅ Gọi API với multipart data
       this.productService.addProduct(
@@ -305,7 +297,6 @@ export class AddProductComponent implements OnInit {
         this.selectedImageFiles.length > 0 ? this.selectedImageFiles : undefined
       ).subscribe({
         next: (newProduct) => {
-          console.log('Product added successfully:', newProduct);
           this.submitting = false;
           this.toastService.success('Thành công', 'Thêm sản phẩm thành công!');
           
