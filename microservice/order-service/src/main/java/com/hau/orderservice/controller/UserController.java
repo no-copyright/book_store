@@ -1,6 +1,7 @@
 package com.hau.orderservice.controller;
 
 import com.hau.event.dto.UserCreateEvent;
+import com.hau.event.dto.UserUpdateEvent;
 import com.hau.orderservice.entity.User;
 import com.hau.orderservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,14 @@ public class UserController {
                 .id(userCreateEvent.getId())
                 .email(userCreateEvent.getEmail())
                 .build();
+        userRepository.save(user);
+    }
+
+    @KafkaListener(topics = "user-updated-topic")
+    public void handleUserUpdateEvent(UserUpdateEvent userUpdateEvent) {
+        User user = userRepository.findById(userUpdateEvent.getId())
+                .orElseThrow();
+        user.setEmail(userUpdateEvent.getEmail());
         userRepository.save(user);
     }
 }

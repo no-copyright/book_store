@@ -19,10 +19,6 @@ public class NotificationRequest {
     private String title;
     private String body;
     private String topic;
-    // Hỗ trợ cả token đơn lẻ và danh sách token
-    private String token;
-    private List<String> tokens;
-    // Dữ liệu bổ sung
     private Map<String, String> data;
     private LocalDateTime createdAt;
 }
