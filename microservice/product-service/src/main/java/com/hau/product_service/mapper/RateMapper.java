@@ -11,7 +11,7 @@ import org.mapstruct.Mapping;
 public interface RateMapper {
 
     @Mapping(target = "productId", source = "product.id")
-    @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "username", source = "user.username")
     RateResponse toRateResponse(Rate rate);
 
     @Mapping(target = "product", ignore = true)
