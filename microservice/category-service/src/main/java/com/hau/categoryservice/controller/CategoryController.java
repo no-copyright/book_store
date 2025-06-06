@@ -69,6 +69,6 @@ public class CategoryController {
     @PostMapping ("/seeding/{numberOfRecords}")
     public ResponseEntity<ApiResponse<String>> seeding(@PathVariable Integer numberOfRecords) {
         ApiResponse<String> response = categoryService.seeding(numberOfRecords);
-        return new ResponseEntity<ApiResponse<String>>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }
