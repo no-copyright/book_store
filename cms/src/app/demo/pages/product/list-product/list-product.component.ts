@@ -18,14 +18,14 @@ export class ListProductComponent implements OnInit {
   filteredProducts: Product[] = [];
   searchKeyword: string = '';
   loading: boolean = false;
-  Math = Math;
   
   // Phân trang
   currentPage = 1;
   pageSize = 10;
   totalItems = 0;
   totalPages = 1;
-
+  Math = Math;
+  
   constructor(
     private router: Router, 
     private productService: ProductService,
@@ -38,52 +38,125 @@ export class ListProductComponent implements OnInit {
 
   loadProducts(): void {
     this.loading = true;
-    this.productService.getProductsForUI().subscribe({
+    
+    console.log(`Loading products - Page: ${this.currentPage}, Size: ${this.pageSize}`);
+    
+    this.productService.getProductsForUI(this.currentPage, this.pageSize).subscribe({
       next: (response) => {
         this.products = response.products;
-        this.filteredProducts = [...response.products];
         this.totalItems = response.totalElements;
         this.totalPages = response.totalPages;
+        this.currentPage = response.currentPage; // ✅ Cập nhật currentPage từ response
         this.loading = false;
+        
+        console.log('Products loaded:', {
+          page: this.currentPage,
+          totalPages: this.totalPages,
+          totalElements: this.totalItems,
+          products: this.products.length
+        });
       },
       error: (error) => {
-        // ✅ Removed console.error - only show user-friendly messages
-        if (error.status === 401) {
-          this.toastService.warning('Cảnh báo', 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-        } else if (error.status === 0) {
-          this.toastService.error('Lỗi kết nối', 'Không thể kết nối đến server. Đang sử dụng dữ liệu mẫu.');
-        } else {
-          this.toastService.error('Lỗi', 'Có lỗi xảy ra khi tải danh sách sản phẩm');
-        }
-        
+        console.error('Error loading products:', error);
         this.loading = false;
+        this.toastService.error('Lỗi', 'Không thể tải danh sách sản phẩm!');
       }
     });
   }
 
   searchProducts(): void {
     if (!this.searchKeyword.trim()) {
-      this.filteredProducts = [...this.products];
-    } else {
-      const keyword = this.searchKeyword.toLowerCase();
-      this.filteredProducts = this.products.filter(product => 
-        product.name?.toLowerCase().includes(keyword) ||
-        product.code?.toLowerCase().includes(keyword) ||
-        product.publisher?.toLowerCase().includes(keyword) ||
-        product.description?.toLowerCase().includes(keyword) ||
-        product.title?.toLowerCase().includes(keyword)
-      );
+      // Reset về trang 1 khi clear search
+      this.currentPage = 1;
+      this.loadProducts();
+      return;
     }
-    
-    this.totalItems = this.filteredProducts.length;
-    this.totalPages = Math.ceil(this.totalItems / this.pageSize);
-    this.currentPage = 1;
 
-    if (this.filteredProducts.length === 0 && this.searchKeyword.trim()) {
-      this.toastService.info('Tìm kiếm', `Không tìm thấy sản phẩm nào với từ khóa "${this.searchKeyword}"`);
-    } else if (this.searchKeyword.trim()) {
-      this.toastService.success('Tìm kiếm', `Tìm thấy ${this.filteredProducts.length} sản phẩm với từ khóa "${this.searchKeyword}"`);
+    this.loading = true;
+    // Reset về trang 1 khi search
+    this.currentPage = 1;
+    
+    console.log(`Searching products: "${this.searchKeyword}" - Page: ${this.currentPage}`);
+    
+    this.productService.searchProducts(this.searchKeyword, this.currentPage, this.pageSize).subscribe({
+      next: (response) => {
+        this.products = response.products;
+        this.totalItems = response.totalElements;
+        this.totalPages = response.totalPages;
+        this.currentPage = response.currentPage;
+        this.loading = false;
+        
+        console.log('Search results:', {
+          keyword: this.searchKeyword,
+          totalFound: this.totalItems,
+          page: this.currentPage,
+          totalPages: this.totalPages
+        });
+        
+        if (this.totalItems === 0) {
+          this.toastService.info('Tìm kiếm', `Không tìm thấy sản phẩm nào với từ khóa "${this.searchKeyword}"`);
+        } else {
+          this.toastService.success('Tìm kiếm', `Tìm thấy ${this.totalItems} sản phẩm`);
+        }
+      },
+      error: (error) => {
+        console.error('Error searching products:', error);
+        this.loading = false;
+        this.toastService.error('Lỗi', 'Không thể tìm kiếm sản phẩm!');
+      }
+    });
+  }
+
+  // ✅ THÊM method để search với pagination
+  searchProductsWithPagination(): void {
+    if (!this.searchKeyword.trim()) {
+      this.loadProducts();
+      return;
     }
+
+    this.loading = true;
+    
+    console.log(`Searching with pagination: "${this.searchKeyword}" - Page: ${this.currentPage}`);
+    
+    this.productService.searchProducts(this.searchKeyword, this.currentPage, this.pageSize).subscribe({
+      next: (response) => {
+        this.products = response.products;
+        this.totalItems = response.totalElements;
+        this.totalPages = response.totalPages;
+        this.currentPage = response.currentPage;
+        this.loading = false;
+        
+        console.log('Search pagination results:', {
+          keyword: this.searchKeyword,
+          page: this.currentPage,
+          totalPages: this.totalPages,
+          results: this.products.length
+        });
+      },
+      error: (error) => {
+        console.error('Error searching products with pagination:', error);
+        this.loading = false;
+        this.toastService.error('Lỗi', 'Không thể tải trang kết quả tìm kiếm!');
+      }
+    });
+  }
+
+  // ✅ CẬP NHẬT method changePage để support cả normal và search
+  changePage(page: number): void {
+    if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+      console.log('Changing to page:', page);
+      this.currentPage = page;
+      
+      // ✅ Gọi lại loadProducts để load data mới
+      this.loadProducts();
+    }
+  }
+
+  clearSearch(): void {
+    console.log('Clearing search');
+    this.searchKeyword = '';
+    this.currentPage = 1;
+    this.loadProducts();
   }
 
   navigateToAddProduct(): void {
@@ -192,6 +265,7 @@ export class ListProductComponent implements OnInit {
     let startPage = Math.max(1, this.currentPage - Math.floor(maxPagesToShow / 2));
     let endPage = Math.min(this.totalPages, startPage + maxPagesToShow - 1);
     
+    // Điều chỉnh startPage nếu cần
     if (endPage - startPage + 1 < maxPagesToShow) {
       startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }
@@ -203,9 +277,22 @@ export class ListProductComponent implements OnInit {
     return pages;
   }
 
-  changePage(page: number): void {
+  // ✅ THÊM method để jump to specific page
+  goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
+      this.changePage(page);
+    }
+  }
+
+  // ✅ THÊM method để change page size
+  changePageSize(newPageSize: number): void {
+    this.pageSize = newPageSize;
+    this.currentPage = 1; // Reset về trang 1
+    
+    if (this.searchKeyword.trim()) {
+      this.searchProducts();
+    } else {
+      this.loadProducts();
     }
   }
 

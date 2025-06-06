@@ -122,7 +122,7 @@ export class ListCategoryComponent implements OnInit {
   }
 
   navigateToAddCategory(): void {
-    this.router.navigate(['/category/add']);
+    this.router.navigate(['/category/add-category']);
   }
 
   navigateToEditCategory(id: string | number): void {

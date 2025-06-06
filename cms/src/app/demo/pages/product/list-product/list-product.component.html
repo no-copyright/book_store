@@ -18,6 +18,12 @@
             <i class="feather icon-search"></i> Tìm kiếm
           </button>
         </div>
+        <!-- ✅ THÊM nút xóa search -->
+        <div class="me-3 mb-2" *ngIf="searchKeyword.trim()">
+          <button class="btn btn-outline-secondary mb-0" type="button" (click)="clearSearch()">
+            <i class="feather icon-x"></i> Xóa
+          </button>
+        </div>
         <div class="ms-auto mb-2">
           <button class="btn btn-success" type="button" (click)="navigateToAddProduct()">
             <i class="feather icon-plus"></i> Thêm sản phẩm
@@ -42,7 +48,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let product of pagedProducts">
+            <tr *ngFor="let product of products">
               <th scope="row">{{ product.code }}</th>
               <td>
                 <img [src]="getProductImageSrc(product)" 
@@ -80,8 +86,9 @@
                 </div>
               </td>
             </tr>
-            <tr *ngIf="filteredProducts.length === 0">
-              <td colspan="10" class="text-center">
+            <!-- ✅ SỬA điều kiện hiển thị thông báo không có sản phẩm -->
+            <tr *ngIf="products.length === 0">
+              <td colspan="9" class="text-center">
                 <div class="alert alert-info mb-0">
                   <i class="feather icon-info me-2"></i> 
                   {{ searchKeyword ? 'Không tìm thấy sản phẩm nào phù hợp' : 'Không có sản phẩm nào' }}
@@ -91,7 +98,7 @@
           </tbody>
         </table>
 
-        <!-- Phân trang -->
+        <!-- ✅ SỬA pagination - SỬ DỤNG PROPERTY HIỆN CÓ -->
         <div class="d-flex justify-content-between align-items-center mt-3" *ngIf="totalItems > 0">
           <div>
             <span>Hiển thị {{ (currentPage-1) * pageSize + 1 }} đến {{ Math.min(currentPage * pageSize, totalItems) }} trong số {{ totalItems }} sản phẩm</span>

@@ -104,6 +104,19 @@ const routes: Routes = [
           { path: 'list', component: ListUsersComponent },
           { path: 'edit/:id', component: EditUserComponent }
         ]
+      },
+      // Thêm route cho quản lý đánh giá
+      {
+        path: 'evaluate',
+        canActivate: [AuthGuard],
+        children: [
+          { path: '', redirectTo: 'list-evaluate', pathMatch: 'full' },
+          { 
+            path: 'list-evaluate', 
+            loadComponent: () => import('./demo/pages/evaluate/list-evaluate/list-evaluate.component')
+              .then(c => c.ListEvaluateComponent)
+          }
+        ]
       }
     ]
   },

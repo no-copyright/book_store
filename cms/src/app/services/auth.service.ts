@@ -222,4 +222,9 @@ export class AuthService {
   canAccessConsultations(): boolean {
     return this.hasAnyRole(['ADMIN', 'STAFF']);
   }
+
+  // Thêm method này nếu chưa có
+  canAccessEvaluates(): boolean {
+    return this.hasAnyRole(['ADMIN', 'STAFF']);
+  }
 }

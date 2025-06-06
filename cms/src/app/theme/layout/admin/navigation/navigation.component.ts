@@ -80,6 +80,9 @@ export class NavigationComponent implements OnInit {
       case 'consultation':
       case 'list-consultation':
         return this.authService.canAccessConsultations(); // ADMIN và STAFF
+      case 'evaluate':
+      case 'list-evaluate':
+        return this.authService.canAccessEvaluates(); // ADMIN và STAFF
       case 'main':
       case 'admin':
       default:

@@ -297,7 +297,7 @@ export class UserService {
       message: string;
       result?: any;
       timestamp: string;
-    }>(`${API_BASE_URL}/identity/users/${userId}/roles`, updateData).pipe(
+    }>(`${API_BASE_URL}/identity/users/${userId}`, updateData).pipe(
       map(response => response.status === 200),
       catchError(error => {
         console.error('Error updating user roles:', error);

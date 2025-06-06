@@ -107,6 +107,13 @@ export const NavigationItems: NavigationItem[] = [
         type: 'item',
         icon: 'feather icon-help-circle',
         url: '/request-consultation/list-consultation'
+      },
+      {
+        id: 'evaluate',
+        title: 'Quản lý đánh giá',
+        type: 'item',
+        icon: 'feather icon-star',
+        url: '/evaluate/list-evaluate'
       }
     ]
   },
