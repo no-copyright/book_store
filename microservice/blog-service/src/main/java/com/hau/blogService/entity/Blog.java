@@ -19,6 +19,7 @@ public class Blog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title;
+    @Column(columnDefinition = "LONGTEXT")
     private String content;
     private String thumbnail;
     private Integer priority;

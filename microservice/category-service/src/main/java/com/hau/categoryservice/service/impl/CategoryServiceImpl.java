@@ -132,8 +132,14 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Không tìm thấy danh mục", null));
 
-        Category updatedCategory = categoryMapper.toCategoryUpdateFromRequest(request, category);
+        CategoryEvent deletedEvent = CategoryEvent.builder()
+                .type(CategoryEvent.TYPE_DELETED)
+                .categoryId(id)
+                .data(categoryMapper.toCategoryResponse(category))
+                .build();
+        categoryEventProducer.sendCategoryDeletedEvent(deletedEvent);
 
+        Category updatedCategory = categoryMapper.toCategoryUpdateFromRequest(request, category);
         Category savedCategory = categoryRepository.save(updatedCategory);
         CategoryResponse response = categoryMapper.toCategoryResponse(savedCategory);
 
@@ -143,6 +149,16 @@ public class CategoryServiceImpl implements CategoryService {
                 .data(response)
                 .build();
         categoryEventProducer.sendCategoryUpdatedEvent(updatedEvent);
+
+
+
+        CategoryEvent createdEvent = CategoryEvent.builder()
+                .type(CategoryEvent.TYPE_CREATED)
+                .categoryId(savedCategory.getId())
+                .data(response)
+                .build();
+        categoryEventProducer.sendCategoryCreatedEvent(createdEvent);
+
 
         return ApiResponse.<CategoryResponse>builder()
                 .status(HttpStatus.OK.value())

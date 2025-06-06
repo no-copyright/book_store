@@ -46,7 +46,6 @@ public class CategoryEventConsumer {
                         log.warn("Category Updated event received with no data for ID: {}", event.getCategoryId());
                     }
                     break;
-
                 case "CATEGORY_DELETED":
                     log.info("Handling Category Deleted event for ID: {}", event.getCategoryId());
                     categoryService.handleCategoryDeleted(event.getCategoryId());
