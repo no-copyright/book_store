@@ -9,7 +9,7 @@ import org.mapstruct.Mapping;
 public interface OrderProductMapper {
     @Mapping(target = "productId", source = "product.id")
     @Mapping(target = "thumbnail", expression = "java(orderProduct.getProduct() != null && orderProduct.getProduct().getThumbnail() != null" +
-            " ? \"http://localhost:8888/api/v1/file/media/download/\" + orderProduct.getProduct().getThumbnail()" +
-            " : \"http://localhost:8888/api/v1/file/media/download/default.img\")")
+            " ? \"http://172.20.64.1:8888/api/v1/file/media/download/\" + orderProduct.getProduct().getThumbnail()" +
+            " : \"http://172.20.64.1:8888/api/v1/file/media/download/default.img\")")
     OrderProductResponse toOrderProductResponse(OrderProduct orderProduct);
 }

@@ -5,7 +5,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/payment_db
+    url: jdbc:postgresql://172.20.64.1:5432/payment_db
     username: postgres
     password: postgres
   jpa:
@@ -17,7 +17,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
   kafka:
-    bootstrap-servers: localhost:9094
+    bootstrap-servers: 172.20.64.1:9094
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -31,15 +31,15 @@ spring:
 
 vnpay:
   payUrl: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html"
-  returnUrl: "http://localhost:8089/payment/vnpay_return"
+  returnUrl: "http://172.20.64.1:8089/payment/vnpay_return"
   tmnCode: ""
   secretKey: ""
 
 momo:
   partnerCode: "MOMOBKUN20180529"
-  returnUrl: "http://localhost:8089/payment/momo_return"
+  returnUrl: "http://172.20.64.1:8089/payment/momo_return"
   endpoint: "https://test-payment.momo.vn/v2/gateway/api/"
-  ipn-url: "http://localhost:8089/payment/momo_return"
+  ipn-url: "http://172.20.64.1:8089/payment/momo_return"
   accessKey: "klm05TvNBzhg7h7j"
   secretKey: "at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa"
   requestType: "payWithMethod"

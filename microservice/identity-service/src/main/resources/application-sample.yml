@@ -4,7 +4,7 @@ server:
     context-path: /identity
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/identity_db
+    url: jdbc:postgresql://172.20.64.1:5432/identity_db
     username: postgres
     password: postgres
   jpa:
@@ -19,7 +19,7 @@ spring:
       max-file-size: 5MB
       max-request-size: 5MB
   kafka:
-    bootstrap-servers: localhost:9094
+    bootstrap-servers: 172.20.64.1:9094
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -34,11 +34,11 @@ jwt:
 
 app:
   cart-service:
-    url: http://localhost:8083
+    url: http://172.20.64.1:8083
   file-service:
-    url: http://localhost:8087
+    url: http://172.20.64.1:8087
   file:
-    download-prefix: http://localhost:8888/api/v1/file/media/download/
+    download-prefix: http://172.20.64.1:8888/api/v1/file/media/download/
     default-image: default-avatar
 
 admin:

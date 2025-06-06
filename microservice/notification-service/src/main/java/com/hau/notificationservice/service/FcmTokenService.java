@@ -1,18 +1,20 @@
 package com.hau.notificationservice.service;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
 import com.hau.notificationservice.dto.ApiResponse;
 import com.hau.notificationservice.dto.FcmTokenCreateRequest;
 import com.hau.notificationservice.dto.FcmTokenResponse;
 import com.hau.notificationservice.entity.FcmToken;
 import com.hau.notificationservice.exception.AppException;
 import com.hau.notificationservice.repository.FcmTokenRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -20,16 +22,15 @@ public class FcmTokenService {
     private final FcmTokenRepository fcmTokenRepository;
 
     public ApiResponse<FcmTokenResponse> fcmTokenResponseApiResponse(FcmTokenCreateRequest fcmTokenCreateRequest) {
-        Integer userId = Integer.valueOf(SecurityContextHolder.getContext().getAuthentication().getName());
+        Integer userId = Integer.valueOf(
+                SecurityContextHolder.getContext().getAuthentication().getName());
         String token = fcmTokenCreateRequest.getToken(); // Lấy token từ request
 
         Optional<FcmToken> existingToken = fcmTokenRepository.findByUserIdAndToken(userId, token);
 
         if (existingToken.isEmpty()) {
-            FcmToken newFcmToken = FcmToken.builder()
-                    .token(token)
-                    .userId(userId)
-                    .build();
+            FcmToken newFcmToken =
+                    FcmToken.builder().token(token).userId(userId).build();
 
             newFcmToken = fcmTokenRepository.save(newFcmToken);
 

@@ -1,14 +1,16 @@
 package com.hau.notificationservice.service;
 
-import com.google.firebase.messaging.*;
-import com.hau.notificationservice.dto.NotificationRequest;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+
+import org.springframework.stereotype.Service;
+
+import com.google.firebase.messaging.*;
+import com.hau.notificationservice.dto.NotificationRequest;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -34,8 +36,7 @@ public class FCMService {
             }
         }
 
-        log.info("Notification sending summary: Success: {}, Failed: {}",
-                successfulTokens.size(), failedTokens.size());
+        log.info("Notification sending summary: Success: {}, Failed: {}", successfulTokens.size(), failedTokens.size());
 
         if (!failedTokens.isEmpty()) {
             log.error("Failed tokens: {}", failedTokens);
@@ -48,21 +49,21 @@ public class FCMService {
 
     private AndroidConfig getAndroidConfig(String topic) {
         return AndroidConfig.builder()
-                .setTtl(Duration.ofMinutes(2).toMillis()).setCollapseKey(topic)
+                .setTtl(Duration.ofMinutes(2).toMillis())
+                .setCollapseKey(topic)
                 .setPriority(AndroidConfig.Priority.HIGH)
-                .setNotification(AndroidNotification.builder()
-                        .setTag(topic).build()).build();
+                .setNotification(AndroidNotification.builder().setTag(topic).build())
+                .build();
     }
 
     private ApnsConfig getApnsConfig(String topic) {
         return ApnsConfig.builder()
-                .setAps(Aps.builder().setCategory(topic).setThreadId(topic).build()).build();
+                .setAps(Aps.builder().setCategory(topic).setThreadId(topic).build())
+                .build();
     }
 
     private Message getPreconfiguredMessageToToken(NotificationRequest request, String token) {
-        return getPreconfiguredMessageBuilder(request)
-                .setToken(token)
-                .build();
+        return getPreconfiguredMessageBuilder(request).setToken(token).build();
     }
 
     private Message.Builder getPreconfiguredMessageBuilder(NotificationRequest request) {

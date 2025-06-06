@@ -36,7 +36,7 @@ public class PaymentController {
     public ResponseEntity<?> momoReturn(HttpServletRequest request) {
         paymentService.processMomoReturn(request);
         HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create("http://localhost:3000"));
+        headers.setLocation(URI.create("http://172.20.64.1:3000"));
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 
@@ -57,7 +57,7 @@ public class PaymentController {
     public ResponseEntity<?> vnPayReturn(HttpServletRequest request) {
         paymentService.processVnPayReturn(request);
         HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create("http://localhost:3000"));
+        headers.setLocation(URI.create("http://172.20.64.1:3000"));
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 }

@@ -4,7 +4,7 @@ server:
     context-path: /profile
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/profile_db
+    url: jdbc:postgresql://172.20.64.1:5432/profile_db
     username: root
     password: 123456789
   jpa:
@@ -15,7 +15,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   kafka:
-    bootstrap-servers: localhost:9094
+    bootstrap-servers: 172.20.64.1:9094
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer

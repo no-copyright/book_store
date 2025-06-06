@@ -547,9 +547,9 @@ public class ProductService {
             throw new AppException(HttpStatus.BAD_REQUEST, "Ảnh thumbnail không được để trống", null);
         }
 
-        if(product.getThumbnail() != null) {
-            fileServiceClientRepository.deleteFile(product.getThumbnail());
-        }
+//        if(product.getThumbnail() != null) {
+//            fileServiceClientRepository.deleteFile(product.getThumbnail());
+//        }
         String newThumbnailUrl = fileUploadService.uploadFileAndGetUrl(thumbnail, "thumbnail");
         product.setThumbnail(newThumbnailUrl);
 

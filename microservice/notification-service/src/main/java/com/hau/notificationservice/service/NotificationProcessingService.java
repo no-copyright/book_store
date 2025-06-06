@@ -1,5 +1,18 @@
 package com.hau.notificationservice.service;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
 import com.hau.event.dto.NotificationEvent;
 import com.hau.notificationservice.dto.ApiResponse;
 import com.hau.notificationservice.dto.NotificationRequest;
@@ -11,19 +24,8 @@ import com.hau.notificationservice.exception.AppException;
 import com.hau.notificationservice.mapper.NotificationMapper;
 import com.hau.notificationservice.repository.FcmTokenRepository;
 import com.hau.notificationservice.repository.NotificationRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -38,9 +40,7 @@ public class NotificationProcessingService {
 
         List<FcmToken> fcmTokens = fcmTokenRepository.findFcmTokenByUserId(userId);
 
-        List<String> tokensToSend = fcmTokens.stream()
-                .map(FcmToken::getToken)
-                .toList();
+        List<String> tokensToSend = fcmTokens.stream().map(FcmToken::getToken).toList();
         Map<String, String> data = new HashMap<>();
         data.put("orderId", notificationEvent.getParams().get("orderId").toString());
         NotificationRequest notificationRequest = NotificationRequest.builder()
@@ -48,7 +48,8 @@ public class NotificationProcessingService {
                 .isRead(false)
                 .topic("Order created")
                 .title("Chúc mừng bạn đã đặt hàng thành công")
-                .body("Đơn hàng của bạn đã được đặt thành công với mã đơn hàng: " + notificationEvent.getParams().get("orderId"))
+                .body("Đơn hàng của bạn đã được đặt thành công với mã đơn hàng: "
+                        + notificationEvent.getParams().get("orderId"))
                 .tokens(tokensToSend)
                 .data(data)
                 .createdAt(LocalDateTime.now())
@@ -64,9 +65,7 @@ public class NotificationProcessingService {
 
         List<FcmToken> fcmTokens = fcmTokenRepository.findFcmTokenByUserId(userId);
 
-        List<String> tokensToSend = fcmTokens.stream()
-                .map(FcmToken::getToken)
-                .toList();
+        List<String> tokensToSend = fcmTokens.stream().map(FcmToken::getToken).toList();
         Map<String, String> data = new HashMap<>();
         data.put("orderId", notificationEvent.getParams().get("orderId").toString());
 
@@ -91,7 +90,8 @@ public class NotificationProcessingService {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         Integer userId = Integer.valueOf(authentication.getName());
 
-        Notification notification = notificationRepository.findByIdAndUserId(id, userId)
+        Notification notification = notificationRepository
+                .findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Thông báo không tồn tại", null));
 
         notification.setIsRead(true);
@@ -122,7 +122,8 @@ public class NotificationProcessingService {
                 .build();
     }
 
-    public ApiResponse<PageResponse<NotificationResponseToUser>> notificationResponseToUser(int pageIndex, int pageSize) {
+    public ApiResponse<PageResponse<NotificationResponseToUser>> notificationResponseToUser(
+            int pageIndex, int pageSize) {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         Integer userId = Integer.valueOf(authentication.getName());
 
@@ -136,15 +137,13 @@ public class NotificationProcessingService {
         return ApiResponse.<PageResponse<NotificationResponseToUser>>builder()
                 .status(200)
                 .message("Lấy thông báo thành công")
-                .result(
-                        PageResponse.<NotificationResponseToUser>builder()
-                                .data(notificationResponses)
-                                .currentPage(pageIndex)
-                                .pageSize(pageSize)
-                                .totalElements(notifications.getTotalElements())
-                                .totalPages(notifications.getTotalPages())
-                                .build()
-                )
+                .result(PageResponse.<NotificationResponseToUser>builder()
+                        .data(notificationResponses)
+                        .currentPage(pageIndex)
+                        .pageSize(pageSize)
+                        .totalElements(notifications.getTotalElements())
+                        .totalPages(notifications.getTotalPages())
+                        .build())
                 .timestamp(LocalDateTime.now())
                 .build();
     }
@@ -153,7 +152,8 @@ public class NotificationProcessingService {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         Integer userId = Integer.valueOf(authentication.getName());
 
-        Notification notification = notificationRepository.findByIdAndUserId(notificationId, userId)
+        Notification notification = notificationRepository
+                .findByIdAndUserId(notificationId, userId)
                 .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Thông báo không tồn tại", null));
 
         notificationRepository.delete(notification);
