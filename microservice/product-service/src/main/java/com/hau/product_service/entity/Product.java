@@ -32,6 +32,7 @@ public class Product {
     Integer discount;
     Integer price;
     Integer priority;
+    @Column(columnDefinition = "LONGTEXT")
     String description;
     @Column(unique = true)
     String slug;
