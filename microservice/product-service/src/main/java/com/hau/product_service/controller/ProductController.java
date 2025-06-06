@@ -130,4 +130,14 @@ public class ProductController {
         ApiResponse<ProductResponse> response = productService.updateProductThumbnail(productId, thumbnail);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+    @PutMapping(value = "/noImage/{productId}")
+    public ResponseEntity<ApiResponse<ProductResponse>> updateProductWithoutImage(
+            @PathVariable Long productId,
+            @RequestBody @Valid ProductRequest request
+    ) {
+        ApiResponse<ProductResponse> response = productService.updateProductWithoutImage(productId, request);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }

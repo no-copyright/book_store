@@ -598,6 +598,32 @@ public class ProductService {
                 .build();
     }
 
+    public ApiResponse<ProductResponse> updateProductWithoutImage(Long id, ProductRequest request) {
+        Product existProduct = productRepository.findById(id)
+                .orElseThrow(() -> new AppException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại", null));
+
+        Product product = productMapper.updateProductFromRequest(request, existProduct);
+
+        List<Category> categories = categoryService.handleCategoryFromProduct(request.getCategoryIds());
+
+        if (request.getActive() != null) {
+            existProduct.setActive(request.getActive());
+        }
+
+        existProduct.setDiscountPercent(calculateProductDiscountPercent(product.getPrice(), product.getDiscount()));
+        existProduct.setSlug(slugService.generateUniqueSlug(product.getTitle(), id));
+        existProduct.setCategories(categories);
+        Product savedProduct = productRepository.save(existProduct);
+
+        ProductResponse response = productMapper.toProductResponse(savedProduct);
+        return ApiResponse.<ProductResponse>builder()
+                .status(HttpStatus.OK.value())
+                .message("Cập nhật sản phẩm thành công")
+                .result(response)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
     public Double calculateProductDiscountPercent(Integer price, Integer discount) {
         if (price == null || discount == null || price <= 0) {
             return 0.0;

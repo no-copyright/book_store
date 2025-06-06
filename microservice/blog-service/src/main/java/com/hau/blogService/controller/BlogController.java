@@ -80,4 +80,11 @@ public class BlogController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+    @PutMapping("/noThumbnail/{id}")
+    public ResponseEntity<ApiResponse<BlogResponse>> updateBlogWithoutThumbnail(@PathVariable Long id, @RequestBody @Valid BlogRequest request) {
+        ApiResponse<BlogResponse> response = blogService.updateBlogWithoutThumbnail(id, request);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
 }
