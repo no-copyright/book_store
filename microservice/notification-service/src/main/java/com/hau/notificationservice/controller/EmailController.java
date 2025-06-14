@@ -1,17 +1,19 @@
 package com.hau.notificationservice.controller;
 
-import com.hau.notificationservice.dto.ApiResponse;
-import com.hau.notificationservice.dto.EmailResponse;
-import com.hau.notificationservice.dto.SendEmailRequest;
-import com.hau.notificationservice.service.EmailService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
+import com.hau.notificationservice.dto.ApiResponse;
+import com.hau.notificationservice.dto.EmailResponse;
+import com.hau.notificationservice.dto.SendEmailRequest;
+import com.hau.notificationservice.service.EmailService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,5 +30,4 @@ public class EmailController {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
-
 }

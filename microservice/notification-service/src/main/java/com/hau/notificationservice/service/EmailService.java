@@ -1,18 +1,20 @@
 package com.hau.notificationservice.service;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
 import com.hau.notificationservice.dto.EmailRequest;
 import com.hau.notificationservice.dto.EmailResponse;
 import com.hau.notificationservice.dto.SendEmailRequest;
 import com.hau.notificationservice.dto.Sender;
 import com.hau.notificationservice.exception.AppException;
 import com.hau.notificationservice.repository.EmailClient;
+
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,9 +37,7 @@ public class EmailService {
         try {
             return emailClient.sendEmail(apiKey, emailRequest);
         } catch (FeignException e) {
-            throw new AppException(HttpStatus.BAD_REQUEST,
-                    "Gửi email thất bại",
-                    e.getMessage());
+            throw new AppException(HttpStatus.BAD_REQUEST, "Gửi email thất bại", e.getMessage());
         }
     }
 }
