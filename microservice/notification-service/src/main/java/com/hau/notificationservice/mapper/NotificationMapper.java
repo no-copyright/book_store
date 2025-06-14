@@ -1,9 +1,10 @@
 package com.hau.notificationservice.mapper;
 
+import org.mapstruct.Mapper;
+
 import com.hau.notificationservice.dto.NotificationRequest;
 import com.hau.notificationservice.dto.NotificationResponseToUser;
 import com.hau.notificationservice.entity.Notification;
-import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface NotificationMapper {

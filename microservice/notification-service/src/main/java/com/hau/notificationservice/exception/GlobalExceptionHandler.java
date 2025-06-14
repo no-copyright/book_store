@@ -1,6 +1,11 @@
 package com.hau.notificationservice.exception;
 
-import com.hau.notificationservice.dto.ErrorsResponse;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,11 +16,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.hau.notificationservice.dto.ErrorsResponse;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -86,7 +87,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorsResponse> handleAllExceptions(Exception ex) {
         ErrorsResponse errorResponse = new ErrorsResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã có lỗi xảy ra(chưa xác định)", ex.getMessage(), LocalDateTime.now());
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Đã có lỗi xảy ra(chưa xác định)",
+                ex.getMessage(),
+                LocalDateTime.now());
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
