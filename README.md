@@ -21,7 +21,7 @@
   <table>
     <tr>
       <td align="center" width="25%">
-        <img src="/images/trang chu.png" width="180" alt="Home" />
+        <img src="/images/trangchu.png" width="180" alt="Home" />
         <br />
         <strong>🏠 Home</strong>
       </td>
@@ -59,9 +59,9 @@
       </td>
       <td align="center" width="25%">
         <!-- Placeholder for future screenshot or remove this cell -->
-        <img src="/assets/images/trang chu.png" width="180" alt="Login" />
+        <img src="/images/chitietsp.png" width="180" alt="Product detail" />
         <br />
-        <strong>🔐 Login</strong>
+        <strong>📚 Product detail</strong>
       </td>
     </tr>
   </table>
