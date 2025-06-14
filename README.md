@@ -21,47 +21,47 @@
   <table>
     <tr>
       <td align="center" width="25%">
-        <img src="/book-store-mobile-react-native/src/assets/images/trang chu.png" width="180" alt="Trang chủ" />
+        <img src="/images/trang chu.png" width="180" alt="Home" />
         <br />
-        <strong>🏠 Trang chủ</strong>
+        <strong>🏠 Home</strong>
       </td>
       <td align="center" width="25%">
-        <img src="/book-store-mobile-react-native/src/assets/images/sanpham.png" width="180" alt="Sản phẩm" />
+        <img src="/images/sanpham.png" width="180" alt="Product" />
         <br />
-        <strong>📚 Sản phẩm</strong>
+        <strong>📚 Product</strong>
       </td>
       <td align="center" width="25%">
-        <img src="/book-store-mobile-react-native/src/assets/images/giohang.png" width="180" alt="Giỏ hàng" />
+        <img src="/images/giohang.png" width="180" alt="Cart" />
         <br />
-        <strong>🛒 Giỏ hàng</strong>
+        <strong>🛒 Cart</strong>
       </td>
       <td align="center" width="25%">
-        <img src="/book-store-mobile-react-native/src/assets/images/thanhtoan.png" width="180" alt="Thanh toán" />
+        <img src="/images/thanhtoan.png" width="180" alt="Payment" />
         <br />
-        <strong>💳 Thanh toán</strong>
+        <strong>💳 Payment</strong>
       </td>
     </tr>
     <tr>
       <td align="center" width="25%">
-        <img src="/book-store-mobile-react-native/src/assets/images/chitietdonhang.png" width="180" alt="Chi tiết đơn hàng" />
+        <img src="/images/chitietdonhang.png" width="180" alt="Order detail" />
         <br />
-        <strong>📋 Chi tiết đơn hàng</strong>
+        <strong>📋 Order detail</strong>
       </td>
       <td align="center" width="25%">
-        <img src="/book-store-mobile-react-native/src/assets/images/lichsudonhang.png" width="180" alt="Lịch sử đơn hàng" />
+        <img src="/images/lichsudonhang.png" width="180" alt="Order history" />
         <br />
-        <strong>📜 Lịch sử đơn hàng</strong>
+        <strong>📜 Order history</strong>
       </td>
       <td align="center" width="25%">
-        <img src="/book-store-mobile-react-native/src/assets/images/taikhoan.png" width="180" alt="Tài khoản" />
+        <img src="/images/taikhoan.png" width="180" alt="Account" />
         <br />
-        <strong>👤 Tài khoản</strong>
+        <strong>👤 Account</strong>
       </td>
       <td align="center" width="25%">
         <!-- Placeholder for future screenshot or remove this cell -->
-        <img src="/book-store-mobile-react-native/src/assets/images/trang chu.png" width="180" alt="Đăng nhập" />
+        <img src="/assets/images/trang chu.png" width="180" alt="Login" />
         <br />
-        <strong>🔐 Đăng nhập</strong>
+        <strong>🔐 Login</strong>
       </td>
     </tr>
   </table>
